@@ -1,0 +1,1937 @@
+:root {
+  --black: #18130f;
+  --charcoal: #211b15;
+  --surface: #2a231b;
+  --surface-2: #342b21;
+  --ivory: #f4efe6;
+  --paper: #e8ded0;
+  --taupe: #cdbfaa;
+  --muted: #aaa092;
+  --soft: #746e64;
+  --gold: #b99359;
+  --gold-2: #d6b981;
+  --green: #5f7167;
+  --sage: #6f7d75;
+  --clay: #a6533c;
+  --line: rgba(166, 83, 60, 0.28);
+  --line-soft: rgba(17, 16, 13, 0.12);
+}
+
+body {
+  background:
+    radial-gradient(circle at 76% -8%, rgba(95, 113, 103, 0.16), transparent 30rem),
+    linear-gradient(180deg, #18130f, #211b15);
+}
+
+.app,
+.app.home-app {
+  background:
+    radial-gradient(circle at 78% 4%, rgba(95, 113, 103, 0.16), transparent 32rem),
+    linear-gradient(180deg, #18130f 0, #18130f 770px, #e8ded0 770px, #e8ded0 100%);
+}
+
+.app:not(.home-app) {
+  background:
+    radial-gradient(circle at 92% 0, rgba(95, 113, 103, 0.18), transparent 28rem),
+    radial-gradient(circle at 10% 92%, rgba(166, 83, 60, 0.12), transparent 24rem),
+    linear-gradient(180deg, #211b15, #18130f);
+}
+
+.sidebar {
+  background:
+    linear-gradient(180deg, rgba(48, 39, 30, 0.98), rgba(31, 25, 19, 0.98)),
+    #211b15;
+  border-right-color: rgba(166, 83, 60, 0.28);
+  box-shadow: 24px 0 80px rgba(0, 0, 0, 0.24);
+}
+
+.sidebar nav button,
+.admin-tabs button {
+  color: #c6baaa;
+}
+
+.sidebar nav button.active,
+.sidebar nav button:hover,
+.admin-tabs button.active,
+.admin-tabs button:hover {
+  background: linear-gradient(90deg, rgba(95, 113, 103, 0.28), rgba(166, 83, 60, 0.12));
+  color: var(--ivory);
+}
+
+.security-card,
+.panel,
+.trust-panel,
+.mini-story,
+.metric,
+.pipeline-panel,
+.feature-story,
+.request-row,
+.delivery-card,
+.cards-admin article,
+.track-card,
+.empty-state,
+.preview-mini,
+.next-step-list article,
+.admin-metric-groups > section,
+.file-separation > div,
+.legacy-card,
+.inquiry-form,
+.modal,
+.large-player,
+.locked-box,
+.preview-card {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.075), rgba(255, 255, 255, 0.026)),
+    #2a231b;
+  border-color: rgba(166, 83, 60, 0.25);
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
+}
+
+.home-view {
+  background:
+    radial-gradient(circle at 76% 2%, rgba(95, 113, 103, 0.17), transparent 31rem),
+    radial-gradient(circle at 12% 26%, rgba(166, 83, 60, 0.12), transparent 28rem),
+    linear-gradient(180deg, #18130f 0, #18130f 840px, #e8ded0 840px);
+}
+
+.hero-media {
+  background:
+    radial-gradient(circle at 55% 45%, rgba(95, 113, 103, 0.2), transparent 19rem),
+    #18130f;
+  border-color: rgba(166, 83, 60, 0.36);
+  box-shadow: 0 24px 100px rgba(31, 25, 19, 0.34);
+}
+
+.hero-copy p,
+.detail-rail p,
+.project-hero-content p,
+.legacy-hero p,
+.footer-brand p,
+.timeline p,
+.legacy-card p,
+.project-card-body p,
+.activity-list span {
+  color: #b9afa1;
+}
+
+.eyebrow,
+.security-card svg,
+.metric svg,
+.panel-head span,
+.section-heading button,
+.plain-button,
+.heart.saved,
+.trust-item svg,
+.select-label span,
+.definition-grid dt,
+.timeline span,
+.legacy-card span,
+.project-card-body span,
+.project-card span,
+.footer-brand span {
+  color: #dfc375;
+}
+
+.home-view .section-kicker h2,
+.home-view .section-heading h2,
+.editorial-band .panel h3,
+.warm-band .collection-card h3,
+.editorial-band .panel-head span,
+.warm-band .tag-row span {
+  color: #17130f;
+}
+
+.editorial-band,
+.warm-band {
+  background:
+    linear-gradient(180deg, rgba(255, 252, 245, 0.88), rgba(244, 239, 230, 0.96)),
+    #f4efe6;
+  border-color: rgba(17, 16, 13, 0.1);
+  box-shadow: 0 26px 90px rgba(36, 31, 24, 0.16);
+}
+
+.editorial-band .panel,
+.warm-band .collection-card,
+.split-section > div:first-child {
+  background: rgba(255, 252, 246, 0.82);
+  border-color: rgba(17, 16, 13, 0.1);
+  color: #17130f;
+}
+
+.editorial-band .panel p,
+.warm-band p,
+.site-footer p,
+.split-section > div:first-child p {
+  color: #746e64;
+}
+
+.partner-band,
+.site-footer {
+  background:
+    radial-gradient(circle at 80% 10%, rgba(166, 83, 60, 0.15), transparent 22rem),
+    linear-gradient(135deg, #2a231b, #18130f);
+}
+
+.gold-button,
+.mini-player > button:first-child {
+  background: linear-gradient(180deg, #b96549, #a6533c 58%, #7e3929);
+  border-color: rgba(214, 185, 129, 0.28);
+  color: #fff8ee;
+  box-shadow: 0 10px 26px rgba(166, 83, 60, 0.22);
+}
+
+.gold-button:hover,
+.small-button:hover,
+.outline-button:hover,
+.ghost-button:hover,
+.icon-button:hover,
+.play-button:hover,
+.heart:hover,
+.mini-play:hover {
+  transform: translateY(-1px);
+}
+
+.profile-pill,
+.ghost-button,
+.outline-button,
+.plain-button,
+.small-button,
+.icon-button,
+.play-button,
+.heart,
+.mini-play,
+.segmented button,
+.role-grid button,
+.mobile-menu {
+  background: rgba(244, 239, 230, 0.07);
+  border-color: rgba(166, 83, 60, 0.28);
+  color: #f4efe6;
+}
+
+.outline-button,
+.ghost-button,
+.site-footer button,
+.image-card button,
+.project-card button,
+.collection-card button,
+.mini-story button,
+.cards-admin button,
+.chip-row button,
+.plain-button {
+  color: #dfc375;
+}
+
+input,
+select,
+textarea,
+.search-box {
+  background: rgba(24, 19, 15, 0.76);
+  border-color: rgba(166, 83, 60, 0.25);
+  color: #f4efe6;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #8f8578;
+}
+
+.track-row,
+.comparison-row,
+.pipeline button {
+  background: rgba(42, 35, 27, 0.82);
+  border-color: rgba(166, 83, 60, 0.2);
+}
+
+.track-row.selected,
+.track-row:hover,
+.comparison-row:hover,
+.pipeline button:hover {
+  background: rgba(95, 113, 103, 0.18);
+  border-color: rgba(95, 113, 103, 0.5);
+}
+
+.split-section .track-row {
+  background: rgba(36, 31, 24, 0.9);
+  border-color: rgba(17, 16, 13, 0.15);
+}
+
+.split-section .track-row:hover,
+.split-section .track-row.selected {
+  background: rgba(48, 42, 33, 0.96);
+  border-color: rgba(198, 161, 91, 0.44);
+}
+
+.track-title strong,
+.definition-grid dd,
+td:first-child,
+th,
+.activity-list p,
+.request-row strong,
+.delivery-card strong,
+.preview-mini strong,
+.mini-player strong {
+  color: #f4efe6;
+}
+
+.track-title strong span,
+.badge,
+.track-title em,
+.tag-row span,
+.state-grid span,
+.chip-row span,
+.delivery-meta span,
+.project-meta-strip span,
+.license-summary span {
+  background: rgba(95, 113, 103, 0.16);
+  border-color: rgba(95, 113, 103, 0.35);
+  color: #d7e0d8;
+}
+
+.waveform {
+  background:
+    repeating-linear-gradient(90deg, rgba(111, 125, 117, 0.4) 0 2px, transparent 2px 8px),
+    linear-gradient(180deg, transparent 0 36%, rgba(166, 83, 60, 0.74) 36% 64%, transparent 64%);
+  filter: drop-shadow(0 0 10px rgba(95, 113, 103, 0.18));
+}
+
+.detail-hero,
+.artist-hero,
+.legacy-hero,
+.form-intro,
+.project-hero,
+.next-steps {
+  background:
+    linear-gradient(135deg, rgba(95, 113, 103, 0.18), rgba(166, 83, 60, 0.08)),
+    #2a231b;
+}
+
+.confirmation {
+  background: rgba(95, 113, 103, 0.18);
+  border-color: rgba(95, 113, 103, 0.46);
+}
+
+.confirmation svg {
+  color: #8ca393;
+}
+
+.admin-metric-groups h3 {
+  color: #d6b981;
+}
+
+.segmented button.active,
+.role-grid button.active {
+  background: #f4efe6;
+  color: #17130f;
+}
+
+.project-stepper span.complete {
+  background: rgba(95, 113, 103, 0.22);
+  border-color: rgba(95, 113, 103, 0.48);
+  color: #d7e0d8;
+}
+
+.public-header nav button,
+.panel-head span,
+.results-meta,
+.request-row span,
+.metric span,
+.metric small,
+.delivery-card span,
+small,
+th,
+td {
+  color: #aaa092;
+}
+
+.public-header nav button:hover {
+  color: #f4efe6;
+}
+
+.public-logo img,
+.site-footer img {
+  mix-blend-mode: normal !important;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.18));
+}
+
+.brand-logo,
+.public-logo img,
+.hero-logo-fallback,
+.site-footer img,
+.system-brand img {
+  mix-blend-mode: normal !important;
+  background: transparent !important;
+}
+
+.swatches span:nth-child(1) { background: #18130f !important; }
+.swatches span:nth-child(2) { background: #2a231b !important; }
+.swatches span:nth-child(3) { background: #f4efe6 !important; color: #17130f; text-shadow: none; }
+.swatches span:nth-child(4) { background: #cdbfaa !important; color: #17130f; text-shadow: none; }
+.swatches span:nth-child(5) { background: #a6533c !important; color: #fff8ee; text-shadow: none; }
+.swatches span:nth-child(6) { background: #5f7167 !important; }
+
+.main-shell {
+  background:
+    radial-gradient(circle at 96% 0, rgba(95, 113, 103, 0.13), transparent 27rem),
+    linear-gradient(180deg, rgba(36, 30, 23, 0.78), rgba(24, 19, 15, 0.95));
+}
+
+.home-app .main-shell {
+  background: transparent;
+}
+
+.topbar h1 {
+  color: #f4efe6;
+}
+
+.sidebar nav::-webkit-scrollbar-thumb,
+.detail-rail::-webkit-scrollbar-thumb {
+  background: rgba(95, 113, 103, 0.55);
+}
+
+.sidebar nav {
+  scrollbar-color: rgba(95, 113, 103, 0.55) transparent;
+}
+
+.catalog-main .outline-button,
+.track-row .small-button,
+.track-row .icon-button,
+.track-row .heart,
+.track-row .play-button {
+  background: rgba(24, 19, 15, 0.62) !important;
+  border-color: rgba(166, 83, 60, 0.28) !important;
+}
+
+.catalog-main .outline-button:hover,
+.track-row .small-button:hover,
+.track-row .icon-button:hover,
+.track-row .heart:hover,
+.track-row .play-button:hover {
+  border-color: rgba(95, 113, 103, 0.55) !important;
+  background: rgba(95, 113, 103, 0.16) !important;
+}
+
+.sidebar nav button.active,
+.admin-tabs button.active {
+  box-shadow: inset 3px 0 0 rgba(166, 83, 60, 0.82);
+}
+
+.profile-pill span {
+  background: rgba(95, 113, 103, 0.25) !important;
+  color: #d7e0d8 !important;
+}
+
+.segmented {
+  background: rgba(24, 19, 15, 0.68) !important;
+  border-color: rgba(166, 83, 60, 0.26) !important;
+}
+
+.segmented button.active,
+.role-grid button.active {
+  background: #e8ded0 !important;
+  color: #211b15 !important;
+}
+
+.admin-metric-groups .metric,
+.next-step-list article,
+.preview-mini,
+.comparison-row,
+.pipeline button {
+  background: rgba(36, 30, 23, 0.74) !important;
+}
+
+.detail-rail {
+  border-left-color: rgba(166, 83, 60, 0.22) !important;
+}
+
+.mini-player {
+  background: rgba(36, 30, 23, 0.94) !important;
+  border-color: rgba(166, 83, 60, 0.26) !important;
+}
+
+.site-footer small,
+th,
+td,
+.results-meta {
+  border-color: rgba(166, 83, 60, 0.18) !important;
+}
+
+/* Inner app de-blackening pass: keep the logo dark, but move product pages to espresso/stone. */
+.app:not(.home-app) {
+  background:
+    radial-gradient(circle at 88% 0, rgba(95, 113, 103, 0.18), transparent 30rem),
+    linear-gradient(180deg, #30271e, #241d16 58%, #1f1913) !important;
+}
+
+.app:not(.home-app) .main-shell {
+  background:
+    radial-gradient(circle at 96% 0, rgba(95, 113, 103, 0.12), transparent 28rem),
+    linear-gradient(180deg, rgba(58, 48, 37, 0.82), rgba(43, 35, 27, 0.92)) !important;
+}
+
+.app:not(.home-app) .sidebar {
+  background:
+    linear-gradient(180deg, rgba(56, 46, 36, 0.98), rgba(39, 32, 25, 0.98)),
+    #30271e !important;
+}
+
+.app:not(.home-app) .catalog-main,
+.app:not(.home-app) .detail-rail,
+.app:not(.home-app) .form-page,
+.app:not(.home-app) .dashboard-page,
+.app:not(.home-app) .admin-page,
+.app:not(.home-app) .content-page,
+.app:not(.home-app) .system-page,
+.app:not(.home-app) .project-page,
+.app:not(.home-app) .detail-page,
+.app:not(.home-app) .artist-page,
+.app:not(.home-app) .legacy-page {
+  color: #f4efe6;
+}
+
+.app:not(.home-app) .detail-rail,
+.app:not(.home-app) .catalog-header,
+.app:not(.home-app) .form-intro,
+.app:not(.home-app) .detail-hero,
+.app:not(.home-app) .artist-hero,
+.app:not(.home-app) .legacy-hero,
+.app:not(.home-app) .project-hero {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #342b21 !important;
+  border: 1px solid rgba(166, 83, 60, 0.24) !important;
+  border-radius: 8px;
+}
+
+.app:not(.home-app) .panel,
+.app:not(.home-app) .metric,
+.app:not(.home-app) .track-row,
+.app:not(.home-app) .track-card,
+.app:not(.home-app) .request-row,
+.app:not(.home-app) .delivery-card,
+.app:not(.home-app) .empty-state,
+.app:not(.home-app) .cards-admin article,
+.app:not(.home-app) .pipeline-panel,
+.app:not(.home-app) .large-player,
+.app:not(.home-app) .locked-box,
+.app:not(.home-app) .preview-card,
+.app:not(.home-app) .comparison-row,
+.app:not(.home-app) .next-steps,
+.app:not(.home-app) .next-step-list article,
+.app:not(.home-app) .admin-metric-groups > section,
+.app:not(.home-app) .preview-mini,
+.app:not(.home-app) .file-separation > div {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.105), rgba(244, 239, 230, 0.04)),
+    #3a3025 !important;
+  border-color: rgba(166, 83, 60, 0.24) !important;
+}
+
+.app:not(.home-app) .track-row.selected,
+.app:not(.home-app) .track-row:hover,
+.app:not(.home-app) .comparison-row:hover,
+.app:not(.home-app) .pipeline button:hover {
+  background:
+    linear-gradient(180deg, rgba(95, 113, 103, 0.25), rgba(95, 113, 103, 0.12)),
+    #3a3025 !important;
+  border-color: rgba(95, 113, 103, 0.56) !important;
+}
+
+.app:not(.home-app) .security-card svg,
+.app:not(.home-app) .metric svg,
+.app:not(.home-app) .trust-item svg,
+.app:not(.home-app) .heart.saved {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) .eyebrow,
+.app:not(.home-app) .panel-head span,
+.app:not(.home-app) .select-label span,
+.app:not(.home-app) .definition-grid dt,
+.app:not(.home-app) .timeline span,
+.app:not(.home-app) .legacy-card span,
+.app:not(.home-app) .project-card-body span,
+.app:not(.home-app) .project-card span,
+.app:not(.home-app) .plain-button,
+.app:not(.home-app) .outline-button,
+.app:not(.home-app) .ghost-button {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) .track-title strong span,
+.app:not(.home-app) .badge,
+.app:not(.home-app) .track-title em,
+.app:not(.home-app) .tag-row span,
+.app:not(.home-app) .state-grid span,
+.app:not(.home-app) .chip-row span,
+.app:not(.home-app) .delivery-meta span,
+.app:not(.home-app) .project-meta-strip span,
+.app:not(.home-app) .license-summary span {
+  background: rgba(95, 113, 103, 0.22) !important;
+  border-color: rgba(95, 113, 103, 0.42) !important;
+  color: #e4ebe4 !important;
+}
+
+/* Catalog polish pass from screenshot review. */
+select {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  background-image: none !important;
+  padding-right: 42px !important;
+}
+
+.select-label svg {
+  color: #d8c9b1 !important;
+  opacity: 0.9;
+}
+
+select:focus,
+input:focus,
+textarea:focus,
+button:focus-visible {
+  outline-color: rgba(95, 113, 103, 0.85) !important;
+}
+
+select:focus {
+  border-color: rgba(95, 113, 103, 0.72) !important;
+  box-shadow: 0 0 0 3px rgba(95, 113, 103, 0.18) !important;
+}
+
+.app:not(.home-app) .sidebar {
+  background:
+    linear-gradient(180deg, rgba(64, 53, 42, 0.98), rgba(47, 39, 31, 0.98)),
+    #40352a !important;
+}
+
+.brand-logo {
+  display: block;
+  background: transparent !important;
+  filter: drop-shadow(0 8px 16px rgba(20, 16, 12, 0.2));
+}
+
+.sidebar-logo,
+.public-logo {
+  background: transparent !important;
+}
+
+.app:not(.home-app) .sidebar nav button {
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .sidebar nav button.active,
+.app:not(.home-app) .sidebar nav button:hover {
+  background: rgba(166, 83, 60, 0.16) !important;
+  border-color: rgba(166, 83, 60, 0.34) !important;
+  box-shadow: inset 3px 0 0 rgba(166, 83, 60, 0.82) !important;
+}
+
+.app:not(.home-app) .security-card {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.11), rgba(244, 239, 230, 0.045)),
+    #4a3d30 !important;
+  color: #ded4c6 !important;
+}
+
+.app:not(.home-app) .catalog-header {
+  max-width: none !important;
+  padding: 18px 20px !important;
+  margin-bottom: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.09), rgba(244, 239, 230, 0.035)),
+    #463a2e !important;
+}
+
+.app:not(.home-app) .catalog-header h2 {
+  font-size: clamp(30px, 3vw, 40px) !important;
+}
+
+.app:not(.home-app) .catalog-header p {
+  margin-bottom: 0 !important;
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .catalog-layout {
+  grid-template-columns: minmax(0, 1fr) 280px !important;
+  gap: 20px !important;
+}
+
+.app:not(.home-app) .detail-rail {
+  padding: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.095), rgba(244, 239, 230, 0.035)),
+    #493c2f !important;
+  border-color: rgba(166, 83, 60, 0.22) !important;
+}
+
+.app:not(.home-app) .preview-card {
+  min-height: 132px !important;
+}
+
+.app:not(.home-app) .preview-card button {
+  width: 52px !important;
+  height: 52px !important;
+  background: rgba(24, 19, 15, 0.68) !important;
+}
+
+.app:not(.home-app) .detail-rail h2 {
+  font-size: 22px !important;
+}
+
+.app:not(.home-app) .rights-list {
+  gap: 6px !important;
+  margin: 14px 0 !important;
+}
+
+.app:not(.home-app) .rights-list p,
+.app:not(.home-app) .detail-rail p,
+.app:not(.home-app) .track-title small,
+.app:not(.home-app) .metric small,
+.app:not(.home-app) .request-row span,
+.app:not(.home-app) td,
+.app:not(.home-app) small {
+  color: #d1c7b8 !important;
+}
+
+.app:not(.home-app) .search-row {
+  align-items: center !important;
+}
+
+.app:not(.home-app) .search-box {
+  min-height: 50px !important;
+  background: rgba(30, 24, 19, 0.72) !important;
+  border-color: rgba(166, 83, 60, 0.24) !important;
+}
+
+.app:not(.home-app) .filters.wide {
+  gap: 10px !important;
+  margin-top: 10px !important;
+}
+
+.app:not(.home-app) .select-label span,
+.app:not(.home-app) .results-meta,
+.app:not(.home-app) .panel-head span {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) input,
+.app:not(.home-app) select,
+.app:not(.home-app) textarea {
+  min-height: 44px !important;
+  background: rgba(30, 24, 19, 0.76) !important;
+  border-color: rgba(166, 83, 60, 0.24) !important;
+  color: #f7f1e8 !important;
+}
+
+.app:not(.home-app) .gold-button,
+.app:not(.home-app) .small-button {
+  background: linear-gradient(180deg, #b45e45, #9f4e38) !important;
+  border-color: rgba(166, 83, 60, 0.42) !important;
+  color: #fff8ee !important;
+}
+
+.app:not(.home-app) .outline-button,
+.app:not(.home-app) .ghost-button,
+.app:not(.home-app) .profile-pill,
+.app:not(.home-app) .icon-button,
+.app:not(.home-app) .heart,
+.app:not(.home-app) .play-button,
+.app:not(.home-app) .mini-play {
+  background: rgba(244, 239, 230, 0.075) !important;
+  border-color: rgba(166, 83, 60, 0.25) !important;
+  color: #f4efe6 !important;
+}
+
+.app:not(.home-app) .top-actions .ghost-button,
+.app:not(.home-app) .top-actions .profile-pill,
+.app:not(.home-app) .top-actions .icon-button {
+  background: rgba(244, 239, 230, 0.095) !important;
+  border-color: rgba(166, 83, 60, 0.25) !important;
+}
+
+.app:not(.home-app) .track-row {
+  grid-template-columns: 38px 58px minmax(210px, 1.25fr) minmax(130px, 0.74fr) 44px 38px auto 38px !important;
+  min-height: 72px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.035)),
+    #45382c !important;
+}
+
+.app:not(.home-app) .track-row.selected,
+.app:not(.home-app) .track-row:hover {
+  background:
+    linear-gradient(180deg, rgba(95, 113, 103, 0.22), rgba(95, 113, 103, 0.11)),
+    #463a2e !important;
+}
+
+.app:not(.home-app) .waveform {
+  opacity: 0.56 !important;
+  max-width: 330px !important;
+  justify-self: end;
+}
+
+.app:not(.home-app) .track-title strong,
+.app:not(.home-app) .detail-rail h2,
+.app:not(.home-app) .rights-list strong,
+.app:not(.home-app) .topbar h1 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .track-title strong span,
+.app:not(.home-app) .badge,
+.app:not(.home-app) .track-title em,
+.app:not(.home-app) .tag-row span,
+.app:not(.home-app) .state-grid span,
+.app:not(.home-app) .chip-row span {
+  background: rgba(95, 113, 103, 0.24) !important;
+  border-color: rgba(95, 113, 103, 0.38) !important;
+  color: #edf3ed !important;
+}
+
+.app:not(.home-app) .heart.saved,
+.app:not(.home-app) .heart.saved svg {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) .segmented button.active {
+  background: #f4efe6 !important;
+  color: #2a231b !important;
+}
+
+@media (max-width: 1350px) {
+  .app:not(.home-app) .catalog-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Artist/profile inner-page composition pass. */
+.app:not(.home-app) .artist-page {
+  max-width: 1560px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .artist-hero {
+  min-height: 260px !important;
+  grid-template-columns: 160px minmax(0, 1fr) !important;
+  gap: 28px !important;
+  align-items: center !important;
+  padding: 28px 34px !important;
+  margin-bottom: 22px !important;
+  background:
+    radial-gradient(circle at 90% 20%, rgba(95, 113, 103, 0.14), transparent 24rem),
+    linear-gradient(135deg, rgba(244, 239, 230, 0.09), rgba(244, 239, 230, 0.035)),
+    #40352a !important;
+}
+
+.app:not(.home-app) .artist-hero .portrait {
+  width: 150px !important;
+  height: 150px !important;
+  border-color: rgba(95, 113, 103, 0.42) !important;
+  box-shadow: 0 18px 46px rgba(20, 16, 12, 0.28) !important;
+}
+
+.app:not(.home-app) .artist-hero h2 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .artist-hero p {
+  max-width: 980px !important;
+  color: #e1d7c9 !important;
+}
+
+.app:not(.home-app) .artist-hero .button-row {
+  margin-top: 10px !important;
+}
+
+.app:not(.home-app) .detail-grid,
+.app:not(.home-app) .archive-grid {
+  width: min(100%, 1480px) !important;
+  margin: 0 auto 28px !important;
+  padding: 22px !important;
+  gap: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.03)),
+    #3a3025 !important;
+  border: 1px solid rgba(166, 83, 60, 0.22) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 54px rgba(20, 16, 12, 0.18) !important;
+}
+
+.app:not(.home-app) .artist-page .editorial-band.two-col {
+  width: min(100%, 1480px) !important;
+  margin: 0 auto 28px !important;
+  padding: 22px !important;
+  gap: 16px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.03)),
+    #3a3025 !important;
+  border: 1px solid rgba(166, 83, 60, 0.22) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 20px 54px rgba(20, 16, 12, 0.18) !important;
+}
+
+.app:not(.home-app) .detail-grid .panel,
+.app:not(.home-app) .archive-grid .panel,
+.app:not(.home-app) .artist-page .editorial-band.two-col .panel {
+  min-height: 150px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.1), rgba(244, 239, 230, 0.04)),
+    #463a2e !important;
+  border-color: rgba(95, 113, 103, 0.25) !important;
+  box-shadow: none !important;
+}
+
+.app:not(.home-app) .detail-grid .panel h3,
+.app:not(.home-app) .archive-grid .panel h3,
+.app:not(.home-app) .artist-page .editorial-band.two-col .panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .detail-grid .panel p,
+.app:not(.home-app) .archive-grid .panel p,
+.app:not(.home-app) .artist-page .editorial-band.two-col .panel p {
+  color: #ded4c6 !important;
+  font-size: 16px !important;
+  line-height: 1.7 !important;
+}
+
+.app:not(.home-app) .detail-grid .panel-head,
+.app:not(.home-app) .archive-grid .panel-head,
+.app:not(.home-app) .artist-page .editorial-band.two-col .panel-head {
+  border-color: rgba(166, 83, 60, 0.22) !important;
+}
+
+.app:not(.home-app) .detail-grid .panel-head span,
+.app:not(.home-app) .archive-grid .panel-head span,
+.app:not(.home-app) .artist-page .editorial-band.two-col .panel-head span {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .artist-page > h3,
+.app:not(.home-app) .artist-page .section-heading h2 {
+  margin-top: 18px !important;
+  margin-bottom: 12px !important;
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .artist-page .track-list {
+  gap: 12px !important;
+}
+
+.app:not(.home-app) .artist-page .track-row {
+  min-height: 86px !important;
+}
+
+.app:not(.home-app) .sidebar nav button.active {
+  background: rgba(166, 83, 60, 0.11) !important;
+  border-color: rgba(166, 83, 60, 0.25) !important;
+  box-shadow: inset 3px 0 0 rgba(95, 113, 103, 0.82) !important;
+}
+
+.app:not(.home-app) .top-actions .ghost-button,
+.app:not(.home-app) .top-actions .profile-pill,
+.app:not(.home-app) .top-actions .icon-button {
+  background: rgba(244, 239, 230, 0.07) !important;
+  border-color: rgba(95, 113, 103, 0.28) !important;
+}
+
+@media (max-width: 760px) {
+  .app:not(.home-app) .artist-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .detail-grid,
+  .app:not(.home-app) .archive-grid {
+    padding: 14px !important;
+  }
+}
+
+/* Public homepage hierarchy pass. */
+.home-app {
+  background:
+    linear-gradient(180deg, #18130f 0, #18130f 680px, #d9cdb9 680px, #e8ded0 100%) !important;
+}
+
+.home-view {
+  background:
+    radial-gradient(circle at 74% 8%, rgba(95, 113, 103, 0.2), transparent 30rem),
+    linear-gradient(180deg, #18130f 0, #211b15 680px, #d9cdb9 680px, #e8ded0 100%) !important;
+}
+
+.public-header {
+  min-height: 88px !important;
+}
+
+.public-logo img {
+  width: 190px !important;
+  max-height: 54px !important;
+  object-fit: contain !important;
+}
+
+.public-header nav button {
+  color: #dfd6c9 !important;
+  font-size: 13px !important;
+}
+
+.public-header .outline-button {
+  min-height: 42px !important;
+  padding-inline: 18px !important;
+  background: rgba(244, 239, 230, 0.1) !important;
+  border-color: rgba(166, 83, 60, 0.3) !important;
+}
+
+.hero {
+  min-height: 710px !important;
+  padding: 102px 0 92px !important;
+  grid-template-columns: minmax(390px, 0.82fr) minmax(500px, 1.08fr) !important;
+  gap: 70px !important;
+}
+
+.hero-copy h2 {
+  font-size: clamp(58px, 5.3vw, 86px) !important;
+  line-height: 0.94 !important;
+  max-width: 700px !important;
+}
+
+.hero-copy p {
+  max-width: 620px !important;
+  color: #d4cabd !important;
+}
+
+.hero .button-row {
+  flex-wrap: nowrap !important;
+  gap: 12px !important;
+  margin-top: 22px !important;
+}
+
+.hero .gold-button,
+.hero .outline-button,
+.hero .plain-button {
+  min-height: 46px !important;
+  padding-inline: 18px !important;
+  font-size: 13px !important;
+  white-space: nowrap !important;
+}
+
+.hero .plain-button {
+  display: none !important;
+}
+
+.hero-media {
+  min-height: 360px !important;
+  max-width: 860px !important;
+  justify-self: center !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 52% 48%, rgba(166, 83, 60, 0.13), transparent 16rem),
+    radial-gradient(circle at 52% 48%, rgba(95, 113, 103, 0.1), transparent 26rem),
+    linear-gradient(135deg, rgba(244, 239, 230, 0.035), rgba(244, 239, 230, 0.012)),
+    #211b15 !important;
+  border-radius: 10px !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.hero-media video {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  opacity: 0.96 !important;
+  filter: sepia(0.1) saturate(1.12) brightness(1.08) contrast(1.08) !important;
+  mix-blend-mode: normal !important;
+  transform: scale(1.08) !important;
+  transform-origin: center center !important;
+}
+
+.hero-media:before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(166, 83, 60, 0.06), transparent 18rem),
+    linear-gradient(90deg, rgba(33, 27, 21, 0.34), rgba(33, 27, 21, 0.02) 21%, rgba(33, 27, 21, 0.02) 79%, rgba(33, 27, 21, 0.34)),
+    linear-gradient(180deg, rgba(33, 27, 21, 0.34), rgba(33, 27, 21, 0.01) 42%, rgba(33, 27, 21, 0.34));
+  pointer-events: none;
+}
+
+.hero-media:after {
+  content: none;
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  background: url("/assets/beatmondo-logo.png") center / min(66%, 560px) auto no-repeat;
+  opacity: 0.88;
+  filter: drop-shadow(0 16px 28px rgba(20, 16, 12, 0.32));
+  pointer-events: none;
+}
+
+.hero-logo-fallback {
+  opacity: 0 !important;
+  width: min(72%, 620px) !important;
+  filter: drop-shadow(0 18px 30px rgba(20, 16, 12, 0.28)) !important;
+}
+
+.media-control {
+  display: none !important;
+}
+
+.editorial-band {
+  margin-top: -22px !important;
+  max-width: 1480px !important;
+}
+
+.editorial-band,
+.warm-band {
+  padding: 28px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 252, 246, 0.92), rgba(244, 239, 230, 0.98)),
+    #f4efe6 !important;
+}
+
+.editorial-band .section-heading,
+.warm-band .section-heading,
+.home-view .section-kicker {
+  margin-bottom: 22px !important;
+}
+
+.section-kicker h2,
+.section-heading h2,
+.partner-band h2 {
+  font-size: clamp(34px, 3.1vw, 52px) !important;
+}
+
+.section-grid .panel {
+  min-height: 118px !important;
+}
+
+.image-card-grid {
+  gap: 18px !important;
+  margin-bottom: 42px !important;
+}
+
+.image-card {
+  min-height: 320px !important;
+  border-color: rgba(17, 16, 13, 0.14) !important;
+  box-shadow: 0 18px 50px rgba(36, 31, 24, 0.16) !important;
+}
+
+.image-card h3 {
+  font-size: 19px !important;
+}
+
+.warm-band .collection-grid {
+  gap: 18px !important;
+}
+
+.warm-band .collection-card {
+  background: #fffaf1 !important;
+  border-color: rgba(17, 16, 13, 0.1) !important;
+  box-shadow: 0 12px 34px rgba(36, 31, 24, 0.08) !important;
+}
+
+.warm-band .collection-grid .collection-card:first-child {
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr) !important;
+  background: #fffdf8 !important;
+  box-shadow: 0 18px 55px rgba(36, 31, 24, 0.13) !important;
+}
+
+.warm-band .collection-grid .collection-card:first-child h3 {
+  font-size: 44px !important;
+}
+
+.split-section {
+  grid-template-columns: minmax(0, 1fr) 300px !important;
+  gap: 16px !important;
+  margin-top: 18px !important;
+}
+
+.split-section > div:first-child {
+  padding: 22px !important;
+  background: #fffaf1 !important;
+}
+
+.split-section .section-heading {
+  margin-bottom: 16px !important;
+}
+
+.split-section .track-row {
+  min-height: 68px !important;
+  grid-template-columns: 34px 48px minmax(190px, 1.15fr) minmax(130px, 0.85fr) 42px 34px auto 34px !important;
+  background: #3f3429 !important;
+}
+
+.split-section .track-row .small-button {
+  min-width: 108px !important;
+}
+
+.split-section .waveform {
+  max-width: 260px !important;
+  opacity: 0.44 !important;
+}
+
+.trust-panel {
+  background:
+    linear-gradient(180deg, rgba(95, 113, 103, 0.14), rgba(244, 239, 230, 0.045)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.35) !important;
+}
+
+.trust-panel h3 {
+  color: #d6b981 !important;
+}
+
+.partner-band {
+  padding: 44px !important;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(166, 83, 60, 0.16), transparent 24rem),
+    linear-gradient(135deg, #2e251d, #1f1913) !important;
+}
+
+.partner-band .outline-button {
+  background: rgba(244, 239, 230, 0.09) !important;
+  border-color: rgba(166, 83, 60, 0.28) !important;
+}
+
+.content-preview {
+  gap: 18px !important;
+  margin-bottom: 44px !important;
+}
+
+.content-preview .mini-story {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.075), rgba(244, 239, 230, 0.03)),
+    #3a3025 !important;
+}
+
+.site-footer {
+  padding: 44px 0 30px !important;
+}
+
+.footer-inner {
+  gap: 48px !important;
+  grid-template-columns: minmax(340px, 0.75fr) minmax(560px, 1fr) !important;
+}
+
+.site-footer img {
+  width: 210px !important;
+}
+
+.site-footer nav {
+  gap: 34px !important;
+}
+
+.site-footer nav div {
+  gap: 12px !important;
+}
+
+.site-footer small {
+  margin-top: 22px !important;
+  padding-top: 18px !important;
+}
+
+@media (max-width: 1180px) {
+  .hero,
+  .split-section {
+    grid-template-columns: 1fr !important;
+  }
+
+  .hero {
+    gap: 32px !important;
+  }
+
+  .split-section .track-row {
+    grid-template-columns: 42px 56px minmax(0, 1fr) 42px !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .public-logo img {
+    width: 150px !important;
+  }
+
+  .hero {
+    padding: 104px 0 70px !important;
+  }
+
+  .hero-copy h2 {
+    font-size: 46px !important;
+  }
+
+  .hero-media {
+    min-height: 300px !important;
+  }
+
+  .editorial-band,
+  .warm-band,
+  .partner-band {
+    padding: 22px !important;
+  }
+}
+
+/* Buyer dashboard hierarchy and density pass. */
+.app:not(.home-app) .dashboard-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .dashboard-page .metric-grid {
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.app:not(.home-app) .dashboard-page .metric {
+  min-height: 128px !important;
+  padding: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.12), rgba(244, 239, 230, 0.045)),
+    #45382c !important;
+  border-color: rgba(95, 113, 103, 0.24) !important;
+}
+
+.app:not(.home-app) .dashboard-page .metric svg {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .dashboard-page .metric strong {
+  color: #fbf6ee !important;
+  font-size: 28px !important;
+}
+
+.app:not(.home-app) .dashboard-page .metric span,
+.app:not(.home-app) .dashboard-page .metric small {
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .next-steps {
+  margin-bottom: 18px !important;
+  padding: 20px !important;
+  background:
+    linear-gradient(135deg, rgba(95, 113, 103, 0.22), rgba(244, 239, 230, 0.06)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.36) !important;
+}
+
+.app:not(.home-app) .next-steps .eyebrow,
+.app:not(.home-app) .next-steps h2 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .next-step-list article {
+  min-height: 92px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.1), rgba(244, 239, 230, 0.04)),
+    #4a3d30 !important;
+  border-color: rgba(95, 113, 103, 0.24) !important;
+}
+
+.app:not(.home-app) .next-step-list strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .next-step-list span {
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .next-step-list button,
+.app:not(.home-app) .project-card button,
+.app:not(.home-app) .panel-head span {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .project-grid {
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.app:not(.home-app) .project-card {
+  min-height: 160px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.035)),
+    #342b21 !important;
+  border-color: rgba(95, 113, 103, 0.22) !important;
+}
+
+.app:not(.home-app) .project-card-image {
+  min-height: 160px !important;
+}
+
+.app:not(.home-app) .project-card-body {
+  padding: 18px !important;
+}
+
+.app:not(.home-app) .project-card-body span {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .project-card-body p {
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .dashboard-grid {
+  gap: 16px !important;
+}
+
+.app:not(.home-app) .dashboard-page .panel {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.105), rgba(244, 239, 230, 0.04)),
+    #40352a !important;
+  border-color: rgba(166, 83, 60, 0.22) !important;
+}
+
+.app:not(.home-app) .dashboard-page .panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .dashboard-page .panel-head {
+  margin-bottom: 12px !important;
+  padding-bottom: 12px !important;
+}
+
+.app:not(.home-app) .dashboard-page .track-list.compact {
+  gap: 10px !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row {
+  grid-template-columns: 38px 54px minmax(0, 1fr) 38px !important;
+  min-height: 116px !important;
+  padding: 12px !important;
+  overflow: hidden !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .waveform {
+  display: none !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .duration {
+  display: none !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .small-button {
+  grid-column: 3 / -1 !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 36px !important;
+  justify-self: stretch !important;
+  margin-top: 2px !important;
+  padding-inline: 10px !important;
+  white-space: nowrap !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .icon-button {
+  display: none !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .heart {
+  justify-self: end !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .duration {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-row .icon-button,
+.app:not(.home-app) .dashboard-page .compact .track-row .heart,
+.app:not(.home-app) .dashboard-page .compact .track-row .play-button {
+  width: 38px !important;
+  height: 38px !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title strong {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  flex-wrap: wrap !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title strong span,
+.app:not(.home-app) .dashboard-page .compact .track-title div {
+  display: none !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title {
+  align-content: center !important;
+  gap: 5px !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title div {
+  gap: 4px !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title div span:nth-child(n+3) {
+  display: none !important;
+}
+
+.app:not(.home-app) .dashboard-page .compact .track-title small {
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+
+.app:not(.home-app) .dashboard-page .small-button {
+  background: rgba(166, 83, 60, 0.78) !important;
+}
+
+.app:not(.home-app) .dashboard-page .request-list {
+  gap: 10px !important;
+}
+
+.app:not(.home-app) .dashboard-page .request-row {
+  min-height: 72px !important;
+  align-items: center !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.07), rgba(244, 239, 230, 0.03)),
+    #493c2f !important;
+}
+
+.app:not(.home-app) .dashboard-page .request-row .badge {
+  min-width: 104px !important;
+  text-align: center !important;
+}
+
+.app:not(.home-app) .dashboard-page .request-row .badge {
+  background: rgba(95, 113, 103, 0.25) !important;
+  border-color: rgba(95, 113, 103, 0.44) !important;
+}
+
+.app:not(.home-app) .dashboard-page .request-row:has(.badge) .badge {
+  color: #edf3ed !important;
+}
+
+.app:not(.home-app) .preview-mini-grid {
+  gap: 10px !important;
+}
+
+.app:not(.home-app) .preview-mini span {
+  min-height: 94px !important;
+}
+
+.app:not(.home-app) .preview-mini strong,
+.app:not(.home-app) .preview-mini small {
+  margin-inline: 10px !important;
+}
+
+.app:not(.home-app) .delivery-card {
+  min-height: 238px !important;
+  align-content: center !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.03)),
+    #493c2f !important;
+}
+
+.app:not(.home-app) .delivery-card .gold-button {
+  margin-top: 8px !important;
+}
+
+@media (max-width: 1180px) {
+  .app:not(.home-app) .dashboard-grid,
+  .app:not(.home-app) .project-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .dashboard-page .compact .track-row {
+    grid-template-columns: 38px 54px minmax(0, 1fr) 40px !important;
+  }
+}
+
+/* Admin operations readability pass. */
+.app:not(.home-app) .admin-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .admin-tabs {
+  gap: 8px !important;
+  margin-bottom: 18px !important;
+  padding: 6px !important;
+  width: fit-content !important;
+  max-width: 100% !important;
+  background: rgba(244, 239, 230, 0.045) !important;
+  border: 1px solid rgba(95, 113, 103, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+.app:not(.home-app) .admin-tabs button {
+  width: auto !important;
+  min-height: 42px !important;
+  padding-inline: 14px !important;
+  color: #d8cfc2 !important;
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.app:not(.home-app) .admin-tabs button.active {
+  background: rgba(166, 83, 60, 0.18) !important;
+  border-color: rgba(166, 83, 60, 0.38) !important;
+  color: #fbf6ee !important;
+  box-shadow: inset 0 -2px 0 rgba(95, 113, 103, 0.9) !important;
+}
+
+.app:not(.home-app) .admin-tabs button:not(.active):hover {
+  background: rgba(95, 113, 103, 0.14) !important;
+  border-color: rgba(95, 113, 103, 0.2) !important;
+}
+
+.app:not(.home-app) .admin-metric-groups {
+  gap: 14px !important;
+  margin-bottom: 16px !important;
+}
+
+.app:not(.home-app) .admin-metric-groups > section {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.11), rgba(244, 239, 230, 0.045)),
+    #45382c !important;
+  border-color: rgba(95, 113, 103, 0.24) !important;
+}
+
+.app:not(.home-app) .admin-metric-groups h3 {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .admin-metric-groups .metric {
+  background: rgba(244, 239, 230, 0.055) !important;
+  min-height: 96px !important;
+}
+
+.app:not(.home-app) .admin-metric-groups .metric svg {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .admin-metric-groups .metric strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .pipeline-panel {
+  padding: 18px !important;
+  margin-bottom: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(95, 113, 103, 0.16), rgba(244, 239, 230, 0.045)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.32) !important;
+}
+
+.app:not(.home-app) .pipeline-panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .pipeline {
+  gap: 8px !important;
+}
+
+.app:not(.home-app) .pipeline button {
+  min-height: 72px !important;
+  background: rgba(244, 239, 230, 0.06) !important;
+  border-color: rgba(95, 113, 103, 0.22) !important;
+}
+
+.app:not(.home-app) .pipeline button:nth-child(3),
+.app:not(.home-app) .pipeline button:nth-child(4) {
+  background: rgba(166, 83, 60, 0.16) !important;
+  border-color: rgba(166, 83, 60, 0.34) !important;
+}
+
+.app:not(.home-app) .pipeline span {
+  color: #f4efe6 !important;
+}
+
+.app:not(.home-app) .pipeline strong {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) .admin-grid {
+  grid-template-columns: minmax(0, 1.12fr) minmax(380px, 0.88fr) !important;
+  gap: 18px !important;
+}
+
+.app:not(.home-app) .admin-page .panel {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.11), rgba(244, 239, 230, 0.045)),
+    #40352a !important;
+  border-color: rgba(166, 83, 60, 0.22) !important;
+}
+
+.app:not(.home-app) .admin-page .panel h3,
+.app:not(.home-app) .pipeline-panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .table-toolbar {
+  margin-bottom: 16px !important;
+}
+
+.app:not(.home-app) .table-toolbar input {
+  min-height: 46px !important;
+  background: rgba(30, 24, 19, 0.62) !important;
+}
+
+.app:not(.home-app) .table-toolbar button {
+  background: linear-gradient(180deg, #b45e45, #9f4e38) !important;
+  border-color: rgba(166, 83, 60, 0.42) !important;
+  color: #fff8ee !important;
+  font-weight: 800 !important;
+}
+
+.app:not(.home-app) table {
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+}
+
+.app:not(.home-app) th {
+  color: #e4dbce !important;
+  font-size: 12px !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+}
+
+.app:not(.home-app) td {
+  color: #ded4c6 !important;
+  font-size: 14px !important;
+}
+
+.app:not(.home-app) td:first-child {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) tr:hover td {
+  background: rgba(95, 113, 103, 0.08) !important;
+}
+
+.app:not(.home-app) .admin-page .badge {
+  background: rgba(95, 113, 103, 0.22) !important;
+  border-color: rgba(95, 113, 103, 0.38) !important;
+  color: #edf3ed !important;
+}
+
+.app:not(.home-app) td .badge,
+.app:not(.home-app) .request-row .badge {
+  min-width: 106px !important;
+  text-align: center !important;
+}
+
+.app:not(.home-app) .file-separation {
+  gap: 12px !important;
+  margin-top: 14px !important;
+  grid-template-columns: 1fr !important;
+}
+
+.app:not(.home-app) .file-separation > div {
+  min-height: 86px !important;
+  padding: 14px 16px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.03)),
+    #493c2f !important;
+  border-color: rgba(95, 113, 103, 0.22) !important;
+}
+
+.app:not(.home-app) .file-separation strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .file-separation p {
+  color: #d8cfc2 !important;
+  margin: 6px 0 0 !important;
+  line-height: 1.45 !important;
+}
+
+.app:not(.home-app) .activity-list p {
+  grid-template-columns: 24px minmax(0, 1fr) auto !important;
+  min-height: 62px !important;
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .activity-list span {
+  color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .admin-page .admin-grid > .panel:last-child {
+  min-height: 560px !important;
+}
+
+.app:not(.home-app) .admin-page .admin-grid > .panel:last-child:after {
+  content: "Audit trail synced";
+  display: block;
+  margin-top: 18px;
+  padding: 14px;
+  border: 1px dashed rgba(95, 113, 103, 0.28);
+  border-radius: 8px;
+  color: #d7e0d8;
+  font-size: 13px;
+}
+
+@media (max-width: 1180px) {
+  .app:not(.home-app) .admin-grid,
+  .app:not(.home-app) .admin-metric-groups {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .pipeline {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* Blog / Podcast editorial hub pass. */
+.app:not(.home-app) .content-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .content-grid {
+  grid-template-columns: minmax(0, 1.05fr) minmax(380px, 0.95fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+.app:not(.home-app) .feature-story {
+  min-height: 470px !important;
+  padding: 34px !important;
+  align-content: end !important;
+  background-position: center !important;
+  border-color: rgba(95, 113, 103, 0.26) !important;
+  box-shadow: 0 24px 70px rgba(20, 16, 12, 0.24) !important;
+}
+
+.app:not(.home-app) .feature-story:before {
+  content: "Essay · 6 min read · Rights-aware catalog stories";
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 12px;
+  padding: 6px 10px;
+  border: 1px solid rgba(95, 113, 103, 0.35);
+  border-radius: 999px;
+  background: rgba(24, 19, 15, 0.48);
+  color: #e4ebe4;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.app:not(.home-app) .feature-story h2 {
+  max-width: 660px !important;
+  font-size: clamp(34px, 3.4vw, 54px) !important;
+  line-height: 1.02 !important;
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .feature-story p {
+  max-width: 760px !important;
+  color: #e1d7c9 !important;
+}
+
+.app:not(.home-app) .feature-story .gold-button {
+  width: fit-content !important;
+  min-width: 170px !important;
+  margin-top: 8px !important;
+  padding-inline: 22px !important;
+}
+
+.app:not(.home-app) .content-page .panel {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.11), rgba(244, 239, 230, 0.045)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.23) !important;
+}
+
+.app:not(.home-app) .content-page .panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .content-page .panel-head span {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .content-page .state-grid {
+  gap: 8px !important;
+}
+
+.app:not(.home-app) .content-page .state-grid span {
+  padding: 7px 10px !important;
+  border-radius: 999px !important;
+  background: rgba(95, 113, 103, 0.18) !important;
+  border-color: rgba(95, 113, 103, 0.32) !important;
+  color: #edf3ed !important;
+  font-size: 11px !important;
+}
+
+.app:not(.home-app) .content-page .panel:nth-of-type(1),
+.app:not(.home-app) .content-page .panel:nth-of-type(2) {
+  min-height: 188px !important;
+}
+
+.app:not(.home-app) .content-page .panel:nth-of-type(3) {
+  grid-column: 1 / -1 !important;
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 14px !important;
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row span {
+  position: relative;
+  min-height: 190px !important;
+  overflow: hidden;
+  border: 1px solid rgba(95, 113, 103, 0.24);
+  border-radius: 8px !important;
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row span:after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 38px 14px 14px;
+  background: linear-gradient(180deg, transparent, rgba(20, 16, 12, 0.84));
+  color: #fbf6ee;
+  font-weight: 800;
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(1):after {
+  content: "Artist Interview · Vocal texture";
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(2):after {
+  content: "Live Culture · Event energy";
+}
+
+.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(3):after {
+  content: "Editing Notes · Trailer rhythm";
+}
+
+.app:not(.home-app) .content-grid:after {
+  content: "Editorial archive · Licensing explainers, artist provenance, catalog updates, podcast conversations, and behind-the-scenes notes for supervisors and buyers.";
+  grid-column: 1 / -1;
+  display: block;
+  padding: 22px 24px;
+  border: 1px solid rgba(166, 83, 60, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(95, 113, 103, 0.14), rgba(166, 83, 60, 0.08)),
+    #342b21;
+  color: #e1d7c9;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+@media (max-width: 1180px) {
+  .app:not(.home-app) .content-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gold-button,
+  .small-button,
+  .outline-button,
+  .ghost-button,
+  .icon-button,
+  .play-button,
+  .heart,
+  .mini-play,
+  .track-row,
+  .comparison-row,
+  .pipeline button {
+    transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  }
+}
