@@ -232,13 +232,38 @@ const navItems = [
   ["system", "Design System", Sliders],
 ];
 
+const validViews = new Set(navItems.map(([id]) => id));
+
+function parseDurationMinutes(duration) {
+  const [min, sec] = duration.split(":").map(Number);
+  return min + sec / 60;
+}
+
+function matchesDuration(duration, filter) {
+  if (filter === "Any Duration") return true;
+  const minutes = parseDurationMinutes(duration);
+  if (filter === "Under 3:00") return minutes < 3;
+  if (filter === "3:00+") return minutes >= 3;
+  return true;
+}
+
+function sortTracks(list, sortBy) {
+  const sorted = [...list];
+  if (sortBy === "title") sorted.sort((a, b) => a.title.localeCompare(b.title));
+  else if (sortBy === "artist") sorted.sort((a, b) => a.artist.localeCompare(b.artist));
+  else if (sortBy === "duration") sorted.sort((a, b) => parseDurationMinutes(a.duration) - parseDurationMinutes(b.duration));
+  return sorted;
+}
+
 function App() {
   const [view, setView] = useState("home");
   const [selectedTrack, setSelectedTrack] = useState(tracks[0]);
   const [playingId, setPlayingId] = useState(null);
+  const [playerTrackId, setPlayerTrackId] = useState(null);
   const [savedIds, setSavedIds] = useState([1, 5]);
   const [query, setQuery] = useState("");
   const [layout, setLayout] = useState("list");
+  const [sortBy, setSortBy] = useState("relevance");
   const [filters, setFilters] = useState({
     genre: "All Genres",
     mood: "Any Mood",
@@ -250,39 +275,97 @@ function App() {
     duration: "Any Duration",
   });
   const [modalTrack, setModalTrack] = useState(null);
-  const [requestSent, setRequestSent] = useState(false);
+  const [pageRequestSent, setPageRequestSent] = useState(false);
+  const [modalRequestSent, setModalRequestSent] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
+  const [toast, setToast] = useState("");
+  const [showNotifications, setShowNotifications] = useState(false);
 
-  const filteredTracks = useMemo(() => tracks.filter((track) => {
-    const text = `${track.title} ${track.artist} ${track.genre} ${track.mood} ${track.tags.join(" ")} ${track.usage}`.toLowerCase();
-    return text.includes(query.toLowerCase())
-      && (filters.genre === "All Genres" || track.genre === filters.genre)
-      && (filters.mood === "Any Mood" || track.mood === filters.mood)
-      && (filters.tempo === "Any Tempo" || track.tempo === filters.tempo)
-      && (filters.era === "Any Era" || track.era === filters.era)
-      && (filters.usage === "Any Usage" || track.usage === filters.usage)
-      && (filters.vocal === "Any Vocal" || track.vocal === filters.vocal)
-      && (filters.availability === "All Availability" || track.availability === filters.availability);
-  }), [query, filters]);
+  const navigate = (nextView) => {
+    if (!validViews.has(nextView)) return;
+    setView(nextView);
+    setMobileNav(false);
+    window.history.replaceState(null, "", nextView === "home" ? window.location.pathname : `#${nextView}`);
+  };
+
+  useEffect(() => {
+    const syncFromHash = () => {
+      const id = window.location.hash.replace("#", "");
+      if (!id || id === "home") {
+        setView("home");
+        return;
+      }
+      if (validViews.has(id)) setView(id);
+    };
+    syncFromHash();
+    window.addEventListener("hashchange", syncFromHash);
+    return () => window.removeEventListener("hashchange", syncFromHash);
+  }, []);
+
+  useEffect(() => {
+    if (!toast) return undefined;
+    const timer = window.setTimeout(() => setToast(""), 3200);
+    return () => window.clearTimeout(timer);
+  }, [toast]);
+
+  const showToast = (message) => setToast(message);
+
+  const filteredTracks = useMemo(() => {
+    const filtered = tracks.filter((track) => {
+      const text = `${track.title} ${track.artist} ${track.genre} ${track.mood} ${track.tags.join(" ")} ${track.usage}`.toLowerCase();
+      return text.includes(query.toLowerCase())
+        && (filters.genre === "All Genres" || track.genre === filters.genre)
+        && (filters.mood === "Any Mood" || track.mood === filters.mood)
+        && (filters.tempo === "Any Tempo" || track.tempo === filters.tempo)
+        && (filters.era === "Any Era" || track.era === filters.era)
+        && (filters.usage === "Any Usage" || track.usage === filters.usage)
+        && (filters.vocal === "Any Vocal" || track.vocal === filters.vocal)
+        && (filters.availability === "All Availability" || track.availability === filters.availability)
+        && matchesDuration(track.duration, filters.duration);
+    });
+    return sortTracks(filtered, sortBy);
+  }, [query, filters, sortBy]);
 
   const saveTrack = (id) => setSavedIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
+  const togglePlay = (id) => {
+    setPlayerTrackId(id);
+    setPlayingId((current) => (current === id ? null : id));
+  };
   const openTrack = (track) => {
     setSelectedTrack(track);
-    setView("track");
-    setMobileNav(false);
+    navigate("track");
   };
   const requestLicense = (track) => {
     setModalTrack(track);
-    setRequestSent(false);
+    setModalRequestSent(false);
   };
-  const activeTrack = tracks.find((track) => track.id === playingId);
+  const playerTrack = tracks.find((track) => track.id === playerTrackId);
 
   return (
     <div className={`app ${view === "home" ? "home-app" : ""}`}>
-      {view !== "home" && <Sidebar view={view} setView={setView} mobileNav={mobileNav} setMobileNav={setMobileNav} />}
+      {view !== "home" && <Sidebar view={view} setView={navigate} mobileNav={mobileNav} setMobileNav={setMobileNav} />}
       <main className="main-shell">
-        {view !== "home" && <Topbar view={view} setView={setView} setMobileNav={setMobileNav} />}
-        {view === "home" && <Home setView={setView} setSelectedTrack={setSelectedTrack} />}
+        {view !== "home" && (
+          <Topbar
+            view={view}
+            setView={navigate}
+            setMobileNav={setMobileNav}
+            showNotifications={showNotifications}
+            setShowNotifications={setShowNotifications}
+            onProfile={() => navigate("buyer")}
+          />
+        )}
+        {view === "home" && (
+          <Home
+            setView={navigate}
+            setSelectedTrack={setSelectedTrack}
+            playingId={playingId}
+            togglePlay={togglePlay}
+            savedIds={savedIds}
+            saveTrack={saveTrack}
+            requestLicense={requestLicense}
+          />
+        )}
         {view === "catalog" && (
           <Catalog
             tracks={filteredTracks}
@@ -292,28 +375,89 @@ function App() {
             setFilters={setFilters}
             layout={layout}
             setLayout={setLayout}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
             selectedTrack={selectedTrack}
             setSelectedTrack={setSelectedTrack}
             playingId={playingId}
-            setPlayingId={setPlayingId}
+            togglePlay={togglePlay}
             savedIds={savedIds}
             saveTrack={saveTrack}
             openTrack={openTrack}
             requestLicense={requestLicense}
+            showToast={showToast}
           />
         )}
-        {view === "track" && <TrackDetail track={selectedTrack} setPlayingId={setPlayingId} playingId={playingId} saveTrack={saveTrack} saved={savedIds.includes(selectedTrack.id)} requestLicense={requestLicense} openTrack={openTrack} />}
-        {view === "artist" && <ArtistProfile requestLicense={() => requestLicense(selectedTrack)} openTrack={openTrack} />}
-        {view === "legacy" && <Legacy setView={setView} openTrack={openTrack} />}
-        {view === "licensing" && <LicensingAccess selectedTrack={selectedTrack} requestSent={requestSent} setRequestSent={setRequestSent} />}
-        {view === "buyer" && <BuyerDashboard savedIds={savedIds} setView={setView} requestLicense={requestLicense} openTrack={openTrack} />}
-        {view === "project" && <ProjectDetail requestLicense={() => requestLicense(selectedTrack)} openTrack={openTrack} />}
-        {view === "admin" && <AdminDashboard />}
-        {view === "content" && <ContentPages />}
+        {view === "track" && (
+          <TrackDetail
+            track={selectedTrack}
+            togglePlay={togglePlay}
+            playingId={playingId}
+            saveTrack={saveTrack}
+            saved={savedIds.includes(selectedTrack.id)}
+            requestLicense={requestLicense}
+            openTrack={openTrack}
+          />
+        )}
+        {view === "artist" && (
+          <ArtistProfile
+            requestLicense={() => requestLicense(selectedTrack)}
+            openTrack={openTrack}
+            playingId={playingId}
+            togglePlay={togglePlay}
+            savedIds={savedIds}
+            saveTrack={saveTrack}
+            setView={navigate}
+          />
+        )}
+        {view === "legacy" && <Legacy setView={navigate} openTrack={openTrack} />}
+        {view === "licensing" && (
+          <LicensingAccess
+            selectedTrack={selectedTrack}
+            requestSent={pageRequestSent}
+            setRequestSent={setPageRequestSent}
+          />
+        )}
+        {view === "buyer" && (
+          <BuyerDashboard
+            savedIds={savedIds}
+            setView={navigate}
+            requestLicense={requestLicense}
+            openTrack={openTrack}
+            playingId={playingId}
+            togglePlay={togglePlay}
+            saveTrack={saveTrack}
+            showToast={showToast}
+          />
+        )}
+        {view === "project" && (
+          <ProjectDetail
+            requestLicense={() => requestLicense(selectedTrack)}
+            openTrack={openTrack}
+            showToast={showToast}
+          />
+        )}
+        {view === "admin" && <AdminDashboard showToast={showToast} togglePlay={togglePlay} />}
+        {view === "content" && <ContentPages setView={navigate} showToast={showToast} />}
         {view === "system" && <DesignSystem />}
       </main>
-      {activeTrack && <MiniPlayer track={activeTrack} onPause={() => setPlayingId(null)} onOpen={() => openTrack(activeTrack)} />}
-      {modalTrack && <InquiryModal track={modalTrack} requestSent={requestSent} setRequestSent={setRequestSent} onClose={() => setModalTrack(null)} />}
+      {playerTrack && (
+        <MiniPlayer
+          track={playerTrack}
+          playingId={playingId}
+          onTogglePlay={() => togglePlay(playerTrack.id)}
+          onOpen={() => openTrack(playerTrack)}
+        />
+      )}
+      {modalTrack && (
+        <InquiryModal
+          track={modalTrack}
+          requestSent={modalRequestSent}
+          setRequestSent={setModalRequestSent}
+          onClose={() => setModalTrack(null)}
+        />
+      )}
+      {toast && <div className="toast-banner" role="status">{toast}</div>}
     </div>
   );
 }
@@ -350,7 +494,7 @@ function Sidebar({ view, setView, mobileNav, setMobileNav }) {
   );
 }
 
-function Topbar({ view, setView, setMobileNav }) {
+function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotifications, onProfile }) {
   return (
     <header className="topbar">
       <button className="mobile-menu" onClick={() => setMobileNav(true)}><FadersHorizontal size={20} /> Menu</button>
@@ -360,9 +504,23 @@ function Topbar({ view, setView, setMobileNav }) {
       </div>
       <div className="top-actions">
         <button onClick={() => setView("licensing")} className="ghost-button"><SignIn size={18} /> Request Access</button>
-        <button className="icon-button" aria-label="Notifications"><Bell size={20} /></button>
-        <button className="profile-pill"><span>AD</span> Alex Davenport</button>
+        <button
+          className="icon-button"
+          aria-label="Notifications"
+          aria-expanded={showNotifications}
+          onClick={() => setShowNotifications((open) => !open)}
+        >
+          <Bell size={20} />
+        </button>
+        <button className="profile-pill" onClick={onProfile} aria-label="Open buyer dashboard"><span>AD</span> Alex Davenport</button>
       </div>
+      {showNotifications && (
+        <div className="panel notification-panel" role="region" aria-label="Notifications">
+          <p><CheckCircle size={16} /> Quote sent for Luxury Auto Campaign</p>
+          <p><ShieldCheck size={16} /> New inquiry assigned to licensing team</p>
+          <p><DownloadSimple size={16} /> Secure WAV ready for Premium Hotel Launch Film</p>
+        </div>
+      )}
     </header>
   );
 }
@@ -384,7 +542,7 @@ function PublicHeader({ setView }) {
   );
 }
 
-function Home({ setView, setSelectedTrack }) {
+function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, saveTrack, requestLicense }) {
   return (
     <section className="home-view">
       <PublicHeader setView={setView} />
@@ -427,7 +585,9 @@ function Home({ setView, setSelectedTrack }) {
       <section className="warm-band collections-band">
         <div className="section-heading"><div><span className="eyebrow">Curated collections</span><h2>Editorial paths into the catalog.</h2></div><button onClick={() => setView("catalog")}>View catalog</button></div>
         <div className="collection-grid">
-          {collections.map(([title, text, count, tags, image]) => <CollectionCard key={title} title={title} text={text} count={count} tags={tags} image={image} />)}
+          {collections.map(([title, text, count, tags, image]) => (
+            <CollectionCard key={title} title={title} text={text} count={count} tags={tags} image={image} onView={() => setView("catalog")} />
+          ))}
         </div>
       </section>
 
@@ -436,7 +596,16 @@ function Home({ setView, setSelectedTrack }) {
           <div className="section-heading"><div><span className="eyebrow">Featured tracks</span><h2>Preview publicly. Deliver securely.</h2></div><button onClick={() => setView("catalog")}>View all music</button></div>
           <div className="track-list compact">
             {tracks.slice(0, 4).map((track) => (
-              <TrackRow key={track.id} track={track} isPlaying={false} saved={false} onPlay={() => {}} onSave={() => {}} onOpen={() => { setSelectedTrack(track); setView("track"); }} onRequest={() => setView("licensing")} />
+              <TrackRow
+                key={track.id}
+                track={track}
+                isPlaying={playingId === track.id}
+                saved={savedIds.includes(track.id)}
+                onPlay={() => togglePlay(track.id)}
+                onSave={() => saveTrack(track.id)}
+                onOpen={() => { setSelectedTrack(track); setView("track"); }}
+                onRequest={() => requestLicense(track)}
+              />
             ))}
           </div>
         </div>
@@ -521,7 +690,10 @@ function HeroMedia() {
 }
 
 function Catalog(props) {
-  const { tracks: visibleTracks, query, setQuery, filters, setFilters, layout, setLayout, selectedTrack, setSelectedTrack, playingId, setPlayingId, savedIds, saveTrack, openTrack, requestLicense } = props;
+  const {
+    tracks: visibleTracks, query, setQuery, filters, setFilters, layout, setLayout, sortBy, setSortBy,
+    selectedTrack, setSelectedTrack, playingId, togglePlay, savedIds, saveTrack, openTrack, requestLicense, showToast,
+  } = props;
   const resetFilters = () => setFilters({ genre: "All Genres", mood: "Any Mood", tempo: "Any Tempo", era: "Any Era", usage: "Any Usage", vocal: "Any Vocal", availability: "All Availability", duration: "Any Duration" });
   const chips = Object.entries(filters).filter(([, value]) => !value.startsWith("All") && !value.startsWith("Any"));
   return (
@@ -536,8 +708,8 @@ function Catalog(props) {
         <div className="search-row">
           <label className="search-box"><MagnifyingGlass size={20} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search track, artist, mood, instrument, usage, or keyword..." /></label>
           <div className="catalog-actions">
-            <button className="outline-button"><BookmarkSimple size={18} /> Save Search</button>
-            <button className="outline-button"><Sparkle size={18} /> Need Something Specific?</button>
+            <button className="outline-button" onClick={() => showToast("Search saved to Buyer workspace.")}><BookmarkSimple size={18} /> Save Search</button>
+            <button className="outline-button" onClick={() => requestLicense(selectedTrack)}><Sparkle size={18} /> Need Something Specific?</button>
           </div>
         </div>
         <div className="filters wide">
@@ -554,19 +726,32 @@ function Catalog(props) {
         <div className="results-meta">
           <span>{visibleTracks.length} tracks found</span>
           <div className="results-tools">
-            <span>Sort by: supervisor relevance</span>
+            <label className="select-label compact-sort">
+              <span>Sort by</span>
+              <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                <option value="relevance">Supervisor relevance</option>
+                <option value="title">Title</option>
+                <option value="artist">Artist</option>
+                <option value="duration">Duration</option>
+              </select>
+              <CaretDown size={14} />
+            </label>
             <div className="segmented"><button className={layout === "list" ? "active" : ""} onClick={() => setLayout("list")}>List</button><button className={layout === "cards" ? "active" : ""} onClick={() => setLayout("cards")}>Cards</button></div>
           </div>
         </div>
-        <div className={layout === "cards" ? "track-card-grid" : "track-list"}>
-          {visibleTracks.map((track) => layout === "cards" ? (
-            <TrackCard key={track.id} track={track} isPlaying={playingId === track.id} saved={savedIds.includes(track.id)} onPlay={() => setPlayingId(playingId === track.id ? null : track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />
-          ) : (
-            <TrackRow key={track.id} track={track} isSelected={selectedTrack.id === track.id} isPlaying={playingId === track.id} saved={savedIds.includes(track.id)} onPlay={() => setPlayingId(playingId === track.id ? null : track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} onSelect={() => setSelectedTrack(track)} />
-          ))}
-        </div>
+        {visibleTracks.length === 0 ? (
+          <EmptyState title="No tracks match your filters" text="Try clearing filters or broadening your search terms." actionLabel="Clear filters" onAction={resetFilters} />
+        ) : (
+          <div className={layout === "cards" ? "track-card-grid" : "track-list"}>
+            {visibleTracks.map((track) => layout === "cards" ? (
+              <TrackCard key={track.id} track={track} isPlaying={playingId === track.id} saved={savedIds.includes(track.id)} onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />
+            ) : (
+              <TrackRow key={track.id} track={track} isSelected={selectedTrack.id === track.id} isPlaying={playingId === track.id} saved={savedIds.includes(track.id)} onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} onSelect={() => setSelectedTrack(track)} />
+            ))}
+          </div>
+        )}
       </div>
-      <TrackSidePanel track={selectedTrack} requestLicense={requestLicense} />
+      <TrackSidePanel track={selectedTrack} requestLicense={requestLicense} playingId={playingId} onTogglePlay={() => togglePlay(selectedTrack.id)} />
     </section>
   );
 }
@@ -593,7 +778,7 @@ function TrackRow({ track, isSelected, isPlaying, saved, onPlay, onSave, onOpen,
 function TrackCard({ track, isPlaying, saved, onPlay, onSave, onOpen, onRequest }) {
   return (
     <article className="track-card">
-      <div className="track-card-art" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.55)), url(${track.image})` }}><button onClick={onPlay}>{isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button></div>
+      <div className="track-card-art" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.55)), url(${track.image})` }}><button onClick={onPlay} aria-label={isPlaying ? "Pause preview" : "Play preview"}>{isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button></div>
       <div><h3>{track.title}</h3><p>{track.artist} · {track.genre}</p></div>
       <div className="waveform" />
       <div className="tag-row">{track.tags.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}<span>{track.duration}</span></div>
@@ -602,10 +787,14 @@ function TrackCard({ track, isPlaying, saved, onPlay, onSave, onOpen, onRequest 
   );
 }
 
-function TrackSidePanel({ track, requestLicense }) {
+function TrackSidePanel({ track, requestLicense, playingId, onTogglePlay }) {
+  const isPlaying = playingId === track.id;
   return (
     <aside className="detail-rail">
-      <div className="preview-card" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.72)), url(${track.image})` }}><span>Preview Only</span><button><Pause size={34} weight="fill" /></button></div>
+      <div className="preview-card" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.72)), url(${track.image})` }}>
+        <span>Preview Only</span>
+        <button onClick={onTogglePlay} aria-label={isPlaying ? "Pause preview" : "Play preview"}>{isPlaying ? <Pause size={34} weight="fill" /> : <Play size={34} weight="fill" />}</button>
+      </div>
       <h2>{track.title}</h2>
       <p>{track.artist} · {track.genre} · {track.usage}</p>
       <div className="tag-row">{track.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
@@ -623,7 +812,7 @@ function TrackSidePanel({ track, requestLicense }) {
   );
 }
 
-function TrackDetail({ track, playingId, setPlayingId, saved, saveTrack, requestLicense, openTrack }) {
+function TrackDetail({ track, playingId, togglePlay, saved, saveTrack, requestLicense, openTrack }) {
   return (
     <section className="detail-page">
       <div className="detail-hero">
@@ -632,7 +821,7 @@ function TrackDetail({ track, playingId, setPlayingId, saved, saveTrack, request
           <h2>{track.title}</h2>
           <p>{track.artist} · {track.genre} · {track.era}</p>
           <div className="button-row">
-            <button className="gold-button" onClick={() => setPlayingId(playingId === track.id ? null : track.id)}>{playingId === track.id ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />} Preview Track</button>
+            <button className="gold-button" onClick={() => togglePlay(track.id)}>{playingId === track.id ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />} Preview Track</button>
             <button className="outline-button" onClick={() => saveTrack(track.id)}><Heart size={18} weight={saved ? "fill" : "regular"} /> {saved ? "Saved" : "Save to Project"}</button>
             <button className="outline-button" onClick={() => requestLicense(track)}><LockKey size={18} /> Request WAV / Master</button>
           </div>
@@ -665,13 +854,13 @@ function TrackDetail({ track, playingId, setPlayingId, saved, saveTrack, request
       </div>
       <section>
         <h3>Similar tracks</h3>
-        <div className="track-list compact">{tracks.filter((item) => item.id !== track.id).slice(0, 3).map((item) => <TrackRow key={item.id} track={item} onPlay={() => {}} onSave={() => {}} onOpen={() => openTrack(item)} onRequest={() => requestLicense(item)} />)}</div>
+        <div className="track-list compact">{tracks.filter((item) => item.id !== track.id).slice(0, 3).map((item) => <TrackRow key={item.id} track={item} isPlaying={playingId === item.id} saved={false} onPlay={() => togglePlay(item.id)} onSave={() => saveTrack(item.id)} onOpen={() => openTrack(item)} onRequest={() => requestLicense(item)} />)}</div>
       </section>
     </section>
   );
 }
 
-function ArtistProfile({ requestLicense, openTrack }) {
+function ArtistProfile({ requestLicense, openTrack, playingId, togglePlay, savedIds, saveTrack, setView }) {
   const artist = artists[0];
   return (
     <section className="artist-page">
@@ -681,7 +870,7 @@ function ArtistProfile({ requestLicense, openTrack }) {
           <span className="eyebrow">Artist profile</span>
           <h2>{artist.name}</h2>
           <p>A musician-founded composer project blending warm piano, cinematic restraint, and live-band provenance for film, television, and brand storytelling.</p>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Licensing Inquiry</button><button className="outline-button"><Article size={18} /> Editorial Story</button></div>
+          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Licensing Inquiry</button><button className="outline-button" onClick={() => setView("content")}><Article size={18} /> Editorial Story</button></div>
         </div>
       </div>
       <div className="editorial-band two-col">
@@ -691,7 +880,7 @@ function ArtistProfile({ requestLicense, openTrack }) {
         <Panel title="Featured collection" action="Licensable"><p>Music for Emotional Storytelling includes 18 related tracks, preview-only listening, and protected master delivery after approval.</p></Panel>
       </div>
       <h3>Related tracks</h3>
-      <div className="track-list compact">{tracks.slice(0, 3).map((track) => <TrackRow key={track.id} track={track} onPlay={() => {}} onSave={() => {}} onOpen={() => openTrack(track)} onRequest={requestLicense} />)}</div>
+      <div className="track-list compact">{tracks.slice(0, 3).map((track) => <TrackRow key={track.id} track={track} isPlaying={playingId === track.id} saved={savedIds.includes(track.id)} onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={requestLicense} />)}</div>
     </section>
   );
 }
@@ -755,11 +944,22 @@ function LicensingAccess({ selectedTrack, requestSent, setRequestSent }) {
 }
 
 function InquiryModal({ track, requestSent, setRequestSent, onClose }) {
+  const modalRef = useRef(null);
+
+  useEffect(() => {
+    const onKeyDown = (event) => {
+      if (event.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    modalRef.current?.querySelector("input, button, select, textarea")?.focus();
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="modal-backdrop" role="dialog" aria-modal="true">
-      <div className="modal">
+    <div className="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="license-modal-title" onClick={onClose}>
+      <div className="modal" ref={modalRef} onClick={(event) => event.stopPropagation()}>
         <button className="close-button" onClick={onClose} aria-label="Close"><X size={20} /></button>
-        {requestSent ? <ConfirmationScreen track={track} compact /> : <><h2>Request license for {track.title}</h2><InquiryForm track={track} onSubmit={() => setRequestSent(true)} compact /></>}
+        {requestSent ? <ConfirmationScreen track={track} compact /> : <><h2 id="license-modal-title">Request license for {track.title}</h2><InquiryForm track={track} onSubmit={() => setRequestSent(true)} compact /></>}
       </div>
     </div>
   );
@@ -767,10 +967,23 @@ function InquiryModal({ track, requestSent, setRequestSent, onClose }) {
 
 function InquiryForm({ track, onSubmit, compact }) {
   const [form, setForm] = useState({ name: "", email: "", company: "", role: "", project: "Luxury Auto Campaign - Fall 2026", type: "Film / TV", media: "Online + paid social", territory: "Worldwide", term: "1 year", exclusivity: "Non-exclusive", budget: "$10k-$18k", deadline: "", master: "Yes", stems: "No", edit: "Maybe", message: "" });
+  const [attempted, setAttempted] = useState(false);
   const update = (field, value) => setForm({ ...form, [field]: value });
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    setAttempted(true);
+    if (!event.currentTarget.checkValidity()) return;
+    onSubmit();
+  };
   return (
-    <form className={`inquiry-form ${compact ? "compact-form" : ""}`} onSubmit={(event) => { event.preventDefault(); onSubmit(); }}>
-      {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"], ["project", "Project name"]].map(([field, label]) => <label key={field}>{label}<input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} /></label>)}
+    <form className={`inquiry-form ${compact ? "compact-form" : ""}`} onSubmit={handleSubmit} noValidate>
+      {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"], ["project", "Project name"]].map(([field, label]) => (
+        <label key={field}>
+          {label}
+          <input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} />
+          {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
+        </label>
+      ))}
       <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Podcast / Media</option></select></label>
       <label>Track of interest<input value={track.title} readOnly /></label>
       <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
@@ -782,7 +995,11 @@ function InquiryForm({ track, onSubmit, compact }) {
       <label>Need WAV/master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
       <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
       <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
-      <label className="full-field">Intended usage / message<textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." /></label>
+      <label className="full-field">
+        Intended usage / message
+        <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
+        {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
+      </label>
       <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> Submit Inquiry</button>
     </form>
   );
@@ -819,12 +1036,12 @@ function AccessConfirmation() {
   return <section className="confirmation"><CheckCircle size={52} weight="fill" /><h2>Access request received.</h2><p>Beatmondo will review your role, company, and intended use before enabling the right workspace permissions.</p><div className="status-strip"><span>Request received</span><span>Role review</span><span>Workspace setup</span></div></section>;
 }
 
-function BuyerDashboard({ savedIds, setView, requestLicense, openTrack }) {
+function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingId, togglePlay, saveTrack, showToast }) {
   const saved = tracks.filter((track) => savedIds.includes(track.id));
   const nextSteps = [
-    ["Quote awaiting review", "Luxury Auto Campaign", "Review terms"],
-    ["Deadline approaching", "Documentary Opening Titles", "Submit usage notes"],
-    ["Download ready", "Premium Hotel Launch Film", "Open delivery"],
+    ["Quote awaiting review", "Luxury Auto Campaign", "Review terms", () => setView("project")],
+    ["Deadline approaching", "Documentary Opening Titles", "Submit usage notes", () => requestLicense(tracks[2])],
+    ["Download ready", "Premium Hotel Launch Film", "Open delivery", () => showToast("Secure delivery workspace opened.")],
   ];
 
   return (
@@ -841,18 +1058,18 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack }) {
           <h2>Buyer workspace priorities</h2>
         </div>
         <div className="next-step-list">
-          {nextSteps.map(([title, project, action]) => (
+          {nextSteps.map(([title, project, action, handler]) => (
             <article key={title}>
               <strong>{title}</strong>
               <span>{project}</span>
-              <button>{action}</button>
+              <button onClick={handler}>{action}</button>
             </article>
           ))}
         </div>
       </section>
       <div className="project-grid">{projects.map((project) => <ProjectCard key={project.name} project={project} onOpen={() => setView("project")} />)}</div>
       <div className="dashboard-grid">
-        <Panel title="Saved tracks" action="Buyer workspace"><div className="track-list compact">{saved.length ? saved.map((track) => <TrackRow key={track.id} track={track} onPlay={() => {}} onSave={() => {}} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />) : <EmptyState title="No saved tracks yet" text="Explore the catalog and save tracks to compare inside a project." />}</div></Panel>
+        <Panel title="Saved tracks" action="Buyer workspace"><div className="track-list compact">{saved.length ? saved.map((track) => <TrackRow key={track.id} track={track} isPlaying={playingId === track.id} saved onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />) : <EmptyState title="No saved tracks yet" text="Explore the catalog and save tracks to compare inside a project." actionLabel="Explore catalog" onAction={() => setView("catalog")} />}</div></Panel>
         <Panel title="Submitted licensing requests" action="Status tracking"><div className="request-list">{inquiries.map((item) => <RequestRow key={item.id} item={item} />)}</div></Panel>
         <Panel title="Recently previewed" action="Discovery"><div className="preview-mini-grid">{tracks.slice(2, 5).map((track) => <button key={track.id} className="preview-mini" onClick={() => openTrack(track)}><span style={{ backgroundImage: `url(${track.image})` }} /><strong>{track.title}</strong><small>{track.artist} · {track.mood}</small></button>)}</div></Panel>
         <Panel title="Approved downloads" action="Secure delivery">
@@ -861,7 +1078,7 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack }) {
             <strong>Beyond the Horizon</strong>
             <span>Expires Jul 30 · 3 downloads remaining · download history tracked</span>
             <div className="delivery-meta"><span>WAV master</span><span>Invoice paid</span><span>Role verified</span></div>
-            <button className="gold-button"><DownloadSimple size={18} /> Secure WAV Download</button>
+            <button className="gold-button" onClick={() => showToast("Secure WAV download started. Delivery history updated.")}><DownloadSimple size={18} /> Secure WAV Download</button>
           </div>
         </Panel>
       </div>
@@ -869,7 +1086,7 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack }) {
   );
 }
 
-function ProjectDetail({ requestLicense, openTrack }) {
+function ProjectDetail({ requestLicense, openTrack, showToast }) {
   const projectTracks = tracks.slice(0, 4);
   return (
     <section className="project-page">
@@ -881,7 +1098,7 @@ function ProjectDetail({ requestLicense, openTrack }) {
           <div className="project-meta-strip">
             <span>Advertising</span><span>Worldwide</span><span>$25k-$50k</span><span>Deadline Sep 18</span><span>Quote Sent</span>
           </div>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Submit Multi-Track Request</button><button className="outline-button"><BookmarkSimple size={18} /> Add Track</button></div>
+          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Submit Multi-Track Request</button><button className="outline-button" onClick={() => showToast("Track picker opened for this project.")}><BookmarkSimple size={18} /> Add Track</button></div>
         </div>
       </div>
       <div className="project-workspace-grid">
@@ -933,7 +1150,7 @@ function ProjectCard({ project, onOpen }) {
   );
 }
 
-function AdminDashboard() {
+function AdminDashboard({ showToast, togglePlay }) {
   const [adminTab, setAdminTab] = useState("Overview");
   const tabs = ["Overview", "Tracks", "Artists", "Inquiries", "Buyers", "Secure Delivery", "Media", "Analytics", "Audit Logs", "Settings"];
   const metricGroups = [
@@ -941,6 +1158,20 @@ function AdminDashboard() {
     ["Licensing", [[ShieldCheck, "New Inquiries", "37"], [FileAudio, "Quote Requests", "14"], [DownloadSimple, "Approved", "216"]]],
     ["Delivery", [[LockKey, "Secure Downloads", "84"], [Article, "Rights Missing", "19"], [CloudArrowUp, "Recent Masters", "28"]]],
   ];
+
+  const renderAdminPanel = () => {
+    if (adminTab === "Artists") return <ArtistAdmin showToast={showToast} />;
+    if (adminTab === "Inquiries") return <InquiryAdmin />;
+    if (adminTab === "Media") return <MediaAdmin showToast={showToast} />;
+    if (adminTab === "Audit Logs") return <AuditAdmin />;
+    if (adminTab === "Secure Delivery") return <SecureDeliveryAdmin showToast={showToast} />;
+    if (adminTab === "Buyers") return <BuyerAdmin showToast={showToast} />;
+    if (adminTab === "Overview") return <OverviewAdmin showToast={showToast} />;
+    if (adminTab === "Analytics") return <AnalyticsAdmin />;
+    if (adminTab === "Settings") return <SettingsAdmin showToast={showToast} />;
+    return <TrackAdmin showToast={showToast} togglePlay={togglePlay} />;
+  };
+
   return (
     <section className="admin-page">
       <div className="admin-tabs">{tabs.map((tab) => <button key={tab} className={adminTab === tab ? "active" : ""} onClick={() => setAdminTab(tab)}>{tab}</button>)}</div>
@@ -955,22 +1186,62 @@ function AdminDashboard() {
         ))}
       </div>
       <div className="admin-grid">
-        <section className="pipeline-panel"><h3>Licensing inquiry pipeline</h3><div className="pipeline">{["New", "In Review", "Quote Needed", "Quote Sent", "Approved", "Paid", "Delivered"].map((status, index) => <button key={status}><span>{status}</span><strong>{[37, 21, 14, 9, 11, 7, 5][index]}</strong></button>)}</div></section>
-        <Panel title={adminTab === "Overview" ? "Catalog operations" : `${adminTab} management`} action="Operational view">{adminTab === "Artists" ? <ArtistAdmin /> : adminTab === "Inquiries" ? <InquiryAdmin /> : adminTab === "Media" ? <MediaAdmin /> : adminTab === "Audit Logs" ? <AuditAdmin /> : adminTab === "Secure Delivery" ? <SecureDeliveryAdmin /> : adminTab === "Buyers" ? <BuyerAdmin /> : <TrackAdmin />}</Panel>
-        <Panel title="Activity feed" action="Audit ready"><div className="activity-list">{["License delivered to VisionTech", "New inquiry from National Geographic", "Quote approved for Peak Performance", "Track uploaded: Midnight Conversations", "Permissions updated"].map((text, index) => <p key={text}><CheckCircle size={18} /> {text} <span>{index * 8 + 2}m ago</span></p>)}</div></Panel>
+        <section className="pipeline-panel">
+          <h3>Licensing inquiry pipeline</h3>
+          <div className="pipeline">
+            {["New", "In Review", "Quote Needed", "Quote Sent", "Approved", "Paid", "Delivered"].map((status, index) => (
+              <button key={status} onClick={() => showToast(`Filtered pipeline by ${status}.`)}>
+                <span>{status}</span>
+                <strong>{[37, 21, 14, 9, 11, 7, 5][index]}</strong>
+              </button>
+            ))}
+          </div>
+        </section>
+        <Panel title={adminTab === "Overview" ? "Catalog operations" : `${adminTab} management`} action="Operational view">{renderAdminPanel()}</Panel>
+        <Panel title="Activity feed" action="Audit ready">
+          <div className="activity-list">{["License delivered to VisionTech", "New inquiry from National Geographic", "Quote approved for Peak Performance", "Track uploaded: Midnight Conversations", "Permissions updated"].map((text, index) => <p key={text}><CheckCircle size={18} /> {text} <span>{index * 8 + 2}m ago</span></p>)}</div>
+          <p className="admin-audit-note">Audit trail synced across licensing, delivery, and permissions events.</p>
+        </Panel>
       </div>
     </section>
   );
 }
 
-function TrackAdmin() {
+function OverviewAdmin({ showToast }) {
+  return (
+    <div className="cards-admin">
+      <article><Sparkle size={28} /><h3>Catalog health</h3><p>94% of published tracks have complete rights notes, preview audio, and delivery readiness.</p><button onClick={() => showToast("Catalog health report opened.")}>Open report</button></article>
+      <article><ShieldCheck size={28} /><h3>Licensing queue</h3><p>37 new inquiries, 14 quote requests, and 9 approvals awaiting payment confirmation.</p><button onClick={() => showToast("Licensing queue filtered to active items.")}>Review queue</button></article>
+    </div>
+  );
+}
+
+function AnalyticsAdmin() {
+  return (
+    <div className="cards-admin">
+      <article><Eye size={28} /><h3>Discovery trends</h3><p>Catalog previews up 18% this month. Cinematic and ambient tags lead supervisor saves.</p></article>
+      <article><UsersThree size={28} /><h3>Buyer activity</h3><p>Music supervisors account for 42% of saved tracks and 61% of submitted licensing requests.</p></article>
+    </div>
+  );
+}
+
+function SettingsAdmin({ showToast }) {
+  return (
+    <div className="cards-admin">
+      <article><GearSix size={28} /><h3>Workspace settings</h3><p>Role permissions, delivery rules, quote templates, and notification defaults.</p><button onClick={() => showToast("Workspace settings panel opened.")}>Edit settings</button></article>
+      <article><LockKey size={28} /><h3>Security controls</h3><p>Master delivery encryption, download limits, and audit retention policies.</p><button onClick={() => showToast("Security controls opened.")}>Manage security</button></article>
+    </div>
+  );
+}
+
+function TrackAdmin({ showToast, togglePlay }) {
   return (
     <div className="track-ops">
       <div className="admin-table">
-        <div className="table-toolbar"><input placeholder="Search tracks, artists, ISRC..." /><button><CloudArrowUp size={18} /> Add Track</button></div>
+        <div className="table-toolbar"><input placeholder="Search tracks, artists, ISRC..." /><button onClick={() => showToast("Track upload workflow opened.")}><CloudArrowUp size={18} /> Add Track</button></div>
         <table>
           <thead><tr><th>Track</th><th>Artist</th><th>Status</th><th>Preview</th><th>Master</th><th>Rights</th></tr></thead>
-          <tbody>{tracks.slice(0, 5).map((track) => <tr key={track.id}><td>{track.title}<small>ISRC US-BMO-25-000{track.id}</small></td><td>{track.artist}</td><td><span className="badge">{track.status}</span></td><td><button className="mini-play"><Play size={14} weight="fill" /></button> Ready</td><td><LockKey size={16} /> Protected</td><td>{track.id === 4 ? "Missing" : "Reviewed"}</td></tr>)}</tbody>
+          <tbody>{tracks.slice(0, 5).map((track) => <tr key={track.id}><td>{track.title}<small>ISRC US-BMO-25-000{track.id}</small></td><td>{track.artist}</td><td><span className="badge">{track.status}</span></td><td><button className="mini-play" aria-label={`Preview ${track.title}`} onClick={() => togglePlay(track.id)}><Play size={14} weight="fill" /></button> Ready</td><td><LockKey size={16} /> Protected</td><td>{track.id === 4 ? "Missing" : "Reviewed"}</td></tr>)}</tbody>
         </table>
       </div>
       <div className="file-separation"><div><FileAudio size={24} /><strong>Preview audio upload</strong><p>Public preview stream, compressed and watermarked for approved buyers.</p></div><div><LockKey size={24} /><strong>Protected master/WAV upload</strong><p>Private file, encrypted, not publicly downloadable, delivered only after approval.</p></div></div>
@@ -978,50 +1249,71 @@ function TrackAdmin() {
   );
 }
 
-function ArtistAdmin() {
-  return <div className="cards-admin">{artists.map((artist) => <article key={artist.name}><div className="portrait small" style={{ backgroundImage: `url(${artist.image})` }} /><h3>{artist.name}</h3><p>{artist.credit}</p><span>{artist.tracks} related tracks</span><button>Manage artist</button></article>)}</div>;
+function ArtistAdmin({ showToast }) {
+  return <div className="cards-admin">{artists.map((artist) => <article key={artist.name}><div className="portrait small" style={{ backgroundImage: `url(${artist.image})` }} /><h3>{artist.name}</h3><p>{artist.credit}</p><span>{artist.tracks} related tracks</span><button onClick={() => showToast(`Managing artist profile for ${artist.name}.`)}>Manage artist</button></article>)}</div>;
 }
 
 function InquiryAdmin() {
   return <div className="request-list">{inquiries.map((item) => <RequestRow key={item.id} item={item} detailed />)}</div>;
 }
 
-function BuyerAdmin() {
-  return <div className="cards-admin">{["Aster Studio", "Northline Pictures", "Cobalt Agency"].map((name) => <article key={name}><UsersThree size={28} /><h3>{name}</h3><p>Role-based access, saved projects, invoice contacts, and request history.</p><button>Open account</button></article>)}</div>;
+function BuyerAdmin({ showToast }) {
+  return <div className="cards-admin">{["Aster Studio", "Northline Pictures", "Cobalt Agency"].map((name) => <article key={name}><UsersThree size={28} /><h3>{name}</h3><p>Role-based access, saved projects, invoice contacts, and request history.</p><button onClick={() => showToast(`Opened buyer account for ${name}.`)}>Open account</button></article>)}</div>;
 }
 
-function SecureDeliveryAdmin() {
-  return <div className="cards-admin"><article><LockKey size={28} /><h3>Delivery queue</h3><p>5 approved licenses waiting on payment confirmation before WAV delivery.</p><button>Review queue</button></article><article><DownloadSimple size={28} /><h3>Download history</h3><p>Every master download is timestamped and tied to buyer role, project, and license.</p><button>View logs</button></article></div>;
+function SecureDeliveryAdmin({ showToast }) {
+  return <div className="cards-admin"><article><LockKey size={28} /><h3>Delivery queue</h3><p>5 approved licenses waiting on payment confirmation before WAV delivery.</p><button onClick={() => showToast("Delivery queue opened.")}>Review queue</button></article><article><DownloadSimple size={28} /><h3>Download history</h3><p>Every master download is timestamped and tied to buyer role, project, and license.</p><button onClick={() => showToast("Download history opened.")}>View logs</button></article></div>;
 }
 
-function MediaAdmin() {
-  return <div className="cards-admin"><article><Article size={28} /><h3>Blog editor</h3><p>Featured story, categories, tags, draft status, and publish controls.</p><button>Edit news</button></article><article><FilmSlate size={28} /><h3>Podcast media</h3><p>Episode detail, embedded audio/video, show notes, and guest references.</p><button>Manage episodes</button></article></div>;
+function MediaAdmin({ showToast }) {
+  return <div className="cards-admin"><article><Article size={28} /><h3>Blog editor</h3><p>Featured story, categories, tags, draft status, and publish controls.</p><button onClick={() => showToast("Blog editor opened.")}>Edit news</button></article><article><FilmSlate size={28} /><h3>Podcast media</h3><p>Episode detail, embedded audio/video, show notes, and guest references.</p><button onClick={() => showToast("Podcast media manager opened.")}>Manage episodes</button></article></div>;
 }
 
 function AuditAdmin() {
   return <div className="activity-list">{["Role changed: Content Manager", "Master download approved", "Track rights notes edited", "Buyer access revoked", "Quote status changed"].map((item) => <p key={item}><ShieldCheck size={18} /> {item}<span>Immutable log</span></p>)}</div>;
 }
 
-function ContentPages() {
+function ContentPages({ setView, showToast }) {
   const posts = ["Music Licensing Education", "Artist Stories", "Behind the Catalog", "Gary Burke Legacy", "Sync Licensing Insights", "Beatmondo Updates", "Industry Conversations"];
   const episodes = ["Artist interviews", "Licensing conversations", "Catalog stories", "Behind-the-scenes", "Music supervisor insights"];
+  const thumbs = [
+    [img.portrait, "Artist Interview · Vocal texture"],
+    [img.vinyl, "Live Culture · Event energy"],
+    [img.edit, "Editing Notes · Trailer rhythm"],
+  ];
   return (
     <section className="content-page">
       <div className="content-grid">
-        <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${img.console})` }}><span className="eyebrow">Featured story</span><h2>The musicians behind unforgettable sounds</h2><p>Editorial storytelling gives buyers a richer understanding of provenance, collaborators, recording context, and why the work matters.</p><button className="gold-button"><Article size={18} /> Read Story</button></article>
-        <Panel title="Blog / news categories" action="Strategic"><div className="state-grid">{posts.map((title) => <span key={title}>{title}</span>)}</div></Panel>
-        <Panel title="Podcast / media" action="Episodes"><div className="state-grid">{episodes.map((title) => <span key={title}>{title}</span>)}</div></Panel>
-        <Panel title="Latest covers" action="Thumbnails"><div className="mini-thumb-row">{[img.portrait, img.vinyl, img.edit].map((image) => <span key={image} style={{ backgroundImage: `url(${image})` }} />)}</div></Panel>
+        <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${img.console})` }}>
+          <span className="feature-story-kicker">Essay · 6 min read · Rights-aware catalog stories</span>
+          <span className="eyebrow">Featured story</span>
+          <h2>The musicians behind unforgettable sounds</h2>
+          <p>Editorial storytelling gives buyers a richer understanding of provenance, collaborators, recording context, and why the work matters.</p>
+          <button className="gold-button" onClick={() => showToast("Featured story opened in editorial reader.")}><Article size={18} /> Read Story</button>
+        </article>
+        <Panel title="Blog / news categories" action="Strategic"><div className="state-grid">{posts.map((title) => <button key={title} className="chip-button" onClick={() => showToast(`Filtered stories by ${title}.`)}>{title}</button>)}</div></Panel>
+        <Panel title="Podcast / media" action="Episodes"><div className="state-grid">{episodes.map((title) => <button key={title} className="chip-button" onClick={() => showToast(`Opened episodes tagged ${title}.`)}>{title}</button>)}</div></Panel>
+        <Panel title="Latest covers" action="Thumbnails">
+          <div className="mini-thumb-row">
+            {thumbs.map(([image, caption]) => (
+              <span key={caption} style={{ backgroundImage: `url(${image})` }}>
+                <span className="thumb-caption">{caption}</span>
+              </span>
+            ))}
+          </div>
+        </Panel>
+        <p className="content-archive-note">Editorial archive · Licensing explainers, artist provenance, catalog updates, podcast conversations, and behind-the-scenes notes for supervisors and buyers.</p>
       </div>
     </section>
   );
 }
 
 function DesignSystem() {
+  const palette = ["#18130f", "#2a231b", "#f4efe6", "#cdbfaa", "#a6533c", "#5f7167"];
   return (
     <section className="system-page">
       <div className="system-brand"><img src={logo} alt="Beatmondo logo usage" /><p>Use black and gold as accents within a broader editorial system: charcoal, ivory, taupe, champagne, warm grey, and muted category colors.</p></div>
-      <div className="swatches">{["#050505", "#14120f", "#f4efe4", "#d8c9b1", "#c4a45a", "#6f7d75"].map((color) => <span key={color} style={{ "--swatch": color }}>{color}</span>)}</div>
+      <div className="swatches">{palette.map((color) => <span key={color} style={{ "--swatch": color }}>{color}</span>)}</div>
       <div className="section-grid">
         <Panel title="Buttons & forms" action="Controls"><div className="button-row"><button className="gold-button">Primary</button><button className="outline-button">Secondary</button><button className="plain-button">Text action</button></div><input placeholder="Form input" /></Panel>
         <Panel title="Audio player" action="Components"><div className="large-player small-player"><div className="waveform big" /><span>Preview-only playback state</span></div></Panel>
@@ -1032,16 +1324,25 @@ function DesignSystem() {
   );
 }
 
-function MiniPlayer({ track, onPause, onOpen }) {
-  return <aside className="mini-player"><button onClick={onPause}><Pause weight="fill" /></button><div className="cover-art small" style={{ backgroundImage: `url(${track.image})` }} /><div><strong>{track.title}</strong><span>{track.artist} · Preview Only</span></div><div className="waveform" /><button className="outline-button" onClick={onOpen}>Details</button></aside>;
+function MiniPlayer({ track, playingId, onTogglePlay, onOpen }) {
+  const isPlaying = playingId === track.id;
+  return (
+    <aside className="mini-player">
+      <button onClick={onTogglePlay} aria-label={isPlaying ? "Pause preview" : "Resume preview"}>{isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button>
+      <div className="cover-art small" style={{ backgroundImage: `url(${track.image})` }} />
+      <div><strong>{track.title}</strong><span>{track.artist} · Preview Only</span></div>
+      <div className="waveform" aria-hidden="true" />
+      <button className="outline-button" onClick={onOpen}>Details</button>
+    </aside>
+  );
 }
 
 function ImageCard({ title, text, image, action }) {
   return <article className="image-card" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.64)), url(${image})` }}><div><h3>{title}</h3><p>{text}</p><button onClick={action}>Explore Tracks</button></div></article>;
 }
 
-function CollectionCard({ title, text, count, tags, image }) {
-  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button>View collection</button></article>;
+function CollectionCard({ title, text, count, tags, image, onView }) {
+  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>View collection</button></article>;
 }
 
 function Select({ label, value, options, onChange }) {
@@ -1068,8 +1369,15 @@ function RequestRow({ item, detailed }) {
   return <article className="request-row"><div><strong>{item.company}</strong><span>{item.track} · {item.type}</span>{detailed && <small>{item.id} · {item.budget} · Deadline {item.deadline}</small>}</div><span className="badge">{item.status}</span></article>;
 }
 
-function EmptyState({ title, text }) {
-  return <div className="empty-state"><BookmarkSimple size={28} /><strong>{title}</strong><p>{text}</p></div>;
+function EmptyState({ title, text, actionLabel, onAction }) {
+  return (
+    <div className="empty-state">
+      <BookmarkSimple size={28} />
+      <strong>{title}</strong>
+      <p>{text}</p>
+      {actionLabel && onAction && <button className="outline-button" onClick={onAction}>{actionLabel}</button>}
+    </div>
+  );
 }
 
 function Footer({ setView }) {

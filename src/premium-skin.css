@@ -1013,7 +1013,7 @@ select:focus {
 }
 
 .hero .plain-button {
-  display: none !important;
+  display: inline-flex !important;
 }
 
 .hero-media {
@@ -1750,17 +1750,6 @@ select:focus {
   min-height: 560px !important;
 }
 
-.app:not(.home-app) .admin-page .admin-grid > .panel:last-child:after {
-  content: "Audit trail synced";
-  display: block;
-  margin-top: 18px;
-  padding: 14px;
-  border: 1px dashed rgba(95, 113, 103, 0.28);
-  border-radius: 8px;
-  color: #d7e0d8;
-  font-size: 13px;
-}
-
 @media (max-width: 1180px) {
   .app:not(.home-app) .admin-grid,
   .app:not(.home-app) .admin-metric-groups {
@@ -1791,20 +1780,6 @@ select:focus {
   background-position: center !important;
   border-color: rgba(95, 113, 103, 0.26) !important;
   box-shadow: 0 24px 70px rgba(20, 16, 12, 0.24) !important;
-}
-
-.app:not(.home-app) .feature-story:before {
-  content: "Essay · 6 min read · Rights-aware catalog stories";
-  display: inline-flex;
-  width: fit-content;
-  margin-bottom: 12px;
-  padding: 6px 10px;
-  border: 1px solid rgba(95, 113, 103, 0.35);
-  border-radius: 999px;
-  background: rgba(24, 19, 15, 0.48);
-  color: #e4ebe4;
-  font-size: 12px;
-  font-weight: 800;
 }
 
 .app:not(.home-app) .feature-story h2 {
@@ -1876,44 +1851,6 @@ select:focus {
   border-radius: 8px !important;
 }
 
-.app:not(.home-app) .content-page .mini-thumb-row span:after {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  padding: 38px 14px 14px;
-  background: linear-gradient(180deg, transparent, rgba(20, 16, 12, 0.84));
-  color: #fbf6ee;
-  font-weight: 800;
-}
-
-.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(1):after {
-  content: "Artist Interview · Vocal texture";
-}
-
-.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(2):after {
-  content: "Live Culture · Event energy";
-}
-
-.app:not(.home-app) .content-page .mini-thumb-row span:nth-child(3):after {
-  content: "Editing Notes · Trailer rhythm";
-}
-
-.app:not(.home-app) .content-grid:after {
-  content: "Editorial archive · Licensing explainers, artist provenance, catalog updates, podcast conversations, and behind-the-scenes notes for supervisors and buyers.";
-  grid-column: 1 / -1;
-  display: block;
-  padding: 22px 24px;
-  border: 1px solid rgba(166, 83, 60, 0.24);
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(95, 113, 103, 0.14), rgba(166, 83, 60, 0.08)),
-    #342b21;
-  color: #e1d7c9;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
 @media (max-width: 1180px) {
   .app:not(.home-app) .content-grid {
     grid-template-columns: 1fr !important;
@@ -1933,5 +1870,66 @@ select:focus {
   .comparison-row,
   .pipeline button {
     transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  }
+}
+
+.modal {
+  width: min(920px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 760px) {
+  .footer-inner {
+    width: calc(100% - 32px) !important;
+    max-width: 100% !important;
+    grid-template-columns: 1fr !important;
+    gap: 22px !important;
+  }
+
+  .site-footer nav {
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .app:not(.home-app) .track-row,
+  .app:not(.home-app) .artist-page .track-row,
+  .app:not(.home-app) .dashboard-page .compact .track-row,
+  .split-section .track-row {
+    grid-template-columns: 42px 56px minmax(0, 1fr) 42px !important;
+    min-height: auto !important;
+  }
+
+  .app:not(.home-app) .track-row .waveform,
+  .app:not(.home-app) .track-row .duration,
+  .app:not(.home-app) .track-row .small-button,
+  .split-section .track-row .waveform,
+  .split-section .track-row .duration,
+  .split-section .track-row .small-button {
+    grid-column: 3 / -1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+  }
+
+  .app:not(.home-app) .track-row .icon-button,
+  .split-section .track-row .icon-button {
+    display: none !important;
+  }
+
+  .app:not(.home-app) .admin-tabs {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hero .plain-button {
+    display: inline-flex !important;
+  }
+
+  .hero .button-row {
+    flex-wrap: wrap !important;
   }
 }
