@@ -63,12 +63,12 @@ const tracks = [
     era: "Modern",
     vocal: "Instrumental",
     usage: "Film / TV",
-    availability: "Exclusive Available",
+    availability: "Exclusive Option",
     duration: "2:34",
     key: "C# Major",
     instrumentation: "Felt piano, bowed guitar, warm analog pads",
     tags: ["Warm", "Uplifting", "Reflective"],
-    status: "Admin Reviewed",
+    status: "Rights Reviewed",
     image: img.studio,
     rights: "One-stop clearance available for select usages. Master controlled by Beatmondo partner catalog.",
   },
@@ -110,7 +110,7 @@ const tracks = [
     key: "D Minor",
     instrumentation: "Tape loops, muted piano, granular textures",
     tags: ["Nocturne", "Introspective", "Atmospheric"],
-    status: "Secure Delivery",
+    status: "Delivery Ready",
     image: img.edit,
     rights: "Worldwide documentary usage supported. Stems available after approval.",
   },
@@ -131,7 +131,7 @@ const tracks = [
     key: "F Major",
     instrumentation: "Rhodes, upright bass, strings, lead vocal",
     tags: ["Haunting", "Minimal", "Emotional"],
-    status: "Quote Needed",
+    status: "Rights Review",
     image: img.vinyl,
     rights: "Archive master requires rights-team review before quoting.",
   },
@@ -152,7 +152,7 @@ const tracks = [
     key: "G Major",
     instrumentation: "Acoustic guitar, mandolin, upright percussion",
     tags: ["Organic", "Cinematic", "Inspiring"],
-    status: "WAV Protected",
+    status: "Protected Delivery",
     image: img.tape,
     rights: "Brand, event, and digital license terms available by territory.",
   },
@@ -173,7 +173,7 @@ const tracks = [
     key: "E Major",
     instrumentation: "Live bass, bright guitars, claps, lead vocal",
     tags: ["Upbeat", "Optimistic", "Clean"],
-    status: "Available",
+    status: "Ready to License",
     image: img.agency,
     rights: "Non-exclusive digital campaigns can be reviewed within two business days.",
   },
@@ -207,9 +207,9 @@ const projects = [
 
 const inquiries = [
   { id: "BM-1048", company: "VisionTech", track: "Golden Hours", type: "Corporate Promo", budget: "$18k-$25k", deadline: "Jul 12", status: "Approved" },
-  { id: "BM-1047", company: "National Geographic", track: "Midnight Transit", type: "Documentary", budget: "$25k-$50k", deadline: "Jul 18", status: "Quote Needed" },
-  { id: "BM-1046", company: "Peak Performance", track: "Paper Planes", type: "Ad Campaign", budget: "$50k+", deadline: "Jun 30", status: "Quote Sent" },
-  { id: "BM-1045", company: "Moonline Films", track: "All That Remains", type: "Film Trailer", budget: "$10k-$18k", deadline: "Jul 4", status: "In Review" },
+  { id: "BM-1047", company: "National Geographic", track: "Midnight Transit", type: "Documentary", budget: "$25k-$50k", deadline: "Jul 18", status: "Needs Quote" },
+  { id: "BM-1046", company: "Peak Performance", track: "Paper Planes", type: "Ad Campaign", budget: "$50k+", deadline: "Jul 24", status: "Quote Sent" },
+  { id: "BM-1045", company: "Moonline Films", track: "All That Remains", type: "Film Trailer", budget: "$10k-$18k", deadline: "Jul 28", status: "In Review" },
 ];
 
 const artists = [
@@ -220,7 +220,7 @@ const artists = [
 
 const navItems = [
   ["home", "Home", House],
-  ["catalog", "Catalog", MagnifyingGlass],
+  ["catalog", "Explore Music", MagnifyingGlass],
   ["track", "Track Detail", FileAudio],
   ["artist", "Artist Profile", MicrophoneStage],
   ["legacy", "Gary Burke Legacy", Archive],
@@ -228,7 +228,10 @@ const navItems = [
   ["buyer", "Buyer Dashboard", UserCircle],
   ["project", "Project Detail", BookmarkSimple],
   ["admin", "Admin", GearSix],
-  ["content", "Blog / Podcast", Article],
+  ["content", "Stories & Media", Article],
+  ["stories", "Stories", Article],
+  ["media", "Media Episodes", FilmSlate],
+  ["contact", "Contact", UsersThree],
   ["system", "Design System", Sliders],
 ];
 
@@ -439,6 +442,9 @@ function App() {
         )}
         {view === "admin" && <AdminDashboard showToast={showToast} togglePlay={togglePlay} />}
         {view === "content" && <ContentPages setView={navigate} showToast={showToast} />}
+        {view === "stories" && <StoriesPage setView={navigate} showToast={showToast} />}
+        {view === "media" && <MediaEpisodesPage setView={navigate} showToast={showToast} />}
+        {view === "contact" && <ContactPage setView={navigate} />}
         {view === "system" && <DesignSystem />}
       </main>
       {playerTrack && (
@@ -535,7 +541,7 @@ function PublicHeader({ setView }) {
         <button onClick={() => setView("catalog")}>Explore Music</button>
         <button onClick={() => setView("licensing")}>Licensing</button>
         <button onClick={() => setView("legacy")}>Legacy</button>
-        <button onClick={() => setView("content")}>Stories</button>
+        <button onClick={() => setView("stories")}>Stories</button>
       </nav>
       <button className="outline-button" onClick={() => setView("licensing")}><SignIn size={18} /> Request Access</button>
     </header>
@@ -567,10 +573,10 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
             <p>Tracks are presented with artist notes, use-case cues, rights details, and a clear path from preview to licensing review.</p>
           </Panel>
           <Panel title="Built for professional buyers" action="Workflow">
-            <p>Music supervisors, brands, agencies, producers, and creative directors can save tracks into projects, compare options, and submit usage detail before quote.</p>
+            <p>Music supervisors, brands, agencies, producers, and creative directors can save tracks into projects, compare options, and submit usage details before a quote.</p>
           </Panel>
           <Panel title="Secure master delivery" action="Protected">
-            <p>Preview streams stay separate from protected WAV/master files, which are delivered only through approved licensing workflows.</p>
+            <p>Preview streams stay separate from protected master audio, which is delivered only through approved licensing workflows.</p>
           </Panel>
         </div>
       </section>
@@ -628,8 +634,8 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
 
       <section className="content-preview">
         <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind Beatmondo." image={img.archive} action={() => setView("legacy")} />
-        <MiniStory title="Blog / News" text="Licensing education, artist stories, behind-the-catalog notes, and industry conversations." image={img.console} action={() => setView("content")} />
-        <MiniStory title="Podcast / Media" text="Conversations with artists, supervisors, collaborators, and catalog partners." image={img.portrait} action={() => setView("content")} />
+        <MiniStory title="Stories" text="Licensing education, artist stories, behind-the-catalog notes, and industry conversations." image={img.console} action={() => setView("stories")} />
+        <MiniStory title="Media" text="Conversations with artists, supervisors, collaborators, and catalog partners." image={img.portrait} action={() => setView("media")} />
       </section>
       <Footer setView={setView} />
     </section>
@@ -719,7 +725,7 @@ function Catalog(props) {
           <Select label="Era" value={filters.era} options={["Any Era", "Modern", "2000s", "1990s", "1970s"]} onChange={(era) => setFilters({ ...filters, era })} />
           <Select label="Usage" value={filters.usage} options={["Any Usage", "Film / TV", "Advertising", "Documentary", "Trailer", "Brand Film", "Streaming"]} onChange={(usage) => setFilters({ ...filters, usage })} />
           <Select label="Vocal" value={filters.vocal} options={["Any Vocal", "Instrumental", "Vocal"]} onChange={(vocal) => setFilters({ ...filters, vocal })} />
-          <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Available", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />
+          <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Option", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />
           <Select label="Duration" value={filters.duration} options={["Any Duration", "Under 3:00", "3:00+"]} onChange={(duration) => setFilters({ ...filters, duration })} />
         </div>
         <div className="chip-row">{chips.map(([key, value]) => <span key={key}>{value}</span>)}{chips.length > 0 && <button onClick={resetFilters}>Clear filters</button>}</div>
@@ -782,7 +788,7 @@ function TrackCard({ track, isPlaying, saved, onPlay, onSave, onOpen, onRequest 
       <div><h3>{track.title}</h3><p>{track.artist} · {track.genre}</p></div>
       <div className="waveform" />
       <div className="tag-row">{track.tags.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}<span>{track.duration}</span></div>
-      <div className="button-row"><button className={`heart ${saved ? "saved" : ""}`} onClick={onSave}><Heart weight={saved ? "fill" : "regular"} /></button><button className="outline-button" onClick={onOpen}>Details</button><button className="gold-button" onClick={onRequest}>License</button></div>
+      <div className="button-row"><button className={`heart ${saved ? "saved" : ""}`} onClick={onSave}><Heart weight={saved ? "fill" : "regular"} /></button><button className="outline-button" onClick={onOpen}>Details</button><button className="gold-button" onClick={onRequest}>Request License</button></div>
     </article>
   );
 }
@@ -802,12 +808,12 @@ function TrackSidePanel({ track, requestLicense, playingId, onTogglePlay }) {
       <div className="rights-list">
         <h3>Rights & licensing</h3>
         <p>Preview Only</p>
-        <p>Master File Protected</p>
+        <p>Protected master audio</p>
         <p>WAV Available After Approval</p>
-        <p>Admin Reviewed</p>
+        <p>Rights reviewed</p>
       </div>
       <button className="gold-button full" onClick={() => requestLicense(track)}><ShieldCheck size={18} /> Request License</button>
-      <div className="locked-box"><LockKey size={28} /> Secure Delivery <small>Protected master files are delivered only after approval.</small></div>
+      <div className="locked-box"><LockKey size={28} /> Secure Delivery <small>Protected master audio is delivered only after approval.</small></div>
     </aside>
   );
 }
@@ -823,17 +829,17 @@ function TrackDetail({ track, playingId, togglePlay, saved, saveTrack, requestLi
           <div className="button-row">
             <button className="gold-button" onClick={() => togglePlay(track.id)}>{playingId === track.id ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />} Preview Track</button>
             <button className="outline-button" onClick={() => saveTrack(track.id)}><Heart size={18} weight={saved ? "fill" : "regular"} /> {saved ? "Saved" : "Save to Project"}</button>
-            <button className="outline-button" onClick={() => requestLicense(track)}><LockKey size={18} /> Request WAV / Master</button>
+            <button className="outline-button" onClick={() => requestLicense(track)}><LockKey size={18} /> Request License</button>
           </div>
         </div>
         <div className="detail-image" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.12), rgba(0,0,0,.55)), url(${track.image})` }} />
       </div>
       <div className="large-player">
-        <div className="player-top"><strong>Preview Only</strong><span>Master File Protected · WAV Available After Approval · Secure Delivery</span></div>
+        <div className="player-top"><strong>Preview Only</strong><span>Protected master audio · WAV available after approval · Secure delivery</span></div>
         <div className="waveform big" />
       </div>
       <div className="detail-grid">
-        <Panel title="Metadata" action="Catalog ready">
+        <Panel title="Metadata" action="Rights metadata">
           <dl className="definition-grid">
             <dt>Artist</dt><dd>{track.artist}</dd>
             <dt>Composer / Writer</dt><dd>{track.composer}</dd>
@@ -849,7 +855,7 @@ function TrackDetail({ track, playingId, togglePlay, saved, saveTrack, requestLi
         </Panel>
         <Panel title="Rights and clearance" action="Private workflow">
           <p>{track.rights}</p>
-          <div className="locked-box"><LockKey size={24} /> Protected master/WAV <small>Encrypted file delivery, download history, and internal review are tracked.</small></div>
+          <div className="locked-box"><LockKey size={24} /> Protected master audio <small>Encrypted WAV delivery, download history, and internal review are tracked.</small></div>
         </Panel>
       </div>
       <section>
@@ -870,7 +876,7 @@ function ArtistProfile({ requestLicense, openTrack, playingId, togglePlay, saved
           <span className="eyebrow">Artist profile</span>
           <h2>{artist.name}</h2>
           <p>A musician-founded composer project blending warm piano, cinematic restraint, and live-band provenance for film, television, and brand storytelling.</p>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Licensing Inquiry</button><button className="outline-button" onClick={() => setView("content")}><Article size={18} /> Editorial Story</button></div>
+          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Request License</button><button className="outline-button" onClick={() => setView("stories")}><Article size={18} /> Editorial Story</button></div>
         </div>
       </div>
       <div className="editorial-band two-col">
@@ -935,8 +941,8 @@ function LicensingAccess({ selectedTrack, requestSent, setRequestSent }) {
       <div className="form-intro">
         <span className="eyebrow">Licensing and access</span>
         <h2>Usage details first. Secure delivery after approval.</h2>
-        <p>Request licensing for a track or apply for buyer, artist, or strategic partner access. Beatmondo keeps the process clear, human, and audit-ready.</p>
-        <div className="segmented stacked"><button className={mode === "license" ? "active" : ""} onClick={() => setMode("license")}>Licensing Request</button><button className={mode === "access" ? "active" : ""} onClick={() => setMode("access")}>Request Access</button></div>
+        <p>Request a license for a track or apply for buyer, artist, or strategic partner access. Beatmondo keeps the process clear, human, and audit-ready.</p>
+        <div className="segmented stacked"><button className={mode === "license" ? "active" : ""} onClick={() => setMode("license")}>Request License</button><button className={mode === "access" ? "active" : ""} onClick={() => setMode("access")}>Request Access</button></div>
       </div>
       {mode === "license" ? (requestSent ? <ConfirmationScreen track={selectedTrack} /> : <InquiryForm track={selectedTrack} onSubmit={() => setRequestSent(true)} />) : (accessSent ? <AccessConfirmation /> : <AccessForm onSubmit={() => setAccessSent(true)} />)}
     </section>
@@ -984,7 +990,7 @@ function InquiryForm({ track, onSubmit, compact }) {
           {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
         </label>
       ))}
-      <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Podcast / Media</option></select></label>
+      <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Stories & Media</option></select></label>
       <label>Track of interest<input value={track.title} readOnly /></label>
       <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
       <label>Territory<select value={form.territory} onChange={(event) => update("territory", event.target.value)}><option>Worldwide</option><option>North America</option><option>United States</option><option>Europe</option></select></label>
@@ -992,7 +998,7 @@ function InquiryForm({ track, onSubmit, compact }) {
       <label>Exclusivity<select value={form.exclusivity} onChange={(event) => update("exclusivity", event.target.value)}><option>Non-exclusive</option><option>Category exclusive</option><option>Full exclusive</option></select></label>
       <label>Budget range<select value={form.budget} onChange={(event) => update("budget", event.target.value)}><option>$5k-$10k</option><option>$10k-$18k</option><option>$18k-$25k</option><option>$25k-$50k</option><option>$50k+</option></select></label>
       <label>Deadline<input type="date" value={form.deadline} onChange={(event) => update("deadline", event.target.value)} /></label>
-      <label>Need WAV/master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
+      <label>Need WAV master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
       <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
       <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
       <label className="full-field">
@@ -1000,7 +1006,7 @@ function InquiryForm({ track, onSubmit, compact }) {
         <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
         {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
       </label>
-      <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> Submit Inquiry</button>
+      <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> Submit License Request</button>
     </form>
   );
 }
@@ -1025,9 +1031,9 @@ function ConfirmationScreen({ track, compact }) {
   return (
     <section className={`confirmation ${compact ? "compact-confirmation" : ""}`}>
       <CheckCircle size={52} weight="fill" />
-      <h2>Your licensing request has been received.</h2>
+      <h2>Your license request has been received.</h2>
       <p>The Beatmondo team will review your usage details for <strong>{track.title}</strong> and respond with next steps.</p>
-      <div className="status-strip">{["Submitted", "Under Review", "Quote Needed", "Quote Sent", "Approved", "Paid", "Delivered"].map((status) => <span key={status}>{status}</span>)}</div>
+      <div className="status-strip">{["Submitted", "Under Review", "Needs Quote", "Quote Sent", "Approved", "Paid", "Delivered"].map((status) => <span key={status}>{status}</span>)}</div>
     </section>
   );
 }
@@ -1049,7 +1055,7 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingI
       <div className="metric-grid">
         <Metric icon={Heart} label="Saved Tracks" value={saved.length || "0"} note={saved.length ? "Ready for project review" : "No saved tracks yet"} />
         <Metric icon={BookmarkSimple} label="Active Projects" value="3" note="1 quote pending" />
-        <Metric icon={FileAudio} label="Licensing Requests" value="4" note="2 need response" />
+        <Metric icon={FileAudio} label="License Requests" value="4" note="2 need response" />
         <Metric icon={DownloadSimple} label="Approved Downloads" value="2" note="1 expires soon" />
       </div>
       <section className="next-steps">
@@ -1069,8 +1075,8 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingI
       </section>
       <div className="project-grid">{projects.map((project) => <ProjectCard key={project.name} project={project} onOpen={() => setView("project")} />)}</div>
       <div className="dashboard-grid">
-        <Panel title="Saved tracks" action="Buyer workspace"><div className="track-list compact">{saved.length ? saved.map((track) => <TrackRow key={track.id} track={track} isPlaying={playingId === track.id} saved onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />) : <EmptyState title="No saved tracks yet" text="Explore the catalog and save tracks to compare inside a project." actionLabel="Explore catalog" onAction={() => setView("catalog")} />}</div></Panel>
-        <Panel title="Submitted licensing requests" action="Status tracking"><div className="request-list">{inquiries.map((item) => <RequestRow key={item.id} item={item} />)}</div></Panel>
+        <Panel title="Saved tracks" action="Buyer workspace"><div className="track-list compact">{saved.length ? saved.map((track) => <TrackRow key={track.id} track={track} isPlaying={playingId === track.id} saved onPlay={() => togglePlay(track.id)} onSave={() => saveTrack(track.id)} onOpen={() => openTrack(track)} onRequest={() => requestLicense(track)} />) : <EmptyState title="No saved tracks yet" text="Explore music and save tracks to compare inside a project." actionLabel="Explore music" onAction={() => setView("catalog")} />}</div></Panel>
+        <Panel title="Submitted license requests" action="Status tracking"><div className="request-list">{inquiries.map((item) => <RequestRow key={item.id} item={item} />)}</div></Panel>
         <Panel title="Recently previewed" action="Discovery"><div className="preview-mini-grid">{tracks.slice(2, 5).map((track) => <button key={track.id} className="preview-mini" onClick={() => openTrack(track)}><span style={{ backgroundImage: `url(${track.image})` }} /><strong>{track.title}</strong><small>{track.artist} · {track.mood}</small></button>)}</div></Panel>
         <Panel title="Approved downloads" action="Secure delivery">
           <div className="delivery-card">
@@ -1094,17 +1100,17 @@ function ProjectDetail({ requestLicense, openTrack, showToast }) {
         <div className="project-hero-content">
           <span className="eyebrow">Buyer project</span>
           <h2>{projects[0].name}</h2>
-          <p>Shortlist music, compare licensing fit, capture buyer notes, and move selected tracks toward quote approval.</p>
+          <p>Shortlist music, compare license fit, capture buyer notes, and move selected tracks toward quote approval.</p>
           <div className="project-meta-strip">
             <span>Advertising</span><span>Worldwide</span><span>$25k-$50k</span><span>Deadline Sep 18</span><span>Quote Sent</span>
           </div>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Submit Multi-Track Request</button><button className="outline-button" onClick={() => showToast("Track picker opened for this project.")}><BookmarkSimple size={18} /> Add Track</button></div>
+          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Submit License Request</button><button className="outline-button" onClick={() => showToast("Track picker opened for this project.")}><BookmarkSimple size={18} /> Add Track</button></div>
         </div>
       </div>
       <div className="project-workspace-grid">
         <Panel title="Track comparison" action="4 shortlisted">
           <div className="comparison-table">
-            <div className="comparison-head"><span>Track</span><span>Mood</span><span>Use fit</span><span>License</span><span /></div>
+            <div className="comparison-head"><span>Track</span><span>Mood</span><span>Usage fit</span><span>Availability</span><span /></div>
             {projectTracks.map((track) => (
               <button className="comparison-row" key={track.id} onClick={() => openTrack(track)}>
                 <span><strong>{track.title}</strong><small>{track.artist} · {track.duration}</small></span>
@@ -1189,7 +1195,7 @@ function AdminDashboard({ showToast, togglePlay }) {
         <section className="pipeline-panel">
           <h3>Licensing inquiry pipeline</h3>
           <div className="pipeline">
-            {["New", "In Review", "Quote Needed", "Quote Sent", "Approved", "Paid", "Delivered"].map((status, index) => (
+            {["New", "In Review", "Needs Quote", "Quote Sent", "Approved", "Paid", "Delivered"].map((status, index) => (
               <button key={status} onClick={() => showToast(`Filtered pipeline by ${status}.`)}>
                 <span>{status}</span>
                 <strong>{[37, 21, 14, 9, 11, 7, 5][index]}</strong>
@@ -1220,7 +1226,7 @@ function AnalyticsAdmin() {
   return (
     <div className="cards-admin">
       <article><Eye size={28} /><h3>Discovery trends</h3><p>Catalog previews up 18% this month. Cinematic and ambient tags lead supervisor saves.</p></article>
-      <article><UsersThree size={28} /><h3>Buyer activity</h3><p>Music supervisors account for 42% of saved tracks and 61% of submitted licensing requests.</p></article>
+      <article><UsersThree size={28} /><h3>Buyer activity</h3><p>Music supervisors account for 42% of saved tracks and 61% of submitted license requests.</p></article>
     </div>
   );
 }
@@ -1244,7 +1250,7 @@ function TrackAdmin({ showToast, togglePlay }) {
           <tbody>{tracks.slice(0, 5).map((track) => <tr key={track.id}><td>{track.title}<small>ISRC US-BMO-25-000{track.id}</small></td><td>{track.artist}</td><td><span className="badge">{track.status}</span></td><td><button className="mini-play" aria-label={`Preview ${track.title}`} onClick={() => togglePlay(track.id)}><Play size={14} weight="fill" /></button> Ready</td><td><LockKey size={16} /> Protected</td><td>{track.id === 4 ? "Missing" : "Reviewed"}</td></tr>)}</tbody>
         </table>
       </div>
-      <div className="file-separation"><div><FileAudio size={24} /><strong>Preview audio upload</strong><p>Public preview stream, compressed and watermarked for approved buyers.</p></div><div><LockKey size={24} /><strong>Protected master/WAV upload</strong><p>Private file, encrypted, not publicly downloadable, delivered only after approval.</p></div></div>
+      <div className="file-separation"><div><FileAudio size={24} /><strong>Preview audio upload</strong><p>Public preview stream, compressed and watermarked for approved buyers.</p></div><div><LockKey size={24} /><strong>Protected master audio upload</strong><p>Private WAV master, encrypted, not publicly downloadable, delivered only after approval.</p></div></div>
     </div>
   );
 }
@@ -1289,10 +1295,10 @@ function ContentPages({ setView, showToast }) {
           <span className="eyebrow">Featured story</span>
           <h2>The musicians behind unforgettable sounds</h2>
           <p>Editorial storytelling gives buyers a richer understanding of provenance, collaborators, recording context, and why the work matters.</p>
-          <button className="gold-button" onClick={() => showToast("Featured story opened in editorial reader.")}><Article size={18} /> Read Story</button>
+          <button className="gold-button" onClick={() => setView("stories")}><Article size={18} /> Read Story</button>
         </article>
-        <Panel title="Blog / news categories" action="Strategic"><div className="state-grid">{posts.map((title) => <button key={title} className="chip-button" onClick={() => showToast(`Filtered stories by ${title}.`)}>{title}</button>)}</div></Panel>
-        <Panel title="Podcast / media" action="Episodes"><div className="state-grid">{episodes.map((title) => <button key={title} className="chip-button" onClick={() => showToast(`Opened episodes tagged ${title}.`)}>{title}</button>)}</div></Panel>
+        <Panel title="Story categories" action="Editorial"><div className="state-grid">{posts.map((title) => <button key={title} className="chip-button" onClick={() => { showToast(`Filtered stories by ${title}.`); setView("stories"); }}>{title}</button>)}</div></Panel>
+        <Panel title="Media episodes" action="Episodes"><div className="state-grid">{episodes.map((title) => <button key={title} className="chip-button" onClick={() => { showToast(`Opened episodes tagged ${title}.`); setView("media"); }}>{title}</button>)}</div></Panel>
         <Panel title="Latest covers" action="Thumbnails">
           <div className="mini-thumb-row">
             {thumbs.map(([image, caption]) => (
@@ -1304,6 +1310,145 @@ function ContentPages({ setView, showToast }) {
         </Panel>
         <p className="content-archive-note">Editorial archive · Licensing explainers, artist provenance, catalog updates, podcast conversations, and behind-the-scenes notes for supervisors and buyers.</p>
       </div>
+    </section>
+  );
+}
+
+function StoriesPage({ setView, showToast }) {
+  const [selectedStory, setSelectedStory] = useState("The musicians behind unforgettable sounds");
+  const stories = [
+    ["The musicians behind unforgettable sounds", "Featured Essay", "Provenance, collaborators, recording context, and why the work matters to buyers.", img.console],
+    ["How rights-aware discovery protects the creative process", "Licensing Education", "A plain-language guide to usage, territory, term, exclusivity, and quote readiness.", img.edit],
+    ["Gary Burke and the catalog as a living archive", "Legacy", "A respectful look at the original Beatmondo spirit, studio memories, and musician-led stewardship.", img.archive],
+    ["What supervisors save before they request a quote", "Sync Insights", "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.", img.film],
+  ];
+  const active = stories.find(([title]) => title === selectedStory) || stories[0];
+
+  return (
+    <section className="content-page stories-page">
+      <div className="content-grid">
+        <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.20), rgba(0,0,0,.72)), url(${active[3]})` }}>
+          <span className="feature-story-kicker">{active[1]} · Rights-aware editorial</span>
+          <span className="eyebrow">Stories</span>
+          <h2>{active[0]}</h2>
+          <p>{active[2]}</p>
+          <div className="button-row">
+            <button className="gold-button" onClick={() => showToast(`Opened "${active[0]}" in the story reader.`)}><Article size={18} /> Open Story</button>
+            <button className="outline-button" onClick={() => setView("media")}><FilmSlate size={18} /> Related Media</button>
+          </div>
+        </article>
+        <Panel title="Editorial library" action="Selectable">
+          <div className="state-grid">
+            {stories.map(([title, category]) => (
+              <button key={title} className={`chip-button ${selectedStory === title ? "active" : ""}`} onClick={() => setSelectedStory(title)}>
+                {category}: {title}
+              </button>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="Reader notes" action="Buyer context">
+          <div className="note-list project-notes">
+            <article><strong>Why it matters</strong><span>Stories add provenance, usage context, and artist credibility before a buyer starts a license request.</span></article>
+            <article><strong>Editorial status</strong><span>Reviewed for rights language, archive sensitivity, and buyer-facing clarity.</span></article>
+          </div>
+        </Panel>
+        <Panel title="Story pathways" action="Discovery">
+          <div className="state-grid">
+            {["Licensing Education", "Artist Stories", "Behind the Catalog", "Gary Burke Legacy", "Sync Licensing Insights"].map((title) => <button key={title} className="chip-button" onClick={() => showToast(`Story pathway filtered to ${title}.`)}>{title}</button>)}
+          </div>
+        </Panel>
+      </div>
+    </section>
+  );
+}
+
+function MediaEpisodesPage({ setView, showToast }) {
+  const [selectedEpisode, setSelectedEpisode] = useState("Artist interviews");
+  const episodes = [
+    ["Artist interviews", "Vocal texture, writing rooms, and the human story behind licensable tracks.", "32 min", img.portrait],
+    ["Licensing conversations", "Supervisors, producers, and catalog partners discuss quote context and rights confidence.", "41 min", img.agency],
+    ["Catalog stories", "Archive finds, session notes, and the craft behind songs that still feel alive.", "28 min", img.vinyl],
+    ["Behind-the-scenes", "Studio process, editorial curation, and protected delivery workflows.", "24 min", img.console],
+    ["Music supervisor insights", "How buyers evaluate fit, edit points, vocal use, and campaign timing.", "36 min", img.film],
+  ];
+  const active = episodes.find(([title]) => title === selectedEpisode) || episodes[0];
+
+  return (
+    <section className="content-page media-page">
+      <div className="content-grid">
+        <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${active[3]})` }}>
+          <span className="feature-story-kicker">Episode · {active[2]} · Beatmondo Media</span>
+          <span className="eyebrow">Media Episodes</span>
+          <h2>{active[0]}</h2>
+          <p>{active[1]}</p>
+          <div className="button-row">
+            <button className="gold-button" onClick={() => showToast(`Playing preview for ${active[0]}.`)}><Play size={18} weight="fill" /> Play Episode</button>
+            <button className="outline-button" onClick={() => setView("stories")}><Article size={18} /> Episode Notes</button>
+          </div>
+        </article>
+        <Panel title="Episode library" action="Selectable">
+          <div className="state-grid">
+            {episodes.map(([title, text, duration]) => (
+              <button key={title} className={`chip-button ${selectedEpisode === title ? "active" : ""}`} onClick={() => setSelectedEpisode(title)}>
+                {title} · {duration}
+              </button>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="Production notes" action="Media kit">
+          <div className="mini-thumb-row">
+            {episodes.slice(0, 3).map(([title, , , image]) => (
+              <span key={title} style={{ backgroundImage: `url(${image})` }}>
+                <span className="thumb-caption">{title}</span>
+              </span>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="For guests and partners" action="Contact">
+          <p>Use the contact page for media inquiries, guest suggestions, partnership conversations, and archive contributions.</p>
+          <button className="outline-button" onClick={() => setView("contact")}><UsersThree size={18} /> Contact Beatmondo</button>
+        </Panel>
+      </div>
+    </section>
+  );
+}
+
+function ContactPage({ setView }) {
+  const [sent, setSent] = useState(false);
+  const [topic, setTopic] = useState("Licensing");
+  const topics = ["Licensing", "Buyer Access", "Artist / Contributor", "Strategic Partner", "Media", "Archive / Legacy"];
+
+  if (sent) {
+    return (
+      <section className="confirmation">
+        <CheckCircle size={52} weight="fill" />
+        <h2>Message received.</h2>
+        <p>The Beatmondo team will route your {topic.toLowerCase()} note to the right person and follow up with next steps.</p>
+        <div className="status-strip"><span>Received</span><span>Team review</span><span>Follow-up</span></div>
+        <div className="button-row"><button className="gold-button" onClick={() => setSent(false)}>Send another message</button><button className="outline-button" onClick={() => setView("licensing")}>Request Access</button></div>
+      </section>
+    );
+  }
+
+  return (
+    <section className="form-page wide-page contact-page">
+      <div className="form-intro">
+        <span className="eyebrow">Contact Beatmondo</span>
+        <h2>The right conversation, routed clearly.</h2>
+        <p>Reach the team for licensing questions, buyer access, artist or contributor interest, strategic partnerships, media conversations, and Gary Burke legacy/archive notes.</p>
+        <div className="role-grid">{topics.map((item) => <button type="button" key={item} className={topic === item ? "active" : ""} onClick={() => setTopic(item)}>{item}</button>)}</div>
+      </div>
+      <form className="inquiry-form access-form" onSubmit={(event) => { event.preventDefault(); setSent(true); }}>
+        <label>Name<input required placeholder="Jane Mitchell" /></label>
+        <label>Email<input required placeholder="name@company.com" /></label>
+        <label>Company<input placeholder="Company, studio, or organization" /></label>
+        <label>Topic<input value={topic} readOnly /></label>
+        <label className="full-field">Message<textarea required placeholder="Tell us what you need, what you are working on, and any timing or rights context." /></label>
+        <div className="button-row">
+          <button className="gold-button form-submit" type="submit"><UsersThree size={18} /> Send Message</button>
+          <button className="outline-button" type="button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> Licensing Form</button>
+        </div>
+      </form>
     </section>
   );
 }
@@ -1383,14 +1528,17 @@ function EmptyState({ title, text, actionLabel, onAction }) {
 function Footer({ setView }) {
   const linkGroups = [
     ["Explore", ["Explore Music", "Licensing", "Artists", "Gary Burke Legacy"]],
-    ["Media", ["Blog", "Podcast / Media", "Contact"]],
-    ["Access", ["Request Access", "Privacy Policy", "Terms of Use"]],
+    ["Media", ["Stories", "Media Episodes", "Contact"]],
+    ["Access", ["Request Access", "Licensing Access", "Partner Inquiry"]],
   ];
   const navigate = (item) => {
     if (item === "Explore Music") setView("catalog");
     else if (item === "Gary Burke Legacy") setView("legacy");
-    else if (item === "Request Access" || item === "Licensing") setView("licensing");
+    else if (item === "Request Access" || item === "Licensing" || item === "Licensing Access" || item === "Partner Inquiry") setView("licensing");
     else if (item === "Artists") setView("artist");
+    else if (item === "Stories") setView("stories");
+    else if (item === "Media Episodes") setView("media");
+    else if (item === "Contact") setView("contact");
     else setView("content");
   };
 

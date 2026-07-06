@@ -2528,6 +2528,13 @@ td small {
   cursor: pointer;
 }
 
+.chip-button:hover,
+.chip-button.active {
+  border-color: rgba(196, 164, 90, 0.62);
+  background: rgba(196, 164, 90, 0.18);
+  color: var(--ivory);
+}
+
 .compact-sort {
   min-width: 180px;
 }
