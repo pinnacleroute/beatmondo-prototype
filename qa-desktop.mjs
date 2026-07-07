@@ -1,12 +1,12 @@
 import { chromium } from "playwright";
-const BASE = "http://127.0.0.1:5175";
+const BASE = process.env.QA_BASE_URL || "http://127.0.0.1:5173";
 const pages = [
   ["home", ".home-view"], ["catalog", ".catalog-main"], ["track", ".detail-page"],
   ["artist", ".artist-page"], ["legacy", ".legacy-page"], ["licensing", ".form-page"],
   ["buyer", ".dashboard-page"], ["project", ".project-page"], ["admin", ".admin-page"],
   ["content", ".content-page"], ["system", ".system-page"],
 ];
-const labels = { catalog:"Catalog", track:"Track Detail", artist:"Artist Profile", legacy:"Gary Burke Legacy", licensing:"Licensing / Access", buyer:"Buyer Dashboard", project:"Project Detail", admin:"Admin", content:"Blog / Podcast", system:"Design System" };
+const labels = { catalog:"Explore Music", track:"Track Detail", artist:"Artist Profile", legacy:"Gary Burke Legacy", licensing:"Licensing / Access", buyer:"Buyer Dashboard", project:"Project Detail", admin:"Admin", content:"Editorial Hub", system:"Design System" };
 const out = [];
 const browser = await chromium.launch({ headless: true });
 for (const [w,h,name] of [[1440,900,"1440"],[1280,720,"1280"]]) {

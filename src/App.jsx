@@ -50,7 +50,41 @@ const img = {
   city: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
 };
 
-const tracks = [
+const buyerTiers = [
+  {
+    id: "discovery",
+    name: "Discovery Access",
+    description: "Limited preview access for approved early buyers.",
+    priceLabel: "Entry access required",
+    features: ["Limited previews", "Save selected tracks", "Submit licensing interest", "No master access"],
+  },
+  {
+    id: "professional",
+    name: "Professional Buyer",
+    description: "Standard licensing workspace for agencies, producers, and serious music buyers.",
+    priceLabel: "Quote-based licensing",
+    features: ["Full project workspace", "Request quotes", "Track license status", "Approved WAV delivery"],
+  },
+  {
+    id: "vip",
+    name: "VIP Sync Access",
+    description: "Priority curated access for top-level supervisors, studios, luxury brands, and strategic buyers.",
+    priceLabel: "Premium access",
+    features: ["Curated premium catalog", "Priority clearance", "Fast-track licensing", "Concierge support"],
+  },
+];
+
+const currentBuyer = {
+  name: "Maya Hart",
+  company: "Northstar Pictures",
+  role: "Music Supervisor",
+  accessTier: "VIP Sync Access",
+  verified: true,
+  membershipStatus: "Active",
+  preApprovedTerms: true,
+};
+
+const rawTracks = [
   {
     id: 1,
     title: "Golden Hours",
@@ -70,7 +104,7 @@ const tracks = [
     tags: ["Warm", "Uplifting", "Reflective"],
     status: "Rights Reviewed",
     image: img.studio,
-    rights: "One-stop clearance available for select usages. Master controlled by Beatmondo partner catalog.",
+    rights: "One-stop clearance available for select usages. Master controlled by beatmondo partner catalog.",
   },
   {
     id: 2,
@@ -179,12 +213,46 @@ const tracks = [
   },
 ];
 
+const tracks = rawTracks.map((track, index) => ({
+  ...track,
+  vipOnly: [1, 4].includes(track.id),
+  energy: ["Low", "High", "Low", "Medium", "Medium", "High"][index],
+  sceneFit: ["Opening titles", "Launch film", "Night drive", "Trailer turn", "Human story", "Social campaign"][index],
+  subgenre: ["Neo-classical", "Indie anthem", "Textural ambient", "Vintage soul", "Americana", "Bright pop"][index],
+  assets: {
+    preview: true,
+    wavMaster: track.id !== 4,
+    stems: [1, 3, 5, 6].includes(track.id),
+    instrumental: track.vocal === "Instrumental" || [2, 4, 6].includes(track.id),
+    vocal: track.vocal === "Vocal",
+    alternateMixes: [1, 2, 5].includes(track.id),
+    loopEdit: [3, 5, 6].includes(track.id),
+    thirtySecondEdit: [1, 2, 6].includes(track.id),
+  },
+  rightsData: {
+    proAffiliation: index % 2 === 0 ? "ASCAP" : "BMI",
+    registrationId: `BMO-MOCK-${String(track.id).padStart(4, "0")}`,
+    publisher: `${track.artist} Publishing`,
+    masterOwner: "beatmondo Partner Catalog",
+    publishingOwner: `${track.artist} Publishing`,
+    ownershipProof: track.id === 4 ? "Rights Review Needed" : "Verified",
+    contractStatus: track.id === 4 ? "Legal Review Needed" : "On File",
+    legalReview: track.id === 4 ? "Pending" : "Approved",
+    prestonApproval: track.id === 4 ? "Pending" : "Approved",
+    licensingEligible: track.id !== 4,
+    rightsVerified: track.id !== 4,
+    deliveryReady: ["Delivery Ready", "Protected Delivery", "Ready to License"].includes(track.status),
+    lastReview: "Jul 2026",
+  },
+}));
+
 const useCases = [
   ["Film & Television", "Emotional themes, source cues, title beds, and end-credit moments.", img.film],
+  ["OTT & Streaming Platforms", "Rights-ready music for premium series, originals, and global streaming campaigns.", img.edit],
   ["Advertising & Brand Campaigns", "Authentic tracks for launches, product films, and premium storytelling.", img.agency],
   ["Trailers & Promos", "Impactful builds, emotional lifts, and quote-ready archive tracks.", img.edit],
   ["Documentary & Editorial", "Human, textured music with provenance and rights context.", img.studio],
-  ["Streaming & Digital Content", "Polished music for series, digital originals, and social films.", img.city],
+  ["Global Campaigns", "Commercially usable music for international launches, markets, and multi-territory media.", img.agency],
   ["Events & Experiences", "Atmospheric catalog selections for launches, installations, and live moments.", img.concert],
   ["Sports & Broadcast", "Driven cues for broadcast packages, promos, and human achievement stories.", img.car],
   ["Luxury / Lifestyle Campaigns", "Warm, tasteful tracks for refined brand worlds.", img.vinyl],
@@ -206,10 +274,10 @@ const projects = [
 ];
 
 const inquiries = [
-  { id: "BM-1048", company: "VisionTech", track: "Golden Hours", type: "Corporate Promo", budget: "$18k-$25k", deadline: "Jul 12", status: "Approved" },
-  { id: "BM-1047", company: "National Geographic", track: "Midnight Transit", type: "Documentary", budget: "$25k-$50k", deadline: "Jul 18", status: "Needs Quote" },
-  { id: "BM-1046", company: "Peak Performance", track: "Paper Planes", type: "Ad Campaign", budget: "$50k+", deadline: "Jul 24", status: "Quote Sent" },
-  { id: "BM-1045", company: "Moonline Films", track: "All That Remains", type: "Film Trailer", budget: "$10k-$18k", deadline: "Jul 28", status: "In Review" },
+  { id: "BM-1048", company: "VisionTech", track: "Golden Hours", type: "Corporate Promo", budget: "$18k-$25k", deadline: "Jul 12", status: "Approved", buyerTier: "VIP Sync Access", priority: "VIP Priority", preApprovedTerms: true, rightsCheck: "Verified", deliveryReadiness: "Delivery Ready" },
+  { id: "BM-1047", company: "National Geographic", track: "Midnight Transit", type: "Documentary", budget: "$25k-$50k", deadline: "Jul 18", status: "Quote Needed", buyerTier: "Professional Buyer", priority: "Standard", preApprovedTerms: false, rightsCheck: "Verified", deliveryReadiness: "Stems Ready" },
+  { id: "BM-1046", company: "Peak Performance", track: "Paper Planes", type: "Ad Campaign", budget: "$50k+", deadline: "Jul 24", status: "Quote Sent", buyerTier: "VIP Sync Access", priority: "Fast-Track Delivery", preApprovedTerms: true, rightsCheck: "Verified", deliveryReadiness: "WAV Ready" },
+  { id: "BM-1045", company: "Moonline Films", track: "All That Remains", type: "Film Trailer", budget: "$10k-$18k", deadline: "Jul 28", status: "Rights Check Needed", buyerTier: "Discovery Access", priority: "Rights Review", preApprovedTerms: false, rightsCheck: "Legal Review Needed", deliveryReadiness: "Blocked" },
 ];
 
 const artists = [
@@ -228,7 +296,7 @@ const navItems = [
   ["buyer", "Buyer Dashboard", UserCircle],
   ["project", "Project Detail", BookmarkSimple],
   ["admin", "Admin", GearSix],
-  ["content", "Stories & Media", Article],
+  ["content", "Editorial Hub", Article],
   ["stories", "Stories", Article],
   ["media", "Media Episodes", FilmSlate],
   ["contact", "Contact", UsersThree],
@@ -276,6 +344,9 @@ function App() {
     vocal: "Any Vocal",
     availability: "All Availability",
     duration: "Any Duration",
+    vipCatalog: "All Access",
+    stems: "Any Stem Status",
+    rightsVerified: "Any Rights Status",
   });
   const [modalTrack, setModalTrack] = useState(null);
   const [pageRequestSent, setPageRequestSent] = useState(false);
@@ -324,7 +395,10 @@ function App() {
         && (filters.usage === "Any Usage" || track.usage === filters.usage)
         && (filters.vocal === "Any Vocal" || track.vocal === filters.vocal)
         && (filters.availability === "All Availability" || track.availability === filters.availability)
-        && matchesDuration(track.duration, filters.duration);
+        && matchesDuration(track.duration, filters.duration)
+        && (filters.vipCatalog === "All Access" || (filters.vipCatalog === "VIP Catalog" ? track.vipOnly : !track.vipOnly))
+        && (filters.stems === "Any Stem Status" || (filters.stems === "Stems Available" ? track.assets.stems : !track.assets.stems))
+        && (filters.rightsVerified === "Any Rights Status" || (filters.rightsVerified === "Rights Verified" ? track.rightsData.rightsVerified : !track.rightsData.rightsVerified));
     });
     return sortTracks(filtered, sortBy);
   }, [query, filters, sortBy]);
@@ -478,9 +552,9 @@ function Sidebar({ view, setView, mobileNav, setMobileNav }) {
           setView("home");
           setMobileNav(false);
         }}
-        aria-label="Go to Beatmondo homepage"
+        aria-label="Go to beatmondo homepage"
       >
-        <img className="brand-logo" src={logo} alt="Beatmondo" />
+        <img className="brand-logo" src={logo} alt="beatmondo" />
       </button>
       <nav>
         {navItems.map(([id, label, Icon]) => (
@@ -505,10 +579,11 @@ function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotific
     <header className="topbar">
       <button className="mobile-menu" onClick={() => setMobileNav(true)}><FadersHorizontal size={20} /> Menu</button>
       <div>
-        <span className="eyebrow">Beatmondo Prototype</span>
+        <span className="eyebrow">beatmondo private sync workspace</span>
         <h1>{navItems.find(([id]) => id === view)?.[1]}</h1>
       </div>
       <div className="top-actions">
+        <span className="tier-badge vip">{currentBuyer.accessTier}</span>
         <button onClick={() => setView("licensing")} className="ghost-button"><SignIn size={18} /> Request Access</button>
         <button
           className="icon-button"
@@ -534,8 +609,8 @@ function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotific
 function PublicHeader({ setView }) {
   return (
     <header className="public-header">
-      <button className="public-logo" onClick={() => setView("home")} aria-label="Beatmondo home">
-        <img src={logo} alt="Beatmondo" />
+      <button className="public-logo" onClick={() => setView("home")} aria-label="beatmondo home">
+        <img src={logo} alt="beatmondo" />
       </button>
       <nav>
         <button onClick={() => setView("catalog")}>Explore Music</button>
@@ -554,37 +629,59 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       <PublicHeader setView={setView} />
       <div className="hero">
         <div className="hero-copy">
-          <span className="eyebrow">Premium music discovery and sync licensing</span>
-          <h2>Curated music with context, built for licensing conversations.</h2>
-          <p>Beatmondo brings authentic tracks, artist provenance, rights-aware metadata, and secure master delivery into one refined workspace for serious creative buyers.</p>
+          <span className="eyebrow">Premium gated sync licensing ecosystem</span>
+          <h2>The private sync environment for music that deserves serious placement.</h2>
+          <p>beatmondo connects serious music supervisors, brands, studios, agencies, and strategic buyers with curated music, verified rights, protected masters, stems, and access-controlled licensing workflows.</p>
+          <p className="trust-line">Preview publicly. License professionally. Deliver securely.</p>
           <div className="button-row">
-            <button className="gold-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore Music</button>
-            <button className="outline-button" onClick={() => setView("licensing")}><LockKey size={18} /> Request Licensing Access</button>
-            <button className="plain-button" onClick={() => setView("legacy")}><Archive size={18} /> Learn the Story</button>
+            <button className="gold-button" onClick={() => setView("licensing")}><LockKey size={18} /> Request Access</button>
+            <button className="outline-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore Curated Music</button>
+            <button className="plain-button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> Apply for VIP Sync Access</button>
           </div>
         </div>
         <HeroMedia />
       </div>
 
       <section className="editorial-band">
-        <div className="section-kicker"><span className="eyebrow">What is Beatmondo?</span><h2>Not stock music. A curated licensing experience.</h2></div>
+        <div className="section-kicker"><span className="eyebrow">What is beatmondo?</span><h2>Not a stock library. A controlled sync licensing environment.</h2></div>
         <div className="section-grid">
-          <Panel title="Curated music with context" action="Editorial">
-            <p>Tracks are presented with artist notes, use-case cues, rights details, and a clear path from preview to licensing review.</p>
+          <Panel title="Gated access by design" action="Private">
+            <p>Public visitors see selected previews and story-led context. Approved buyers unlock deeper metadata, project tools, quote workflows, and secure delivery.</p>
           </Panel>
-          <Panel title="Built for professional buyers" action="Workflow">
-            <p>Music supervisors, brands, agencies, producers, and creative directors can save tracks into projects, compare options, and submit usage details before a quote.</p>
+          <Panel title="Built for serious buyers" action="Workflow">
+            <p>Music supervisors, brands, studios, agencies, producers, and strategic partners can work through curated access, usage review, quote approval, and delivery controls.</p>
           </Panel>
-          <Panel title="Secure master delivery" action="Protected">
-            <p>Preview streams stay separate from protected master audio, which is delivered only through approved licensing workflows.</p>
+          <Panel title="Rights verified before licensing" action="Legal">
+            <p>Ownership proof, PRO details, contract status, Preston approval, and rights review are represented before music becomes licensing eligible.</p>
           </Panel>
         </div>
       </section>
 
+      <section className="access-tier-band">
+        <div className="section-heading">
+          <div><span className="eyebrow">Choose your access level</span><h2>Curated access for serious sync buyers.</h2></div>
+          <button onClick={() => setView("licensing")}>Discuss Licensing Access</button>
+        </div>
+        <div className="tier-grid">
+          {buyerTiers.map((tier) => <AccessTierCard key={tier.id} tier={tier} onSelect={() => setView("licensing")} />)}
+        </div>
+      </section>
+
       <section>
-        <div className="section-kicker"><span className="eyebrow">Music for creative use</span><h2>Search by the work you are making.</h2></div>
+        <div className="section-kicker"><span className="eyebrow">Music for global sync opportunities</span><h2>Search by the work, market, and placement you are making.</h2></div>
         <div className="image-card-grid use-cases">
           {useCases.map(([title, text, image]) => <ImageCard key={title} title={title} text={text} image={image} action={() => setView("catalog")} />)}
+        </div>
+      </section>
+
+      <section className="vip-band">
+        <div>
+          <span className="eyebrow">VIP Sync Access</span>
+          <h2>Priority catalog access for vetted high-value buyers.</h2>
+          <p>VIP buyers receive private curated selections, pre-approved usage parameters where available, concierge licensing support, faster review, and premium delivery access for serious sync opportunities.</p>
+        </div>
+        <div className="vip-feature-grid">
+          {["Curated high-value tracks", "Priority quote requests", "Pre-approved terms", "Concierge contact", "Fast-track licensing", "Secure WAV and stems delivery"].map((item) => <span key={item}><ShieldCheck size={16} /> {item}</span>)}
         </div>
       </section>
 
@@ -616,7 +713,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
           </div>
         </div>
         <div className="trust-panel">
-          <h3>Trusted by licensing professionals</h3>
+          <h3>Secure licensing workflow</h3>
           <TrustItem icon={ShieldCheck} title="Rights-aware metadata" text="Usage, territory, term, and clearance notes stay attached to the licensing workflow." />
           <TrustItem icon={LockKey} title="Protected masters" text="WAV files and stems stay locked until approval, payment, and delivery rules are complete." />
           <TrustItem icon={UsersThree} title="Artist-first catalog" text="Real musicianship, provenance, and relationship-led licensing sit at the center." />
@@ -627,15 +724,15 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
         <div>
           <span className="eyebrow">For strategic partners</span>
           <h2>A catalog foundation built for long-term value.</h2>
-          <p>Beatmondo combines curated catalog exploration, rights-aware metadata, secure licensing workflows, and artist-first positioning for thoughtful partnership and future catalog expansion.</p>
+          <p>beatmondo combines curated catalog exploration, rights-aware metadata, secure licensing workflows, and artist-first positioning for thoughtful partnership and future catalog expansion.</p>
         </div>
         <button className="outline-button" onClick={() => setView("licensing")}><UsersThree size={18} /> Partnership Inquiry</button>
       </section>
 
       <section className="content-preview">
-        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind Beatmondo." image={img.archive} action={() => setView("legacy")} />
-        <MiniStory title="Stories" text="Licensing education, artist stories, behind-the-catalog notes, and industry conversations." image={img.console} action={() => setView("stories")} />
-        <MiniStory title="Media" text="Conversations with artists, supervisors, collaborators, and catalog partners." image={img.portrait} action={() => setView("media")} />
+        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.archive} action={() => setView("legacy")} />
+        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, catalog highlights, VIP picks, and licensing conversations." image={img.console} action={() => setView("stories")} />
+        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, catalog highlights, legacy clips, and supervisor conversations." image={img.portrait} action={() => setView("media")} />
       </section>
       <Footer setView={setView} />
     </section>
@@ -649,20 +746,15 @@ function HeroMedia() {
     const video = videoRef.current;
     if (!video) return undefined;
 
-    const playWithAudio = async () => {
-      try {
-        video.muted = false;
-        await video.play();
-      } catch {
-        video.muted = true;
-        await video.play().catch(() => {});
-      }
+    const playMuted = async () => {
+      video.muted = true;
+      await video.play().catch(() => {});
     };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          playWithAudio();
+          playMuted();
         } else {
           video.pause();
         }
@@ -677,7 +769,7 @@ function HeroMedia() {
     };
 
     observer.observe(video);
-    playWithAudio();
+    playMuted();
     window.addEventListener("pointerdown", unlockAudio, { once: true });
     window.addEventListener("keydown", unlockAudio, { once: true });
 
@@ -690,7 +782,8 @@ function HeroMedia() {
 
   return (
     <div className="hero-media">
-      <video ref={videoRef} src={opener} poster={logo} autoPlay loop playsInline />
+      <video ref={videoRef} src={opener} poster={logo} autoPlay muted loop playsInline />
+      <img className="hero-logo-fallback" src={logo} alt="beatmondo" />
     </div>
   );
 }
@@ -700,15 +793,16 @@ function Catalog(props) {
     tracks: visibleTracks, query, setQuery, filters, setFilters, layout, setLayout, sortBy, setSortBy,
     selectedTrack, setSelectedTrack, playingId, togglePlay, savedIds, saveTrack, openTrack, requestLicense, showToast,
   } = props;
-  const resetFilters = () => setFilters({ genre: "All Genres", mood: "Any Mood", tempo: "Any Tempo", era: "Any Era", usage: "Any Usage", vocal: "Any Vocal", availability: "All Availability", duration: "Any Duration" });
+  const resetFilters = () => setFilters({ genre: "All Genres", mood: "Any Mood", tempo: "Any Tempo", era: "Any Era", usage: "Any Usage", vocal: "Any Vocal", availability: "All Availability", duration: "Any Duration", vipCatalog: "All Access", stems: "Any Stem Status", rightsVerified: "Any Rights Status" });
   const chips = Object.entries(filters).filter(([, value]) => !value.startsWith("All") && !value.startsWith("Any"));
   return (
     <section className="catalog-layout">
       <div className="catalog-main">
         <div className="catalog-header">
           <div>
-            <h2>Curated for Your Next Story</h2>
-            <p>Search by mood, use case, artist, era, tempo, clearance, and delivery readiness.</p>
+            <span className="tier-badge vip"><LockKey size={14} /> {currentBuyer.accessTier}</span>
+            <h2>Curated for high-value sync opportunities.</h2>
+            <p>Search by mood, use case, artist, era, tempo, stems, rights verification, VIP access, and delivery readiness.</p>
           </div>
         </div>
         <div className="search-row">
@@ -727,6 +821,9 @@ function Catalog(props) {
           <Select label="Vocal" value={filters.vocal} options={["Any Vocal", "Instrumental", "Vocal"]} onChange={(vocal) => setFilters({ ...filters, vocal })} />
           <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Option", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />
           <Select label="Duration" value={filters.duration} options={["Any Duration", "Under 3:00", "3:00+"]} onChange={(duration) => setFilters({ ...filters, duration })} />
+          <Select label="Access" value={filters.vipCatalog} options={["All Access", "Standard Access", "VIP Catalog"]} onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })} />
+          <Select label="Stems" value={filters.stems} options={["Any Stem Status", "Stems Available", "Stems Not Ready"]} onChange={(stems) => setFilters({ ...filters, stems })} />
+          <Select label="Rights" value={filters.rightsVerified} options={["Any Rights Status", "Rights Verified", "Rights Review Needed"]} onChange={(rightsVerified) => setFilters({ ...filters, rightsVerified })} />
         </div>
         <div className="chip-row">{chips.map(([key, value]) => <span key={key}>{value}</span>)}{chips.length > 0 && <button onClick={resetFilters}>Clear filters</button>}</div>
         <div className="results-meta">
@@ -768,9 +865,9 @@ function TrackRow({ track, isSelected, isPlaying, saved, onPlay, onSave, onOpen,
       <button className="play-button" onClick={(event) => { event.stopPropagation(); onPlay(); }} aria-label={isPlaying ? "Pause preview" : "Play preview"}>{isPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}</button>
       <div className="cover-art" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,.45)), url(${track.image})` }} />
       <div className="track-title">
-        <strong>{track.title} <span>{track.status}</span></strong>
+        <strong>{track.title} <span>{track.status}</span>{track.vipOnly && <span className="vip-mini">VIP</span>}</strong>
         <small>{track.artist} · {track.genre} · {track.bpm}</small>
-        <div>{track.tags.slice(0, 3).map((tag) => <em key={tag}>{tag}</em>)}</div>
+        <div>{track.tags.slice(0, 3).map((tag) => <em key={tag}>{tag}</em>)}{track.assets.stems && <em>Stems</em>}{track.rightsData.rightsVerified && <em>Rights Verified</em>}</div>
       </div>
       <div className="waveform" aria-hidden="true" />
       <span className="duration">{track.duration}</span>
@@ -785,7 +882,7 @@ function TrackCard({ track, isPlaying, saved, onPlay, onSave, onOpen, onRequest 
   return (
     <article className="track-card">
       <div className="track-card-art" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.55)), url(${track.image})` }}><button onClick={onPlay} aria-label={isPlaying ? "Pause preview" : "Play preview"}>{isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button></div>
-      <div><h3>{track.title}</h3><p>{track.artist} · {track.genre}</p></div>
+      <div><h3>{track.title} {track.vipOnly && <span className="vip-mini">VIP</span>}</h3><p>{track.artist} · {track.genre} · {track.sceneFit}</p></div>
       <div className="waveform" />
       <div className="tag-row">{track.tags.slice(0, 2).map((tag) => <span key={tag}>{tag}</span>)}<span>{track.duration}</span></div>
       <div className="button-row"><button className={`heart ${saved ? "saved" : ""}`} onClick={onSave}><Heart weight={saved ? "fill" : "regular"} /></button><button className="outline-button" onClick={onOpen}>Details</button><button className="gold-button" onClick={onRequest}>Request License</button></div>
@@ -805,14 +902,15 @@ function TrackSidePanel({ track, requestLicense, playingId, onTogglePlay }) {
       <p>{track.artist} · {track.genre} · {track.usage}</p>
       <div className="tag-row">{track.tags.map((tag) => <span key={tag}>{tag}</span>)}</div>
       <div className="meta-grid"><span><Clock size={16} /> {track.duration}</span><span><MusicNote size={16} /> {track.bpm}</span><span>{track.key}</span></div>
+      <AssetBadges track={track} compact />
       <div className="rights-list">
         <h3>Rights & licensing</h3>
         <p>Preview Only</p>
         <p>Protected master audio</p>
-        <p>WAV Available After Approval</p>
-        <p>Rights reviewed</p>
+        <p>{track.assets.wavMaster ? "WAV available after approval" : "WAV pending rights check"}</p>
+        <p>{track.rightsData.rightsVerified ? "Ownership verified" : "Rights check needed"}</p>
       </div>
-      <button className="gold-button full" onClick={() => requestLicense(track)}><ShieldCheck size={18} /> Request License</button>
+      <button className="gold-button full" onClick={() => requestLicense(track)}><ShieldCheck size={18} /> {track.vipOnly ? "Fast-Track License" : "Request License"}</button>
       <div className="locked-box"><LockKey size={28} /> Secure Delivery <small>Protected master audio is delivered only after approval.</small></div>
     </aside>
   );
@@ -837,6 +935,20 @@ function TrackDetail({ track, playingId, togglePlay, saved, saveTrack, requestLi
       <div className="large-player">
         <div className="player-top"><strong>Preview Only</strong><span>Protected master audio · WAV available after approval · Secure delivery</span></div>
         <div className="waveform big" />
+      </div>
+      <div className="detail-grid">
+        <Panel title="Available audio assets" action="Access controlled">
+          <AssetBadges track={track} />
+          <p className="muted-note">Preview is public-limited. WAV master, stems, instrumentals, vocals, edits, loops, and alternate mixes unlock only after approval, payment, or VIP terms.</p>
+        </Panel>
+        <Panel title="Rights verification summary" action={track.rightsData.rightsVerified ? "Verified" : "Review needed"}>
+          <div className="rights-proof-grid">
+            <span>Ownership proof: {track.rightsData.ownershipProof}</span>
+            <span>PRO / Registry: {track.rightsData.proAffiliation} · {track.rightsData.registrationId}</span>
+            <span>Contract: {track.rightsData.contractStatus}</span>
+            <span>Preston approval: {track.rightsData.prestonApproval}</span>
+          </div>
+        </Panel>
       </div>
       <div className="detail-grid">
         <Panel title="Metadata" action="Rights metadata">
@@ -899,7 +1011,7 @@ function Legacy({ setView, openTrack }) {
     ["Artist-first future", "The legacy extends through discovery tools that help new creative buyers find authentic music responsibly."],
   ];
   const legacyCards = [
-    ["Preserving the Original Vision", "Archive Notes", img.tape, "A warm space for founding memories, recording context, handwritten notes, and the musician-led spirit behind Beatmondo."],
+    ["Preserving the Original Vision", "Archive Notes", img.tape, "A warm space for founding memories, recording context, handwritten notes, and the musician-led spirit behind beatmondo."],
     ["Studio Memories", "Stories", img.console, "Behind-the-board moments, collaborators, instruments, and session details that give the catalog its human texture."],
     ["Featured Legacy Tracks", "Listen", img.vinyl, "A restrained selection of archive-connected tracks with provenance, preview listening, and protected master delivery.", true],
     ["Quotes and Stories", "Memories", img.portrait, "Short recollections from artists, collaborators, and partners, gathered as an archive rather than a sales pitch."],
@@ -911,7 +1023,7 @@ function Legacy({ setView, openTrack }) {
         <div className="legacy-hero-copy">
           <span className="eyebrow">Gary Burke legacy</span>
           <h2>Preserving the original vision.</h2>
-          <p>A respectful archive for memories, studio stories, collaborators, and the musician-led spirit behind Beatmondo.</p>
+          <p>A respectful archive for memories, studio stories, collaborators, and the musician-led spirit behind beatmondo.</p>
           <button className="outline-button" onClick={() => setView("catalog")}><MusicNote size={18} /> Explore related music</button>
         </div>
       </div>
@@ -936,16 +1048,74 @@ function Legacy({ setView, openTrack }) {
 function LicensingAccess({ selectedTrack, requestSent, setRequestSent }) {
   const [mode, setMode] = useState("license");
   const [accessSent, setAccessSent] = useState(false);
+  const [selectedTier, setSelectedTier] = useState("VIP Sync Access");
   return (
-    <section className="form-page wide-page">
-      <div className="form-intro">
-        <span className="eyebrow">Licensing and access</span>
-        <h2>Usage details first. Secure delivery after approval.</h2>
-        <p>Request a license for a track or apply for buyer, artist, or strategic partner access. Beatmondo keeps the process clear, human, and audit-ready.</p>
-        <div className="segmented stacked"><button className={mode === "license" ? "active" : ""} onClick={() => setMode("license")}>Request License</button><button className={mode === "access" ? "active" : ""} onClick={() => setMode("access")}>Request Access</button></div>
+    <section className="form-page wide-page licensing-page">
+      <div className="licensing-header">
+        <div className="form-intro">
+          <span className="eyebrow">Licensing and access</span>
+          <h2>Gated access first. Secure delivery after approval or VIP terms.</h2>
+          <p>Request a license for a track or apply for Discovery, Professional, or VIP Sync Access. beatmondo keeps access selective, rights-controlled, and audit-ready.</p>
+        </div>
+        <div className="segmented stacked licensing-mode">
+          <span className="eyebrow">Request type</span>
+          <p>{mode === "license" ? "Submit usage parameters for a selected track." : "Apply for buyer, contributor, or partner workspace access."}</p>
+          <button className={mode === "license" ? "active" : ""} onClick={() => setMode("license")}>Request License</button>
+          <button className={mode === "access" ? "active" : ""} onClick={() => setMode("access")}>Request Access</button>
+        </div>
       </div>
-      {mode === "license" ? (requestSent ? <ConfirmationScreen track={selectedTrack} /> : <InquiryForm track={selectedTrack} onSubmit={() => setRequestSent(true)} />) : (accessSent ? <AccessConfirmation /> : <AccessForm onSubmit={() => setAccessSent(true)} />)}
+      <div className="tier-grid form-tier-grid">
+        {buyerTiers.map((tier) => (
+          <button type="button" key={tier.id} className={`tier-pick ${selectedTier === tier.name ? "active" : ""}`} onClick={() => setSelectedTier(tier.name)}>
+            <span className="tier-badge">{tier.name}</span>
+            <strong>{tier.name}</strong>
+            <small>{tier.priceLabel}</small>
+            <span>{tier.features.slice(0, 3).join(" · ")}</span>
+          </button>
+        ))}
+      </div>
+      <div className="licensing-workspace">
+        <div>
+          {mode === "license" ? (requestSent ? <ConfirmationScreen track={selectedTrack} tier={selectedTier} /> : <InquiryForm track={selectedTrack} onSubmit={() => setRequestSent(true)} selectedTier={selectedTier} />) : (accessSent ? <AccessConfirmation tier={selectedTier} /> : <AccessForm onSubmit={() => setAccessSent(true)} selectedTier={selectedTier} />)}
+        </div>
+        <LicensingSummary track={selectedTrack} selectedTier={selectedTier} mode={mode} />
+      </div>
     </section>
+  );
+}
+
+function FieldGroup({ title, note, children }) {
+  return (
+    <fieldset className="form-section">
+      <legend>{title}</legend>
+      {note && <p>{note}</p>}
+      <div className="form-section-grid">{children}</div>
+    </fieldset>
+  );
+}
+
+function LicensingSummary({ track, selectedTier, mode }) {
+  const isVip = selectedTier === "VIP Sync Access";
+  const steps = isVip
+    ? ["Confirm usage parameters", "Concierge rights review", "Pre-approved terms or quote", "Fast-track secure delivery"]
+    : ["Submit usage details", "Rights and quote review", "Approval and payment", "Secure WAV delivery"];
+  return (
+    <aside className="licensing-summary-panel">
+      <span className="eyebrow">{mode === "license" ? "Licensing summary" : "Access review"}</span>
+      <h3>{isVip ? "VIP priority path" : "Controlled access path"}</h3>
+      <div className="summary-list">
+        <span><strong>Track</strong>{track.title}</span>
+        <span><strong>Buyer tier</strong>{selectedTier}</span>
+        <span><strong>Verification</strong>{currentBuyer.verified ? "Verified buyer" : "Review needed"}</span>
+        <span><strong>Rights status</strong>{track.rightsData?.rightsVerified ? "Ownership verified" : "Rights check needed"}</span>
+        <span><strong>Delivery</strong>{track.assets?.stems ? "WAV master + stems" : "WAV master after approval"}</span>
+        <span><strong>Terms</strong>{isVip ? "Pre-approved where available" : "Quote-based licensing"}</span>
+      </div>
+      <div className="workflow-steps">
+        {steps.map((step, index) => <span key={step}><em>{index + 1}</em>{step}</span>)}
+      </div>
+      <div className="locked-box summary-lock"><LockKey size={24} /> Protected master audio <small>Files remain private until approval, payment, or VIP terms are confirmed.</small></div>
+    </aside>
   );
 }
 
@@ -971,8 +1141,8 @@ function InquiryModal({ track, requestSent, setRequestSent, onClose }) {
   );
 }
 
-function InquiryForm({ track, onSubmit, compact }) {
-  const [form, setForm] = useState({ name: "", email: "", company: "", role: "", project: "Luxury Auto Campaign - Fall 2026", type: "Film / TV", media: "Online + paid social", territory: "Worldwide", term: "1 year", exclusivity: "Non-exclusive", budget: "$10k-$18k", deadline: "", master: "Yes", stems: "No", edit: "Maybe", message: "" });
+function InquiryForm({ track, onSubmit, compact, selectedTier = currentBuyer.accessTier }) {
+  const [form, setForm] = useState({ name: "", email: "", company: "", role: "", project: "Luxury Auto Campaign - Fall 2026", brand: "Aster Automotive", production: "Northstar Pictures", campaign: "Fall launch film", type: "OTT / streaming", media: "Online + paid social", territory: "Worldwide", term: "1 year", exclusivity: "Non-exclusive", paidMedia: "Paid + organic", placements: "3", scale: "Global", budget: "$25k-$50k", releaseDate: "", deadline: "", master: "Yes", stems: "Yes", instrumental: "Yes", vocal: "If available", edit: "Maybe", loop: "Maybe", urgent: "Yes", preApproved: selectedTier === "VIP Sync Access" ? "Yes" : "No", message: "" });
   const [attempted, setAttempted] = useState(false);
   const update = (field, value) => setForm({ ...form, [field]: value });
   const handleSubmit = (event) => {
@@ -983,35 +1153,62 @@ function InquiryForm({ track, onSubmit, compact }) {
   };
   return (
     <form className={`inquiry-form ${compact ? "compact-form" : ""}`} onSubmit={handleSubmit} noValidate>
-      {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"], ["project", "Project name"]].map(([field, label]) => (
-        <label key={field}>
-          {label}
-          <input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} />
-          {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
+      {selectedTier === "VIP Sync Access" && <p className="vip-form-note">VIP requests confirm usage parameters first, then move through concierge review and pre-approved terms when available.</p>}
+      <FieldGroup title="Buyer details" note="Who should the licensing team verify and contact?">
+        {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"]].map(([field, label]) => (
+          <label key={field}>
+            {label}
+            <input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} />
+            {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
+          </label>
+        ))}
+        <label>Buyer access tier<input value={selectedTier} readOnly /></label>
+        <label>Buyer verified?<input value={currentBuyer.verified ? "Verified buyer" : "Verification needed"} readOnly /></label>
+        <label>VIP buyer?<input value={selectedTier === "VIP Sync Access" ? "Yes" : "No"} readOnly /></label>
+        <label>Pre-approved usage terms?<select value={form.preApproved} onChange={(event) => update("preApproved", event.target.value)}><option>Yes</option><option>No</option><option>Requested</option></select></label>
+      </FieldGroup>
+      <FieldGroup title="Project details" note="Tell us what the music is supporting.">
+        <label>Project name<input required value={form.project} onChange={(event) => update("project", event.target.value)} placeholder="Project name" />{attempted && !form.project && <span className="form-error">This field is required.</span>}</label>
+        <label>Brand / client name<input value={form.brand} onChange={(event) => update("brand", event.target.value)} /></label>
+        <label>Production company<input value={form.production} onChange={(event) => update("production", event.target.value)} /></label>
+        <label>Campaign / title<input value={form.campaign} onChange={(event) => update("campaign", event.target.value)} /></label>
+        <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>OTT / streaming</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Documentary</option><option>Sports / broadcast</option><option>Luxury / lifestyle campaign</option><option>Game</option><option>Live event</option><option>Editorial / Media</option></select></label>
+        <label>Track of interest<input value={track.title} readOnly /></label>
+      </FieldGroup>
+      <FieldGroup title="Usage terms" note="These fields shape rights review, quote timing, and delivery readiness.">
+        <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
+        <label>Territory<select value={form.territory} onChange={(event) => update("territory", event.target.value)}><option>Worldwide</option><option>North America</option><option>United States</option><option>Europe</option></select></label>
+        <label>Term<select value={form.term} onChange={(event) => update("term", event.target.value)}><option>1 year</option><option>2 years</option><option>Perpetual</option><option>Festival only</option></select></label>
+        <label>Exclusivity<select value={form.exclusivity} onChange={(event) => update("exclusivity", event.target.value)}><option>Non-exclusive</option><option>Category exclusive</option><option>Full exclusive</option></select></label>
+        <label>Paid media or organic use?<select value={form.paidMedia} onChange={(event) => update("paidMedia", event.target.value)}><option>Paid + organic</option><option>Paid media</option><option>Organic only</option><option>Internal only</option></select></label>
+        <label>Number of placements<input value={form.placements} onChange={(event) => update("placements", event.target.value)} /></label>
+        <label>Usage scale<select value={form.scale} onChange={(event) => update("scale", event.target.value)}><option>Global</option><option>National</option><option>Local</option><option>Festival only</option></select></label>
+        <label>Budget range<select value={form.budget} onChange={(event) => update("budget", event.target.value)}><option>$5k-$10k</option><option>$10k-$18k</option><option>$18k-$25k</option><option>$25k-$50k</option><option>$50k+</option></select></label>
+        <label>Expected release date<input type="date" value={form.releaseDate} onChange={(event) => update("releaseDate", event.target.value)} /></label>
+        <label>Deadline<input type="date" value={form.deadline} onChange={(event) => update("deadline", event.target.value)} /></label>
+      </FieldGroup>
+      <FieldGroup title="Delivery needs" note="Protected files unlock only after approval, payment, or VIP terms.">
+        <label>Need WAV master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
+        <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
+        <label>Need instrumental?<select value={form.instrumental} onChange={(event) => update("instrumental", event.target.value)}><option>Yes</option><option>No</option><option>If available</option></select></label>
+        <label>Need vocal version?<select value={form.vocal} onChange={(event) => update("vocal", event.target.value)}><option>If available</option><option>Yes</option><option>No</option></select></label>
+        <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
+        <label>Need loop/edit points?<select value={form.loop} onChange={(event) => update("loop", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
+        <label>Urgent delivery?<select value={form.urgent} onChange={(event) => update("urgent", event.target.value)}><option>Yes</option><option>No</option></select></label>
+      </FieldGroup>
+      <FieldGroup title="Message" note="Add scene, campaign, edit, rights, or timing context.">
+        <label className="full-field">
+          Intended usage / message
+          <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
+          {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
         </label>
-      ))}
-      <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Stories & Media</option></select></label>
-      <label>Track of interest<input value={track.title} readOnly /></label>
-      <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
-      <label>Territory<select value={form.territory} onChange={(event) => update("territory", event.target.value)}><option>Worldwide</option><option>North America</option><option>United States</option><option>Europe</option></select></label>
-      <label>Term<select value={form.term} onChange={(event) => update("term", event.target.value)}><option>1 year</option><option>2 years</option><option>Perpetual</option><option>Festival only</option></select></label>
-      <label>Exclusivity<select value={form.exclusivity} onChange={(event) => update("exclusivity", event.target.value)}><option>Non-exclusive</option><option>Category exclusive</option><option>Full exclusive</option></select></label>
-      <label>Budget range<select value={form.budget} onChange={(event) => update("budget", event.target.value)}><option>$5k-$10k</option><option>$10k-$18k</option><option>$18k-$25k</option><option>$25k-$50k</option><option>$50k+</option></select></label>
-      <label>Deadline<input type="date" value={form.deadline} onChange={(event) => update("deadline", event.target.value)} /></label>
-      <label>Need WAV master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
-      <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
-      <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
-      <label className="full-field">
-        Intended usage / message
-        <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
-        {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
-      </label>
-      <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> Submit License Request</button>
+      </FieldGroup>
+      <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> {selectedTier === "VIP Sync Access" ? "Submit VIP Priority Request" : "Submit License Request"}</button>
     </form>
   );
 }
 
-function AccessForm({ onSubmit }) {
+function AccessForm({ onSubmit, selectedTier = currentBuyer.accessTier }) {
   const [role, setRole] = useState("Music Supervisor");
   return (
     <form className="inquiry-form access-form" onSubmit={(event) => { event.preventDefault(); onSubmit(); }}>
@@ -1020,26 +1217,28 @@ function AccessForm({ onSubmit }) {
       <label>Email<input required placeholder="name@company.com" /></label>
       <label>Company<input required placeholder="Company or studio" /></label>
       <label>Role<input value={role} readOnly /></label>
-      <label className="full-field">Intended use<textarea required placeholder="Tell us how you expect to use Beatmondo." /></label>
+      <label>Requested access tier<input value={selectedTier} readOnly /></label>
+      <label>Membership / payment status<input value={selectedTier === "Discovery Access" ? "Entry approval required" : "Verification required"} readOnly /></label>
+      <label className="full-field">Intended use<textarea required placeholder="Tell us how you expect to use beatmondo." /></label>
       <label className="full-field">Message<textarea placeholder="Anything the team should know?" /></label>
       <button className="gold-button form-submit" type="submit"><SignIn size={18} /> Request Access</button>
     </form>
   );
 }
 
-function ConfirmationScreen({ track, compact }) {
+function ConfirmationScreen({ track, compact, tier = currentBuyer.accessTier }) {
   return (
     <section className={`confirmation ${compact ? "compact-confirmation" : ""}`}>
       <CheckCircle size={52} weight="fill" />
       <h2>Your license request has been received.</h2>
-      <p>The Beatmondo team will review your usage details for <strong>{track.title}</strong> and respond with next steps.</p>
-      <div className="status-strip">{["Submitted", "Under Review", "Needs Quote", "Quote Sent", "Approved", "Paid", "Delivered"].map((status) => <span key={status}>{status}</span>)}</div>
+      <p>The beatmondo team will review your usage details for <strong>{track.title}</strong> under <strong>{tier}</strong> and respond with next steps.</p>
+      <div className="status-strip">{(tier === "VIP Sync Access" ? ["VIP Priority", "Concierge Review", "Pre-Approved Terms", "Fast-Track Delivery", "VIP Delivered"] : ["Submitted", "In Review", "Quote Needed", "Quote Sent", "Approved", "Paid", "Delivery Ready"]).map((status) => <span key={status}>{status}</span>)}</div>
     </section>
   );
 }
 
-function AccessConfirmation() {
-  return <section className="confirmation"><CheckCircle size={52} weight="fill" /><h2>Access request received.</h2><p>Beatmondo will review your role, company, and intended use before enabling the right workspace permissions.</p><div className="status-strip"><span>Request received</span><span>Role review</span><span>Workspace setup</span></div></section>;
+function AccessConfirmation({ tier = currentBuyer.accessTier }) {
+  return <section className="confirmation"><CheckCircle size={52} weight="fill" /><h2>Access request received.</h2><p>beatmondo will review your role, company, intended use, and requested <strong>{tier}</strong> permissions before enabling the right workspace.</p><div className="status-strip"><span>Request received</span><span>Buyer verification</span><span>{tier === "VIP Sync Access" ? "Concierge review" : "Workspace setup"}</span></div></section>;
 }
 
 function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingId, togglePlay, saveTrack, showToast }) {
@@ -1052,12 +1251,38 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingI
 
   return (
     <section className="dashboard-page">
+      <section className="buyer-profile-card">
+        <div>
+          <span className="eyebrow">Buyer profile</span>
+          <h2>{currentBuyer.name}</h2>
+          <p>{currentBuyer.company} · {currentBuyer.role}</p>
+        </div>
+        <div className="buyer-profile-meta">
+          <span className="tier-badge vip">{currentBuyer.accessTier}</span>
+          <span>{currentBuyer.verified ? "Verified buyer" : "Verification needed"}</span>
+          <span>Membership: {currentBuyer.membershipStatus}</span>
+          <span>{currentBuyer.preApprovedTerms ? "Pre-approved terms active" : "Terms review needed"}</span>
+        </div>
+      </section>
       <div className="metric-grid">
         <Metric icon={Heart} label="Saved Tracks" value={saved.length || "0"} note={saved.length ? "Ready for project review" : "No saved tracks yet"} />
         <Metric icon={BookmarkSimple} label="Active Projects" value="3" note="1 quote pending" />
         <Metric icon={FileAudio} label="License Requests" value="4" note="2 need response" />
         <Metric icon={DownloadSimple} label="Approved Downloads" value="2" note="1 expires soon" />
       </div>
+      <section className="vip-dashboard-panel">
+        <div>
+          <span className="eyebrow">VIP Sync Access</span>
+          <h2>Priority licensing workspace</h2>
+          <p>Private curated tracks, pre-approved terms, concierge review, fast-track licensing, and secure WAV/stems delivery for vetted high-value projects.</p>
+        </div>
+        <div className="metric-grid compact-metrics">
+          <Metric icon={Sparkle} label="VIP Curated Tracks" value="18" note="Private selections" />
+          <Metric icon={ShieldCheck} label="Priority Requests" value="3" note="Concierge review" />
+          <Metric icon={DownloadSimple} label="Approved Downloads" value="2" note="WAV + stems" />
+          <Metric icon={CalendarBlank} label="Membership" value="Active" note="Renews Sep 2026" />
+        </div>
+      </section>
       <section className="next-steps">
         <div>
           <span className="eyebrow">Next steps</span>
@@ -1082,8 +1307,8 @@ function BuyerDashboard({ savedIds, setView, requestLicense, openTrack, playingI
           <div className="delivery-card">
             <LockKey size={30} />
             <strong>Beyond the Horizon</strong>
-            <span>Expires Jul 30 · 3 downloads remaining · download history tracked</span>
-            <div className="delivery-meta"><span>WAV master</span><span>Invoice paid</span><span>Role verified</span></div>
+            <span>Delivery Ready · Expires Jul 30 · 3 downloads remaining · download history tracked</span>
+            <div className="delivery-meta"><span>WAV master</span><span>Stems available</span><span>Terms accepted</span><span>Invoice paid</span><span>Role verified</span></div>
             <button className="gold-button" onClick={() => showToast("Secure WAV download started. Delivery history updated.")}><DownloadSimple size={18} /> Secure WAV Download</button>
           </div>
         </Panel>
@@ -1100,23 +1325,23 @@ function ProjectDetail({ requestLicense, openTrack, showToast }) {
         <div className="project-hero-content">
           <span className="eyebrow">Buyer project</span>
           <h2>{projects[0].name}</h2>
-          <p>Shortlist music, compare license fit, capture buyer notes, and move selected tracks toward quote approval.</p>
+          <p>VIP project workspace for global brand campaign usage, multi-track quote review, rights verification, WAV/stems readiness, and fast-track licensing.</p>
           <div className="project-meta-strip">
-            <span>Advertising</span><span>Worldwide</span><span>$25k-$50k</span><span>Deadline Sep 18</span><span>Quote Sent</span>
+            <span>VIP Sync Access</span><span>Global brand campaign</span><span>$25k-$50k</span><span>Deadline Sep 18</span><span>Pre-approved terms</span><span>3 WAV masters ready</span>
           </div>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Submit License Request</button><button className="outline-button" onClick={() => showToast("Track picker opened for this project.")}><BookmarkSimple size={18} /> Add Track</button></div>
+          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Open VIP Licensing Workspace</button><button className="outline-button" onClick={() => showToast("Multi-track quote request opened.")}><BookmarkSimple size={18} /> Request Multiple Tracks</button><button className="outline-button" onClick={() => showToast("VIP fast-track review requested.")}><Sparkle size={18} /> Fast-Track Review</button></div>
         </div>
       </div>
       <div className="project-workspace-grid">
         <Panel title="Track comparison" action="4 shortlisted">
           <div className="comparison-table">
-            <div className="comparison-head"><span>Track</span><span>Mood</span><span>Usage fit</span><span>Availability</span><span /></div>
+            <div className="comparison-head"><span>Track</span><span>Mood</span><span>Rights</span><span>WAV / Stems</span><span /></div>
             {projectTracks.map((track) => (
               <button className="comparison-row" key={track.id} onClick={() => openTrack(track)}>
                 <span><strong>{track.title}</strong><small>{track.artist} · {track.duration}</small></span>
                 <span>{track.mood}</span>
-                <span>{track.usage}</span>
-                <span>{track.availability}</span>
+                <span>{track.rightsData.rightsVerified ? "Verified" : "Review needed"}</span>
+                <span>{track.assets.wavMaster ? "WAV" : "WAV pending"} · {track.assets.stems ? "Stems" : "No stems"}</span>
                 <Eye size={18} />
               </button>
             ))}
@@ -1134,7 +1359,7 @@ function ProjectDetail({ requestLicense, openTrack, showToast }) {
         </Panel>
         <Panel title="Licensing summary" action="Buyer review">
           <div className="license-summary">
-            <span>4 tracks selected</span><span>Worldwide paid media</span><span>1 year term</span><span>Non-exclusive</span><span>Master files locked</span><span>Quote expires Sep 12</span>
+            <span>4 tracks selected</span><span>Worldwide paid media</span><span>1 year term</span><span>Non-exclusive</span><span>Protected masters locked</span><span>VIP fast-track available</span><span>Quote expires Sep 12</span>
           </div>
         </Panel>
       </div>
@@ -1160,9 +1385,25 @@ function AdminDashboard({ showToast, togglePlay }) {
   const [adminTab, setAdminTab] = useState("Overview");
   const tabs = ["Overview", "Tracks", "Artists", "Inquiries", "Buyers", "Secure Delivery", "Media", "Analytics", "Audit Logs", "Settings"];
   const metricGroups = [
-    ["Catalog", [[MusicNote, "Tracks", "12,842"], [Eye, "Published", "9,876"], [Sparkle, "Health", "94%"]]],
-    ["Licensing", [[ShieldCheck, "New Inquiries", "37"], [FileAudio, "Quote Requests", "14"], [DownloadSimple, "Approved", "216"]]],
-    ["Delivery", [[LockKey, "Secure Downloads", "84"], [Article, "Rights Missing", "19"], [CloudArrowUp, "Recent Masters", "28"]]],
+    ["Music Operations", [[MusicNote, "Tracks", "12,842"], [Eye, "Published", "9,876"], [Sparkle, "Stems Ready", "61%"]]],
+    ["Licensing", [[ShieldCheck, "VIP Buyers", "42"], [FileAudio, "Revenue Pipeline", "$1.8M"], [DownloadSimple, "Quote Conversion", "38%"]]],
+    ["Delivery", [[LockKey, "Secure Downloads", "84"], [Article, "Rights Backlog", "19"], [CloudArrowUp, "Delivery Completion", "92%"]]],
+  ];
+  const pipelineItems = [
+    ["New", 37, "neutral"],
+    ["In Review", 21, "neutral"],
+    ["Rights Check Needed", 14, "attention"],
+    ["Quote Needed", 9, "attention"],
+    ["Quote Sent", 11, "neutral"],
+    ["VIP Priority", 7, "priority"],
+    ["Delivery Ready", 5, "ready"],
+  ];
+  const activityItems = [
+    ["License delivered to VisionTech", "Delivery", "2m ago"],
+    ["New inquiry from National Geographic", "New", "10m ago"],
+    ["Quote approved for Peak Performance", "Quote", "18m ago"],
+    ["Track uploaded: Midnight Conversations", "Asset", "26m ago"],
+    ["Permissions updated", "Audit", "34m ago"],
   ];
 
   const renderAdminPanel = () => {
@@ -1180,6 +1421,17 @@ function AdminDashboard({ showToast, togglePlay }) {
 
   return (
     <section className="admin-page">
+      {adminTab === "Overview" && (
+        <div className="admin-overview-summary">
+          <div>
+            <span className="eyebrow">Today in the workspace</span>
+            <strong>23 items need admin attention before buyers receive quotes or protected master audio.</strong>
+          </div>
+          <div><span>Rights checks</span><strong>14</strong></div>
+          <div><span>Quotes needed</span><strong>9</strong></div>
+          <div><span>VIP priority</span><strong>7</strong></div>
+        </div>
+      )}
       <div className="admin-tabs">{tabs.map((tab) => <button key={tab} className={adminTab === tab ? "active" : ""} onClick={() => setAdminTab(tab)}>{tab}</button>)}</div>
       <div className="admin-metric-groups">
         {metricGroups.map(([group, metrics]) => (
@@ -1191,21 +1443,21 @@ function AdminDashboard({ showToast, togglePlay }) {
           </section>
         ))}
       </div>
-      <div className="admin-grid">
+      <div className={`admin-grid ${adminTab === "Tracks" ? "tracks-admin-grid" : ""}`}>
         <section className="pipeline-panel">
           <h3>Licensing inquiry pipeline</h3>
           <div className="pipeline">
-            {["New", "In Review", "Needs Quote", "Quote Sent", "Approved", "Paid", "Delivered"].map((status, index) => (
-              <button key={status} onClick={() => showToast(`Filtered pipeline by ${status}.`)}>
+            {pipelineItems.map(([status, count, tone]) => (
+              <button key={status} className={`pipeline-${tone}`} onClick={() => showToast(`Filtered pipeline by ${status}.`)}>
                 <span>{status}</span>
-                <strong>{[37, 21, 14, 9, 11, 7, 5][index]}</strong>
+                <strong>{count}</strong>
               </button>
             ))}
           </div>
         </section>
-        <Panel title={adminTab === "Overview" ? "Catalog operations" : `${adminTab} management`} action="Operational view">{renderAdminPanel()}</Panel>
+        <Panel title={adminTab === "Overview" ? "Music operations" : `${adminTab} management`} action="Operational view">{renderAdminPanel()}</Panel>
         <Panel title="Activity feed" action="Audit ready">
-          <div className="activity-list">{["License delivered to VisionTech", "New inquiry from National Geographic", "Quote approved for Peak Performance", "Track uploaded: Midnight Conversations", "Permissions updated"].map((text, index) => <p key={text}><CheckCircle size={18} /> {text} <span>{index * 8 + 2}m ago</span></p>)}</div>
+          <div className="activity-list activity-list-actionable">{activityItems.map(([text, tag, time]) => <p key={text}><CheckCircle size={18} /> <span className="activity-copy">{text}<small>{tag}</small></span> <span>{time}</span></p>)}</div>
           <p className="admin-audit-note">Audit trail synced across licensing, delivery, and permissions events.</p>
         </Panel>
       </div>
@@ -1214,10 +1466,22 @@ function AdminDashboard({ showToast, togglePlay }) {
 }
 
 function OverviewAdmin({ showToast }) {
+  const cards = [
+    [Sparkle, "Catalog health", "94% complete", "Published tracks with rights notes, preview audio, and delivery readiness.", "Open report"],
+    [ShieldCheck, "Licensing queue", "37 new", "New inquiries, quote requests, and approvals awaiting payment confirmation.", "Review queue"],
+    [Eye, "Private catalog intelligence", "42% lift", "VIP buyers are saving cinematic instrumentals more often this week.", "Open insights"],
+    [LockKey, "Rights verification backlog", "19 blocked", "Ownership proof, PRO registry confirmation, contract review, or Preston approval needed.", "Review rights"],
+  ];
   return (
-    <div className="cards-admin">
-      <article><Sparkle size={28} /><h3>Catalog health</h3><p>94% of published tracks have complete rights notes, preview audio, and delivery readiness.</p><button onClick={() => showToast("Catalog health report opened.")}>Open report</button></article>
-      <article><ShieldCheck size={28} /><h3>Licensing queue</h3><p>37 new inquiries, 14 quote requests, and 9 approvals awaiting payment confirmation.</p><button onClick={() => showToast("Licensing queue filtered to active items.")}>Review queue</button></article>
+    <div className="cards-admin overview-action-grid">
+      {cards.map(([Icon, title, stat, copy, action]) => (
+        <article key={title}>
+          <div className="overview-card-head"><Icon size={24} /><strong>{stat}</strong></div>
+          <h3>{title}</h3>
+          <p>{copy}</p>
+          <button onClick={() => showToast(`${title} opened.`)}>{action}</button>
+        </article>
+      ))}
     </div>
   );
 }
@@ -1225,8 +1489,10 @@ function OverviewAdmin({ showToast }) {
 function AnalyticsAdmin() {
   return (
     <div className="cards-admin">
-      <article><Eye size={28} /><h3>Discovery trends</h3><p>Catalog previews up 18% this month. Cinematic and ambient tags lead supervisor saves.</p></article>
-      <article><UsersThree size={28} /><h3>Buyer activity</h3><p>Music supervisors account for 42% of saved tracks and 61% of submitted license requests.</p></article>
+      <article><Eye size={28} /><h3>Private Catalog Intelligence</h3><p>Supervisor Favorites is outperforming other entry paths, and luxury/lifestyle campaigns are trending across buyer projects.</p></article>
+      <article><UsersThree size={28} /><h3>VIP activity</h3><p>VIP buyers are saving cinematic instrumental tracks 42% more this week and submitting higher-value quote requests.</p></article>
+      <article><FileAudio size={28} /><h3>Stems signal</h3><p>Tracks with stems available are receiving higher quote requests and faster buyer progression.</p></article>
+      <article><LockKey size={28} /><h3>Revenue blocked by rights</h3><p>3 high-interest tracks are blocked by missing rights documentation, contract review, or Preston approval.</p></article>
     </div>
   );
 }
@@ -1241,22 +1507,73 @@ function SettingsAdmin({ showToast }) {
 }
 
 function TrackAdmin({ showToast, togglePlay }) {
+  const filters = ["All", "Rights Review Needed", "Verified", "Stems Ready", "WAV Pending", "Preston Pending", "Licensing Eligible"];
+  const reviewQueue = tracks.filter((track) => !track.rightsData.rightsVerified || !track.rightsData.licensingEligible || track.rightsData.prestonApproval !== "Approved");
   return (
     <div className="track-ops">
-      <div className="admin-table">
-        <div className="table-toolbar"><input placeholder="Search tracks, artists, ISRC..." /><button onClick={() => showToast("Track upload workflow opened.")}><CloudArrowUp size={18} /> Add Track</button></div>
-        <table>
-          <thead><tr><th>Track</th><th>Artist</th><th>Status</th><th>Preview</th><th>Master</th><th>Rights</th></tr></thead>
-          <tbody>{tracks.slice(0, 5).map((track) => <tr key={track.id}><td>{track.title}<small>ISRC US-BMO-25-000{track.id}</small></td><td>{track.artist}</td><td><span className="badge">{track.status}</span></td><td><button className="mini-play" aria-label={`Preview ${track.title}`} onClick={() => togglePlay(track.id)}><Play size={14} weight="fill" /></button> Ready</td><td><LockKey size={16} /> Protected</td><td>{track.id === 4 ? "Missing" : "Reviewed"}</td></tr>)}</tbody>
-        </table>
+      <div className="track-admin-toolbar">
+        <input placeholder="Search tracks, artists, ISRC..." />
+        <button onClick={() => showToast("Track upload workflow opened.")}><CloudArrowUp size={18} /> Add Track</button>
       </div>
-      <div className="file-separation"><div><FileAudio size={24} /><strong>Preview audio upload</strong><p>Public preview stream, compressed and watermarked for approved buyers.</p></div><div><LockKey size={24} /><strong>Protected master audio upload</strong><p>Private WAV master, encrypted, not publicly downloadable, delivered only after approval.</p></div></div>
+      <div className="track-filter-row">{filters.map((filter) => <button key={filter} onClick={() => showToast(`Filtered tracks by ${filter}.`)}>{filter}</button>)}</div>
+      <div className="track-ops-grid">
+        <div className="track-operation-list">
+          {tracks.slice(0, 5).map((track) => (
+            <article className={`track-operation-row ${track.rightsData.licensingEligible ? "eligible" : "blocked"}`} key={track.id}>
+              <div className="track-op-main">
+                <button className="mini-play" aria-label={`Preview ${track.title}`} onClick={() => togglePlay(track.id)}><Play size={14} weight="fill" /></button>
+                <div>
+                  <strong>{track.title}</strong>
+                  <span>{track.artist} · ISRC US-BMO-25-000{track.id}</span>
+                </div>
+              </div>
+              <div className="track-op-badges">
+                <span className={track.rightsData.rightsVerified ? "state-good" : "state-risk"}>{track.rightsData.ownershipProof}</span>
+                <span>{track.rightsData.proAffiliation} · {track.rightsData.registrationId}</span>
+                <span className={track.rightsData.prestonApproval === "Approved" ? "state-good" : "state-risk"}>Preston {track.rightsData.prestonApproval}</span>
+                <span className={track.rightsData.licensingEligible ? "state-good" : "state-risk"}>{track.rightsData.licensingEligible ? "Licensing Eligible" : "Not Eligible"}</span>
+              </div>
+              <div className="asset-chip-row">
+                <span className={track.assets.preview ? "state-good" : "state-risk"}>Preview</span>
+                <span className={track.assets.wavMaster ? "state-good" : "state-risk"}>WAV</span>
+                <span className={track.assets.stems ? "state-good" : "state-warn"}>Stems</span>
+                <span className={track.assets.instrumental ? "state-good" : "state-warn"}>Instrumental</span>
+              </div>
+              <div className="owner-stack">
+                <span>Master: {track.rightsData.masterOwner}</span>
+                <span>Publishing: {track.rightsData.publishingOwner}</span>
+              </div>
+              <div className="track-op-actions">
+                <button onClick={() => showToast(`Rights review opened for ${track.title}.`)}>Review</button>
+                <button onClick={() => showToast(`Asset manager opened for ${track.title}.`)}>Assets</button>
+                <button onClick={() => togglePlay(track.id)}>Preview</button>
+              </div>
+            </article>
+          ))}
+        </div>
+        <aside className="rights-review-queue">
+          <span className="eyebrow">Rights review queue</span>
+          <h3>Blocked tracks need action</h3>
+          {reviewQueue.map((track) => (
+            <article key={track.id}>
+              <strong>{track.title}</strong>
+              <span>{track.rightsData.contractStatus} · Preston {track.rightsData.prestonApproval}</span>
+              <button onClick={() => showToast(`Priority review opened for ${track.title}.`)}>Open review</button>
+            </article>
+          ))}
+        </aside>
+      </div>
+      <div className="file-separation upload-control-grid">
+        <button onClick={() => showToast("Preview audio upload opened.")}><FileAudio size={24} /><strong>Preview Audio</strong><p>Upload compressed, watermarked preview streams for approved buyers.</p></button>
+        <button onClick={() => showToast("Protected WAV master upload opened.")}><LockKey size={24} /><strong>WAV Master</strong><p>Upload encrypted protected master audio for approved delivery only.</p></button>
+        <button onClick={() => showToast("Stems and alternate mixes workflow opened.")}><CloudArrowUp size={24} /><strong>Stems / Alternate Mixes</strong><p>Manage stems, instrumentals, loop edits, cue versions, and delivery readiness.</p></button>
+      </div>
     </div>
   );
 }
 
 function ArtistAdmin({ showToast }) {
-  return <div className="cards-admin">{artists.map((artist) => <article key={artist.name}><div className="portrait small" style={{ backgroundImage: `url(${artist.image})` }} /><h3>{artist.name}</h3><p>{artist.credit}</p><span>{artist.tracks} related tracks</span><button onClick={() => showToast(`Managing artist profile for ${artist.name}.`)}>Manage artist</button></article>)}</div>;
+  return <div className="cards-admin">{artists.map((artist, index) => <article key={artist.name}><div className="portrait small" style={{ backgroundImage: `url(${artist.image})` }} /><h3>{artist.name}</h3><p>{artist.credit}</p><span>{["Metadata Review", "Rights Documentation Review", "Preston Approval"][index]} · {artist.tracks} submitted tracks</span><button onClick={() => showToast(`Controlled contributor review opened for ${artist.name}.`)}>Review submission</button></article>)}</div>;
 }
 
 function InquiryAdmin() {
@@ -1264,15 +1581,15 @@ function InquiryAdmin() {
 }
 
 function BuyerAdmin({ showToast }) {
-  return <div className="cards-admin">{["Aster Studio", "Northline Pictures", "Cobalt Agency"].map((name) => <article key={name}><UsersThree size={28} /><h3>{name}</h3><p>Role-based access, saved projects, invoice contacts, and request history.</p><button onClick={() => showToast(`Opened buyer account for ${name}.`)}>Open account</button></article>)}</div>;
+  return <div className="cards-admin">{[["Aster Studio", "VIP Sync Access", "Active", "Concierge assigned"], ["Northline Pictures", "Professional Buyer", "Verified", "Standard support"], ["Cobalt Agency", "Discovery Access", "Entry approval", "Upgrade candidate"]].map(([name, tier, status, note]) => <article key={name}><UsersThree size={28} /><h3>{name}</h3><p>Role-based access, saved projects, invoice contacts, request history, and private buyer intelligence.</p><span>{tier} · {status} · {note}</span><button onClick={() => showToast(`Opened buyer account for ${name}.`)}>Open account</button></article>)}</div>;
 }
 
 function SecureDeliveryAdmin({ showToast }) {
-  return <div className="cards-admin"><article><LockKey size={28} /><h3>Delivery queue</h3><p>5 approved licenses waiting on payment confirmation before WAV delivery.</p><button onClick={() => showToast("Delivery queue opened.")}>Review queue</button></article><article><DownloadSimple size={28} /><h3>Download history</h3><p>Every master download is timestamped and tied to buyer role, project, and license.</p><button onClick={() => showToast("Download history opened.")}>View logs</button></article></div>;
+  return <div className="cards-admin"><article><LockKey size={28} /><h3>Delivery queue</h3><p>5 approved licenses waiting on payment confirmation or VIP terms before WAV/stems delivery.</p><span>Buyer tier · payment status · rights cleared · expiry date</span><button onClick={() => showToast("Delivery queue opened.")}>Review queue</button></article><article><DownloadSimple size={28} /><h3>Download controls</h3><p>Expiring links, remaining download counts, terms accepted state, revoke access, and reissue secure link actions.</p><button onClick={() => showToast("Secure link reissue controls opened.")}>Manage links</button></article><article><ShieldCheck size={28} /><h3>Download history</h3><p>Every master and stems download is timestamped and tied to buyer role, project, license, and IP context.</p><button onClick={() => showToast("Download history opened.")}>View logs</button></article></div>;
 }
 
 function MediaAdmin({ showToast }) {
-  return <div className="cards-admin"><article><Article size={28} /><h3>Blog editor</h3><p>Featured story, categories, tags, draft status, and publish controls.</p><button onClick={() => showToast("Blog editor opened.")}>Edit news</button></article><article><FilmSlate size={28} /><h3>Podcast media</h3><p>Episode detail, embedded audio/video, show notes, and guest references.</p><button onClick={() => showToast("Podcast media manager opened.")}>Manage episodes</button></article></div>;
+  return <div className="cards-admin"><article><Article size={28} /><h3>Stories editor</h3><p>Featured story, categories, tags, draft status, rights-sensitive language, and publish controls.</p><button onClick={() => showToast("Stories editor opened.")}>Edit stories</button></article><article><FilmSlate size={28} /><h3>Media episodes</h3><p>Short sync clips, artist stories, studio sessions, catalog highlights, VIP picks, legacy clips, and guest references.</p><button onClick={() => showToast("Media episodes manager opened.")}>Manage episodes</button></article></div>;
 }
 
 function AuditAdmin() {
@@ -1280,35 +1597,53 @@ function AuditAdmin() {
 }
 
 function ContentPages({ setView, showToast }) {
-  const posts = ["Music Licensing Education", "Artist Stories", "Behind the Catalog", "Gary Burke Legacy", "Sync Licensing Insights", "Beatmondo Updates", "Industry Conversations"];
-  const episodes = ["Artist interviews", "Licensing conversations", "Catalog stories", "Behind-the-scenes", "Music supervisor insights"];
-  const thumbs = [
-    [img.portrait, "Artist Interview · Vocal texture"],
-    [img.vinyl, "Live Culture · Event energy"],
-    [img.edit, "Editing Notes · Trailer rhythm"],
+  const hubCards = [
+    ["Short Sync Clips", "30 sec", "Fast editorial cuts for high-intent discovery, social context, and sync-ready catalog moments.", img.edit, "media"],
+    ["Story Library", "Features", "Rights-aware essays, artist context, Gary Burke legacy notes, and buyer-facing catalog stories.", img.console, "stories"],
+    ["Media Episodes", "Episodes", "Artist stories, studio sessions, licensing conversations, catalog highlights, VIP picks, and legacy clips.", img.portrait, "media"],
+    ["VIP Picks", "Private", "Curated premium selections and catalog intelligence for vetted buyers and strategic sync opportunities.", img.vinyl, "media"],
+    ["Gary Burke Legacy", "Archive", "Original brand spirit, archive memories, collaborator notes, and legacy-aware editorial context.", img.archive, "legacy"],
+    ["Catalog Highlights", "15 sec", "Quick, visual entry points into tracks with strong sync potential, stems, and rights context.", img.film, "media"],
+  ];
+  const pathways = [
+    ["Stories", "Browse the editorial library", "stories"],
+    ["Media Episodes", "Open the media library", "media"],
+    ["Gary Burke Legacy", "Visit the archive", "legacy"],
   ];
   return (
-    <section className="content-page">
-      <div className="content-grid">
-        <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${img.console})` }}>
-          <span className="feature-story-kicker">Essay · 6 min read · Rights-aware catalog stories</span>
-          <span className="eyebrow">Featured story</span>
-          <h2>The musicians behind unforgettable sounds</h2>
-          <p>Editorial storytelling gives buyers a richer understanding of provenance, collaborators, recording context, and why the work matters.</p>
-          <button className="gold-button" onClick={() => setView("stories")}><Article size={18} /> Read Story</button>
-        </article>
-        <Panel title="Story categories" action="Editorial"><div className="state-grid">{posts.map((title) => <button key={title} className="chip-button" onClick={() => { showToast(`Filtered stories by ${title}.`); setView("stories"); }}>{title}</button>)}</div></Panel>
-        <Panel title="Media episodes" action="Episodes"><div className="state-grid">{episodes.map((title) => <button key={title} className="chip-button" onClick={() => { showToast(`Opened episodes tagged ${title}.`); setView("media"); }}>{title}</button>)}</div></Panel>
-        <Panel title="Latest covers" action="Thumbnails">
-          <div className="mini-thumb-row">
-            {thumbs.map(([image, caption]) => (
-              <span key={caption} style={{ backgroundImage: `url(${image})` }}>
-                <span className="thumb-caption">{caption}</span>
-              </span>
-            ))}
+    <section className="content-page editorial-hub-page">
+      <div className="editorial-hub-grid">
+        <article className="editorial-hub-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,9,8,.90), rgba(13,9,8,.42)), url(${img.film})` }}>
+          <span className="feature-story-kicker">Hub · Stories · Clips · Catalog intelligence</span>
+          <span className="eyebrow">Editorial Hub</span>
+          <h2>Stories, clips, and catalog context for serious sync buyers.</h2>
+          <p>Editorial context, short-form sync clips, artist stories, legacy notes, and media conversations designed to help vetted buyers understand the music behind the catalog.</p>
+          <div className="button-row">
+            <button className="gold-button" onClick={() => setView("stories")}><Article size={18} /> Browse Stories</button>
+            <button className="outline-button" onClick={() => setView("media")}><FilmSlate size={18} /> Watch Media Episodes</button>
           </div>
-        </Panel>
-        <p className="content-archive-note">Editorial archive · Licensing explainers, artist provenance, catalog updates, podcast conversations, and behind-the-scenes notes for supervisors and buyers.</p>
+        </article>
+        <aside className="hub-pathways">
+          {pathways.map(([title, text, target]) => (
+            <button key={title} onClick={() => setView(target)}>
+              <strong>{title}</strong>
+              <span>{text}</span>
+            </button>
+          ))}
+        </aside>
+        <div className="hub-card-grid">
+          {hubCards.map(([title, duration, text, image, target]) => (
+            <button key={title} className="hub-card" onClick={() => target === "legacy" ? setView("legacy") : setView(target)}>
+              <span className="hub-card-image" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.05), rgba(0,0,0,.5)), url(${image})` }} />
+              <span className="hub-card-body">
+                <small>{duration}</small>
+                <strong>{title}</strong>
+                <span>{text}</span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <p className="content-archive-note">Short clips are designed for fast discovery and social engagement; longer pieces are reserved for standout artist, catalog, licensing, VIP, and legacy stories.</p>
       </div>
     </section>
   );
@@ -1317,10 +1652,10 @@ function ContentPages({ setView, showToast }) {
 function StoriesPage({ setView, showToast }) {
   const [selectedStory, setSelectedStory] = useState("The musicians behind unforgettable sounds");
   const stories = [
-    ["The musicians behind unforgettable sounds", "Featured Essay", "Provenance, collaborators, recording context, and why the work matters to buyers.", img.console],
-    ["How rights-aware discovery protects the creative process", "Licensing Education", "A plain-language guide to usage, territory, term, exclusivity, and quote readiness.", img.edit],
-    ["Gary Burke and the catalog as a living archive", "Legacy", "A respectful look at the original Beatmondo spirit, studio memories, and musician-led stewardship.", img.archive],
-    ["What supervisors save before they request a quote", "Sync Insights", "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.", img.film],
+    ["The musicians behind unforgettable sounds", "2 min feature", "Provenance, collaborators, recording context, and why the work matters to buyers.", img.console],
+    ["How rights-aware discovery protects the creative process", "45 sec", "A concise guide to usage, territory, term, exclusivity, and quote readiness.", img.edit],
+    ["Gary Burke and the catalog as a living archive", "2 min feature", "A respectful look at the original beatmondo spirit, studio memories, lowercase identity, and musician-led stewardship.", img.archive],
+    ["What supervisors save before they request a quote", "30 sec", "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.", img.film],
   ];
   const active = stories.find(([title]) => title === selectedStory) || stories[0];
 
@@ -1365,11 +1700,12 @@ function StoriesPage({ setView, showToast }) {
 function MediaEpisodesPage({ setView, showToast }) {
   const [selectedEpisode, setSelectedEpisode] = useState("Artist interviews");
   const episodes = [
-    ["Artist interviews", "Vocal texture, writing rooms, and the human story behind licensable tracks.", "32 min", img.portrait],
-    ["Licensing conversations", "Supervisors, producers, and catalog partners discuss quote context and rights confidence.", "41 min", img.agency],
-    ["Catalog stories", "Archive finds, session notes, and the craft behind songs that still feel alive.", "28 min", img.vinyl],
-    ["Behind-the-scenes", "Studio process, editorial curation, and protected delivery workflows.", "24 min", img.console],
-    ["Music supervisor insights", "How buyers evaluate fit, edit points, vocal use, and campaign timing.", "36 min", img.film],
+    ["Short Sync Clips", "Fast 15-45 second clips for premium discovery, social engagement, and high-intent music moments.", "30 sec", img.portrait],
+    ["Artist Stories", "Vocal texture, writing rooms, and the human story behind licensable tracks.", "2 min feature", img.portrait],
+    ["Studio Sessions", "Recording context, stems, session notes, and the craft behind songs that still feel alive.", "45 sec", img.console],
+    ["Licensing Conversations", "Supervisors, producers, and catalog partners discuss quote context and rights confidence.", "2 min feature", img.agency],
+    ["Catalog Highlights", "Private selections, VIP picks, and high-value tracks with strong sync potential.", "15 sec", img.vinyl],
+    ["Legacy Clips", "Short archive-led moments honoring Gary Burke and the original beatmondo spirit.", "45 sec", img.archive],
   ];
   const active = episodes.find(([title]) => title === selectedEpisode) || episodes[0];
 
@@ -1377,7 +1713,7 @@ function MediaEpisodesPage({ setView, showToast }) {
     <section className="content-page media-page">
       <div className="content-grid">
         <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${active[3]})` }}>
-          <span className="feature-story-kicker">Episode · {active[2]} · Beatmondo Media</span>
+          <span className="feature-story-kicker">Episode · {active[2]} · beatmondo Media</span>
           <span className="eyebrow">Media Episodes</span>
           <h2>{active[0]}</h2>
           <p>{active[1]}</p>
@@ -1406,7 +1742,7 @@ function MediaEpisodesPage({ setView, showToast }) {
         </Panel>
         <Panel title="For guests and partners" action="Contact">
           <p>Use the contact page for media inquiries, guest suggestions, partnership conversations, and archive contributions.</p>
-          <button className="outline-button" onClick={() => setView("contact")}><UsersThree size={18} /> Contact Beatmondo</button>
+          <button className="outline-button" onClick={() => setView("contact")}><UsersThree size={18} /> Contact beatmondo</button>
         </Panel>
       </div>
     </section>
@@ -1416,14 +1752,25 @@ function MediaEpisodesPage({ setView, showToast }) {
 function ContactPage({ setView }) {
   const [sent, setSent] = useState(false);
   const [topic, setTopic] = useState("Licensing");
-  const topics = ["Licensing", "Buyer Access", "Artist / Contributor", "Strategic Partner", "Media", "Archive / Legacy"];
+  const topics = [
+    { name: "Licensing", route: "Licensing team", next: "Use the licensing form when a track, usage, budget, and timing are already known.", note: "Best for quote questions, usage clarification, and project timing.", action: "Open Licensing / Access" },
+    { name: "Buyer Access", route: "Access review", next: "Buyer role, company, and intended use are reviewed before workspace permissions are enabled.", note: "Best for music supervisors, producers, agencies, and brand teams." },
+    { name: "VIP Sync Access", route: "VIP concierge", next: "VIP requests are reviewed for buyer fit, project value, and premium access eligibility.", note: "Best for studios, luxury brands, high-value agencies, and strategic sync buyers." },
+    { name: "Artist / Contributor", route: "Contributor review", next: "Submissions require metadata, ownership proof, PRO details, and approval before licensing representation.", note: "Artists cannot publish directly into the live catalog." },
+    { name: "Rights / Catalog", route: "Rights review", next: "Catalog submissions are reviewed privately for ownership, contracts, registry data, and eligibility.", note: "Rights and catalog materials stay private during review." },
+    { name: "Strategic Partner", route: "Partnerships", next: "Partnership notes are routed for catalog value, market fit, and long-term opportunity review.", note: "Best for catalog owners, investors, and global commercial partners." },
+    { name: "Media", route: "Editorial team", next: "Media notes, guest ideas, and story opportunities are routed to the editorial workflow.", note: "Best for interviews, episodes, short clips, and catalog stories." },
+    { name: "Archive / Legacy", route: "Archive team", next: "Legacy notes are reviewed with sensitivity to Gary Burke history and archive provenance.", note: "Best for memories, materials, credits, and historical context." },
+  ];
+  const activeTopic = topics.find((item) => item.name === topic) || topics[0];
+  const featureRoutes = topics.filter((item) => ["VIP Sync Access", "Rights / Catalog", "Strategic Partner", "Archive / Legacy"].includes(item.name));
 
   if (sent) {
     return (
       <section className="confirmation">
         <CheckCircle size={52} weight="fill" />
         <h2>Message received.</h2>
-        <p>The Beatmondo team will route your {topic.toLowerCase()} note to the right person and follow up with next steps.</p>
+        <p>The beatmondo team will route your {topic.toLowerCase()} note to the right person and follow up with next steps.</p>
         <div className="status-strip"><span>Received</span><span>Team review</span><span>Follow-up</span></div>
         <div className="button-row"><button className="gold-button" onClick={() => setSent(false)}>Send another message</button><button className="outline-button" onClick={() => setView("licensing")}>Request Access</button></div>
       </section>
@@ -1432,38 +1779,73 @@ function ContactPage({ setView }) {
 
   return (
     <section className="form-page wide-page contact-page">
-      <div className="form-intro">
-        <span className="eyebrow">Contact Beatmondo</span>
-        <h2>The right conversation, routed clearly.</h2>
-        <p>Reach the team for licensing questions, buyer access, artist or contributor interest, strategic partnerships, media conversations, and Gary Burke legacy/archive notes.</p>
-        <div className="role-grid">{topics.map((item) => <button type="button" key={item} className={topic === item ? "active" : ""} onClick={() => setTopic(item)}>{item}</button>)}</div>
-      </div>
-      <form className="inquiry-form access-form" onSubmit={(event) => { event.preventDefault(); setSent(true); }}>
-        <label>Name<input required placeholder="Jane Mitchell" /></label>
-        <label>Email<input required placeholder="name@company.com" /></label>
-        <label>Company<input placeholder="Company, studio, or organization" /></label>
-        <label>Topic<input value={topic} readOnly /></label>
-        <label className="full-field">Message<textarea required placeholder="Tell us what you need, what you are working on, and any timing or rights context." /></label>
-        <div className="button-row">
-          <button className="gold-button form-submit" type="submit"><UsersThree size={18} /> Send Message</button>
-          <button className="outline-button" type="button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> Licensing Form</button>
+      <div className="contact-header">
+        <div className="form-intro">
+          <span className="eyebrow">Contact beatmondo</span>
+          <h2>The right conversation, routed clearly.</h2>
+          <p>Reach the team for licensing questions, buyer access, VIP review, artist or contributor interest, strategic partnerships, media conversations, and Gary Burke legacy/archive notes.</p>
         </div>
-      </form>
+        <aside className="contact-routing-summary">
+          <span className="eyebrow">Routing summary</span>
+          <h3>{activeTopic.route}</h3>
+          <p>{activeTopic.next}</p>
+          <div className="workflow-steps">
+            {["Received", "Routed to team", "Private review", "Follow-up"].map((step, index) => <span key={step}><em>{index + 1}</em>{step}</span>)}
+          </div>
+        </aside>
+      </div>
+      <div className="contact-topic-grid">
+        {topics.map((item) => (
+          <button type="button" key={item.name} className={topic === item.name ? "active" : ""} onClick={() => setTopic(item.name)}>
+            <strong>{item.name}</strong>
+            <span>{item.route}</span>
+          </button>
+        ))}
+      </div>
+      <div className="contact-workspace">
+        <form className="inquiry-form access-form contact-form" onSubmit={(event) => { event.preventDefault(); setSent(true); }}>
+          <p className="vip-form-note">{activeTopic.note}</p>
+          <label>Name<input required placeholder="Jane Mitchell" /></label>
+          <label>Email<input required placeholder="name@company.com" /></label>
+          <label>Company<input placeholder="Company, studio, or organization" /></label>
+          <label>Topic<input value={topic} readOnly /></label>
+          <label className="full-field">Message<textarea required placeholder="Tell us what you need, what you are working on, and any timing or rights context." /></label>
+          <div className="button-row">
+            <button className="gold-button form-submit" type="submit"><UsersThree size={18} /> Send Message</button>
+            <button className="outline-button" type="button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> Open Licensing / Access</button>
+          </div>
+        </form>
+        <aside className="contact-private-note">
+          <LockKey size={28} />
+          <strong>Private routing</strong>
+          <p>Rights, catalog, contributor, VIP, and archive notes are reviewed privately before any representation, publication, or licensing discussion.</p>
+          <span>Response path depends on topic, verification needs, and project urgency.</span>
+        </aside>
+      </div>
+      <div className="contact-route-cards">
+        {featureRoutes.map((item) => (
+          <button key={item.name} onClick={() => setTopic(item.name)}>
+            <strong>{item.name}</strong>
+            <span>{item.note}</span>
+          </button>
+        ))}
+      </div>
     </section>
   );
 }
 
 function DesignSystem() {
-  const palette = ["#18130f", "#2a231b", "#f4efe6", "#cdbfaa", "#a6533c", "#5f7167"];
+  const palette = ["#18130f", "#2a231b", "#f4efe6", "#cdbfaa", "#a6342a", "#5f7167"];
   return (
     <section className="system-page">
-      <div className="system-brand"><img src={logo} alt="Beatmondo logo usage" /><p>Use black and gold as accents within a broader editorial system: charcoal, ivory, taupe, champagne, warm grey, and muted category colors.</p></div>
+      <div className="system-brand"><img src={logo} alt="beatmondo logo usage" /><p>Use lowercase beatmondo, Gary Burke red as a strategic brand accent, muted brass as secondary emphasis, and a darker gated/private sync licensing visual system.</p></div>
       <div className="swatches">{palette.map((color) => <span key={color} style={{ "--swatch": color }}>{color}</span>)}</div>
       <div className="section-grid">
         <Panel title="Buttons & forms" action="Controls"><div className="button-row"><button className="gold-button">Primary</button><button className="outline-button">Secondary</button><button className="plain-button">Text action</button></div><input placeholder="Form input" /></Panel>
         <Panel title="Audio player" action="Components"><div className="large-player small-player"><div className="waveform big" /><span>Preview-only playback state</span></div></Panel>
-        <Panel title="Status badges" action="Licensing"><div className="tag-row"><span>Under Review</span><span>Quote Sent</span><span>Approved</span><span>Delivered</span></div></Panel>
-        <Panel title="Empty / loading / error" action="States"><p>Empty projects, missing rights notes, expired downloads, locked masters, and quote states are represented with calm product language.</p></Panel>
+        <Panel title="Access badges" action="Gated"><div className="tag-row"><span>Discovery Access</span><span>Professional Buyer</span><span>VIP Sync Access</span><span>VIP Only</span></div></Panel>
+        <Panel title="Rights and delivery badges" action="Licensing"><div className="tag-row"><span>Rights Verified</span><span>Preston Approved</span><span>WAV Master</span><span>Stems</span><span>Fast-Track Delivery</span></div></Panel>
+        <Panel title="Locked components" action="Private"><p>Locked/VIP-only states, missing rights notes, expired secure links, protected masters, and quote states are represented with restrained, legally serious product language.</p></Panel>
       </div>
     </section>
   );
@@ -1490,6 +1872,39 @@ function CollectionCard({ title, text, count, tags, image, onView }) {
   return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>View collection</button></article>;
 }
 
+function AccessTierCard({ tier, onSelect }) {
+  return (
+    <article className={`tier-card ${tier.id === "vip" ? "vip-tier" : ""}`}>
+      <span className="tier-badge">{tier.name}</span>
+      <h3>{tier.name}</h3>
+      <p>{tier.description}</p>
+      <strong>{tier.priceLabel}</strong>
+      <ul>{tier.features.map((feature) => <li key={feature}><CheckCircle size={15} weight="fill" /> {feature}</li>)}</ul>
+      <button className={tier.id === "vip" ? "gold-button" : "outline-button"} onClick={onSelect}>{tier.id === "vip" ? "Apply for VIP Access" : "Request Access"}</button>
+    </article>
+  );
+}
+
+function AssetBadges({ track, compact = false }) {
+  const assets = [
+    ["Preview", track.assets.preview, "Public-limited"],
+    ["WAV Master", track.assets.wavMaster, "After approval"],
+    ["Stems", track.assets.stems, "After approval"],
+    ["Instrumental", track.assets.instrumental, "Available"],
+    ["Vocal", track.assets.vocal, "Available"],
+    ["30-sec edit", track.assets.thirtySecondEdit, "VIP"],
+    ["Loopable", track.assets.loopEdit, "Edit-ready"],
+    ["Alt mix", track.assets.alternateMixes, "On request"],
+  ];
+  return (
+    <div className={`asset-badges ${compact ? "compact-assets" : ""}`}>
+      {assets.map(([label, ready, note]) => (
+        <span key={label} className={ready ? "ready" : "locked"}><LockKey size={compact ? 12 : 14} /> {label}{!compact && <small>{ready ? note : "Rights check"}</small>}</span>
+      ))}
+    </div>
+  );
+}
+
 function Select({ label, value, options, onChange }) {
   return <label className="select-label"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}>{options.map((option) => <option key={option}>{option}</option>)}</select><CaretDown size={14} /></label>;
 }
@@ -1511,7 +1926,7 @@ function MiniStory({ title, text, image, action }) {
 }
 
 function RequestRow({ item, detailed }) {
-  return <article className="request-row"><div><strong>{item.company}</strong><span>{item.track} · {item.type}</span>{detailed && <small>{item.id} · {item.budget} · Deadline {item.deadline}</small>}</div><span className="badge">{item.status}</span></article>;
+  return <article className="request-row"><div><strong>{item.company}</strong><span>{item.track} · {item.type}</span>{detailed && <small>{item.id} · {item.budget} · Deadline {item.deadline} · {item.buyerTier} · {item.priority} · {item.rightsCheck}</small>}</div><span className="badge">{item.status}</span></article>;
 }
 
 function EmptyState({ title, text, actionLabel, onAction }) {
@@ -1528,7 +1943,7 @@ function EmptyState({ title, text, actionLabel, onAction }) {
 function Footer({ setView }) {
   const linkGroups = [
     ["Explore", ["Explore Music", "Licensing", "Artists", "Gary Burke Legacy"]],
-    ["Media", ["Stories", "Media Episodes", "Contact"]],
+    ["Media", ["Editorial Hub", "Stories", "Media Episodes", "Contact"]],
     ["Access", ["Request Access", "Licensing Access", "Partner Inquiry"]],
   ];
   const navigate = (item) => {
@@ -1536,6 +1951,7 @@ function Footer({ setView }) {
     else if (item === "Gary Burke Legacy") setView("legacy");
     else if (item === "Request Access" || item === "Licensing" || item === "Licensing Access" || item === "Partner Inquiry") setView("licensing");
     else if (item === "Artists") setView("artist");
+    else if (item === "Editorial Hub") setView("content");
     else if (item === "Stories") setView("stories");
     else if (item === "Media Episodes") setView("media");
     else if (item === "Contact") setView("contact");
@@ -1546,7 +1962,7 @@ function Footer({ setView }) {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-brand">
-          <img src={logo} alt="Beatmondo" />
+          <img src={logo} alt="beatmondo" />
           <p>Authentic tracks from real musicians. Built for licensing conversations.</p>
           <span>Preview publicly. Deliver securely.</span>
         </div>

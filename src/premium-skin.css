@@ -8,12 +8,13 @@
   --taupe: #cdbfaa;
   --muted: #aaa092;
   --soft: #746e64;
-  --gold: #b99359;
-  --gold-2: #d6b981;
+  --gold: #a98552;
+  --gold-2: #d2b77a;
+  --beatmondo-red: #a6342a;
   --green: #5f7167;
   --sage: #6f7d75;
-  --clay: #a6533c;
-  --line: rgba(166, 83, 60, 0.28);
+  --clay: #a6342a;
+  --line: rgba(166, 52, 42, 0.3);
   --line-soft: rgba(17, 16, 13, 0.12);
 }
 
@@ -174,7 +175,7 @@ body {
 
 .gold-button,
 .mini-player > button:first-child {
-  background: linear-gradient(180deg, #b96549, #a6533c 58%, #7e3929);
+  background: linear-gradient(180deg, #b74a3f, #a6342a 58%, #75241d);
   border-color: rgba(214, 185, 129, 0.28);
   color: #fff8ee;
   box-shadow: 0 10px 26px rgba(166, 83, 60, 0.22);
@@ -1069,9 +1070,9 @@ select:focus {
 }
 
 .hero-logo-fallback {
-  opacity: 0 !important;
+  opacity: 0.88 !important;
   width: min(72%, 620px) !important;
-  filter: drop-shadow(0 18px 30px rgba(20, 16, 12, 0.28)) !important;
+  filter: drop-shadow(0 18px 30px rgba(20, 16, 12, 0.28)) drop-shadow(0 0 34px rgba(166, 52, 42, 0.16)) !important;
 }
 
 .media-control {
@@ -1604,6 +1605,37 @@ select:focus {
   color: #fbf6ee !important;
 }
 
+.app:not(.home-app) .admin-overview-summary {
+  margin-bottom: 14px !important;
+}
+
+.app:not(.home-app) .admin-overview-summary > div {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.105), rgba(244, 239, 230, 0.04)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.24) !important;
+}
+
+.app:not(.home-app) .admin-overview-summary > div:first-child {
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 83, 60, 0.18), transparent 14rem),
+    linear-gradient(135deg, rgba(196, 164, 90, 0.14), rgba(95, 113, 103, 0.08)),
+    #40352a !important;
+  border-color: rgba(196, 164, 90, 0.28) !important;
+}
+
+.app:not(.home-app) .admin-overview-summary span {
+  color: #d1c7b8 !important;
+}
+
+.app:not(.home-app) .admin-overview-summary strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .admin-overview-summary > div:not(:first-child) strong {
+  color: #d6b981 !important;
+}
+
 .app:not(.home-app) .pipeline-panel {
   padding: 18px !important;
   margin-bottom: 18px !important;
@@ -1627,10 +1659,19 @@ select:focus {
   border-color: rgba(95, 113, 103, 0.22) !important;
 }
 
-.app:not(.home-app) .pipeline button:nth-child(3),
-.app:not(.home-app) .pipeline button:nth-child(4) {
+.app:not(.home-app) .pipeline button.pipeline-attention {
   background: rgba(166, 83, 60, 0.16) !important;
   border-color: rgba(166, 83, 60, 0.34) !important;
+}
+
+.app:not(.home-app) .pipeline button.pipeline-priority {
+  background: rgba(196, 164, 90, 0.12) !important;
+  border-color: rgba(196, 164, 90, 0.32) !important;
+}
+
+.app:not(.home-app) .pipeline button.pipeline-ready {
+  background: rgba(95, 113, 103, 0.16) !important;
+  border-color: rgba(95, 113, 103, 0.36) !important;
 }
 
 .app:not(.home-app) .pipeline span {
@@ -1646,6 +1687,22 @@ select:focus {
   gap: 18px !important;
 }
 
+.app:not(.home-app) .admin-grid.tracks-admin-grid {
+  grid-template-columns: 1fr !important;
+}
+
+.app:not(.home-app) .admin-grid.tracks-admin-grid > .panel {
+  min-width: 0 !important;
+}
+
+.app:not(.home-app) .admin-grid.tracks-admin-grid > .panel:last-child {
+  min-height: 0 !important;
+}
+
+.app:not(.home-app) .admin-grid.tracks-admin-grid .track-ops-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px) !important;
+}
+
 .app:not(.home-app) .admin-page .panel {
   background:
     linear-gradient(180deg, rgba(244, 239, 230, 0.11), rgba(244, 239, 230, 0.045)),
@@ -1656,6 +1713,37 @@ select:focus {
 .app:not(.home-app) .admin-page .panel h3,
 .app:not(.home-app) .pipeline-panel h3 {
   color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .overview-action-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  align-items: stretch !important;
+}
+
+.app:not(.home-app) .overview-action-grid article {
+  min-height: 210px !important;
+  padding: 18px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.075), rgba(244, 239, 230, 0.03)),
+    #493c2f !important;
+}
+
+.app:not(.home-app) .overview-action-grid h3 {
+  color: #fbf6ee !important;
+  font-size: 18px !important;
+}
+
+.app:not(.home-app) .overview-action-grid p {
+  color: #d8cfc2 !important;
+  line-height: 1.45 !important;
+}
+
+.app:not(.home-app) .overview-card-head svg {
+  color: #d7e0d8 !important;
+}
+
+.app:not(.home-app) .overview-card-head strong {
+  color: #d6b981 !important;
 }
 
 .app:not(.home-app) .table-toolbar {
@@ -1742,8 +1830,20 @@ select:focus {
   color: #fbf6ee !important;
 }
 
+.app:not(.home-app) .activity-list-actionable p {
+  align-items: start !important;
+}
+
 .app:not(.home-app) .activity-list span {
   color: #d8cfc2 !important;
+}
+
+.app:not(.home-app) .activity-list .activity-copy {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .activity-list .activity-copy small {
+  color: #d6b981 !important;
 }
 
 .app:not(.home-app) .admin-page .admin-grid > .panel:last-child {
@@ -1761,7 +1861,7 @@ select:focus {
   }
 }
 
-/* Blog / Podcast editorial hub pass. */
+/* Stories & Media editorial hub pass. */
 .app:not(.home-app) .content-page {
   max-width: 1500px;
   margin: 0 auto;
@@ -1851,8 +1951,73 @@ select:focus {
   border-radius: 8px !important;
 }
 
+.app:not(.home-app) .editorial-hub-page {
+  max-width: 1500px;
+}
+
+.app:not(.home-app) .editorial-hub-grid {
+  grid-template-columns: minmax(0, 1fr) 360px !important;
+  gap: 18px !important;
+}
+
+.app:not(.home-app) .editorial-hub-hero {
+  min-height: 430px !important;
+  border-color: rgba(166, 52, 42, 0.34) !important;
+  box-shadow: 0 24px 70px rgba(20, 16, 12, 0.24) !important;
+}
+
+.app:not(.home-app) .editorial-hub-hero h2 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .hub-pathways button,
+.app:not(.home-app) .hub-card {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.1), rgba(244, 239, 230, 0.035)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.23) !important;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
+}
+
+.app:not(.home-app) .hub-pathways button:hover,
+.app:not(.home-app) .hub-card:hover {
+  border-color: rgba(166, 52, 42, 0.46) !important;
+  background:
+    linear-gradient(180deg, rgba(166, 52, 42, 0.16), rgba(244, 239, 230, 0.035)),
+    #40352a !important;
+}
+
+.app:not(.home-app) .hub-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+.app:not(.home-app) .hub-card {
+  min-height: 320px;
+}
+
+.app:not(.home-app) .hub-card strong,
+.app:not(.home-app) .hub-pathways strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .hub-card-body > span,
+.app:not(.home-app) .hub-pathways span {
+  color: #d6cabc !important;
+}
+
+.app:not(.home-app) .hub-card small {
+  border-color: rgba(166, 52, 42, 0.38) !important;
+  background: rgba(166, 52, 42, 0.14) !important;
+  color: #f0d4c8 !important;
+}
+
 @media (max-width: 1180px) {
   .app:not(.home-app) .content-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .editorial-hub-grid,
+  .app:not(.home-app) .hub-card-grid {
     grid-template-columns: 1fr !important;
   }
 }
@@ -1931,5 +2096,733 @@ select:focus {
 
   .hero .button-row {
     flex-wrap: wrap !important;
+  }
+}
+
+/* Screenshot refinement pass: make the home page feel more gated, less checklist-like. */
+.home-app,
+.home-view {
+  background:
+    radial-gradient(circle at 74% 8%, rgba(166, 52, 42, 0.18), transparent 30rem),
+    radial-gradient(circle at 38% 14%, rgba(95, 113, 103, 0.12), transparent 28rem),
+    linear-gradient(180deg, #110d0b 0, #18120f 790px, #dfd2bd 790px, #e8ded0 100%) !important;
+}
+
+.hero {
+  min-height: 760px !important;
+  padding: 106px 0 124px !important;
+  grid-template-columns: minmax(420px, 0.82fr) minmax(500px, 1fr) !important;
+  gap: clamp(44px, 6vw, 86px) !important;
+}
+
+.hero-copy h2 {
+  max-width: 660px !important;
+  font-size: clamp(54px, 4.9vw, 78px) !important;
+  line-height: 0.98 !important;
+}
+
+.hero-copy p {
+  max-width: 560px !important;
+  font-size: 15px !important;
+}
+
+.trust-line {
+  border-color: rgba(166, 52, 42, 0.48) !important;
+  background: rgba(166, 52, 42, 0.14) !important;
+  color: #f6d8c9 !important;
+}
+
+.hero .button-row {
+  flex-wrap: wrap !important;
+  gap: 10px !important;
+  max-width: 650px !important;
+}
+
+.hero .gold-button,
+.hero .outline-button,
+.hero .plain-button {
+  min-height: 44px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22) !important;
+}
+
+.hero .outline-button,
+.hero .plain-button {
+  background: rgba(244, 239, 230, 0.12) !important;
+  border-color: rgba(244, 239, 230, 0.24) !important;
+  color: #fff3e5 !important;
+}
+
+.hero-media {
+  min-height: 340px !important;
+  max-width: 760px !important;
+  border-color: rgba(166, 52, 42, 0.32) !important;
+  background:
+    radial-gradient(circle at 42% 48%, rgba(166, 52, 42, 0.22), transparent 18rem),
+    linear-gradient(135deg, rgba(244, 239, 230, 0.045), rgba(244, 239, 230, 0.012)),
+    #0a0807 !important;
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.36) !important;
+}
+
+.hero-media video {
+  inset: 8% !important;
+  width: 84% !important;
+  height: 84% !important;
+  object-fit: contain !important;
+  opacity: 0.9 !important;
+  transform: none !important;
+  filter: saturate(0.95) brightness(0.95) contrast(1.08) !important;
+}
+
+.hero-media:before {
+  background:
+    linear-gradient(90deg, rgba(166, 52, 42, 0.18), transparent 18%, transparent 82%, rgba(166, 52, 42, 0.16)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 42%, rgba(0, 0, 0, 0.36)) !important;
+}
+
+.editorial-band {
+  margin-top: -42px !important;
+}
+
+.access-tier-band {
+  background:
+    linear-gradient(135deg, rgba(18, 13, 11, 0.98), rgba(49, 31, 27, 0.96)),
+    #120d0b !important;
+  border-color: rgba(166, 52, 42, 0.36) !important;
+  padding: 34px !important;
+}
+
+.access-tier-band .section-heading h2,
+.access-tier-band .section-heading .eyebrow {
+  color: #f5eadb !important;
+}
+
+.access-tier-band .section-heading button {
+  background: rgba(244, 239, 230, 0.12) !important;
+  border: 1px solid rgba(244, 239, 230, 0.2) !important;
+  border-radius: 999px !important;
+  padding: 8px 12px !important;
+  color: #f5d2c5 !important;
+}
+
+.access-tier-band .tier-grid {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1fr) minmax(0, 1.12fr) !important;
+}
+
+.tier-card {
+  display: grid !important;
+  align-content: start !important;
+  min-height: 272px !important;
+  padding: 22px !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.065), rgba(244, 239, 230, 0.018)),
+    rgba(5, 5, 5, 0.18) !important;
+  border-color: rgba(244, 239, 230, 0.14) !important;
+  box-shadow: none !important;
+}
+
+.tier-card h3 {
+  color: #fff2e2 !important;
+  font-size: 30px !important;
+}
+
+.tier-card strong {
+  width: fit-content !important;
+  padding: 5px 8px !important;
+  border: 1px solid rgba(244, 239, 230, 0.14) !important;
+  border-radius: 999px !important;
+  color: #f0d4c8 !important;
+  font-size: 11px !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.08em !important;
+}
+
+.tier-card ul {
+  gap: 6px !important;
+}
+
+.tier-card button {
+  margin-top: auto !important;
+}
+
+.vip-tier {
+  background:
+    radial-gradient(circle at 90% 0, rgba(166, 52, 42, 0.22), transparent 16rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.09), rgba(244, 239, 230, 0.024)),
+    rgba(5, 5, 5, 0.2) !important;
+  border-color: rgba(166, 52, 42, 0.64) !important;
+}
+
+.image-card-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+}
+
+.image-card {
+  min-height: 280px !important;
+  padding: 18px !important;
+}
+
+.image-card h3 {
+  font-size: 18px !important;
+  line-height: 1.08 !important;
+}
+
+.image-card button {
+  color: #f4d1c4 !important;
+}
+
+.vip-band {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 86% 18%, rgba(166, 52, 42, 0.24), transparent 24rem),
+    linear-gradient(135deg, #100b0a, #2a1714 64%, #120d0b) !important;
+  border-color: rgba(166, 52, 42, 0.48) !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22) !important;
+}
+
+.vip-band:before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-top: 3px solid rgba(166, 52, 42, 0.78);
+  pointer-events: none;
+}
+
+.vip-band h2,
+.vip-band p {
+  color: #fff1e4 !important;
+}
+
+.vip-feature-grid span {
+  background: rgba(0, 0, 0, 0.22) !important;
+  border-color: rgba(244, 239, 230, 0.14) !important;
+  color: #f6e8d8 !important;
+}
+
+.split-section {
+  grid-template-columns: minmax(0, 1fr) 360px !important;
+  gap: 18px !important;
+}
+
+.split-section > div:first-child {
+  padding: 26px !important;
+}
+
+.split-section .track-row {
+  min-height: 74px !important;
+  grid-template-columns: 34px 50px minmax(220px, 1.3fr) minmax(150px, 0.8fr) 44px 34px auto 34px !important;
+}
+
+.split-section .track-title div {
+  display: none !important;
+}
+
+.split-section .waveform {
+  opacity: 0.32 !important;
+}
+
+.trust-panel {
+  padding: 28px !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.16), transparent 16rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.07), rgba(244, 239, 230, 0.026)),
+    #221815 !important;
+  border-color: rgba(166, 52, 42, 0.28) !important;
+}
+
+.trust-panel h3 {
+  color: #f0d4c8 !important;
+}
+
+.site-footer {
+  background:
+    radial-gradient(circle at 78% 16%, rgba(166, 52, 42, 0.1), transparent 24rem),
+    #0d0908 !important;
+}
+
+.site-footer nav button {
+  min-height: 26px !important;
+  color: #d7c4b1 !important;
+}
+
+.site-footer nav strong {
+  color: #f3e6d6 !important;
+}
+
+.site-footer small {
+  color: #9f8c7c !important;
+}
+
+@media (max-width: 1180px) {
+  .image-card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .access-tier-band .tier-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .home-app,
+  .home-view {
+    background:
+      radial-gradient(circle at 72% 4%, rgba(166, 52, 42, 0.16), transparent 22rem),
+      linear-gradient(180deg, #110d0b 0, #18120f 820px, #dfd2bd 820px, #e8ded0 100%) !important;
+  }
+
+  .hero-copy h2 {
+    font-size: 42px !important;
+  }
+
+  .image-card-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Licensing workspace pass. */
+.app:not(.home-app) .licensing-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .licensing-header {
+  grid-template-columns: minmax(0, 1fr) 300px !important;
+}
+
+.app:not(.home-app) .licensing-header .form-intro {
+  min-height: auto !important;
+  padding: 28px !important;
+}
+
+.app:not(.home-app) .licensing-mode {
+  display: grid !important;
+  gap: 10px !important;
+  padding: 18px !important;
+  border: 1px solid rgba(166, 52, 42, 0.25);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.03)),
+    #3f3429;
+}
+
+.app:not(.home-app) .licensing-mode button {
+  width: 100% !important;
+}
+
+.app:not(.home-app) .form-tier-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  margin-bottom: 18px !important;
+}
+
+.app:not(.home-app) .tier-pick {
+  min-height: 168px !important;
+  display: grid !important;
+  align-content: start !important;
+  gap: 10px !important;
+  padding: 18px !important;
+  border-color: rgba(244, 239, 230, 0.12) !important;
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.08), rgba(244, 239, 230, 0.025)),
+    #322921 !important;
+}
+
+.app:not(.home-app) .tier-pick strong {
+  color: #fbf6ee !important;
+  font-family: "Cormorant Garamond", Georgia, serif;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.app:not(.home-app) .tier-pick small {
+  color: #d6b981 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 900;
+}
+
+.app:not(.home-app) .tier-pick > span:last-child {
+  color: #d8cfc2 !important;
+  line-height: 1.4;
+}
+
+.app:not(.home-app) .tier-pick.active {
+  border-color: rgba(166, 52, 42, 0.7) !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.22), transparent 15rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.1), rgba(244, 239, 230, 0.03)),
+    #42231f !important;
+}
+
+.app:not(.home-app) .licensing-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
+}
+
+.app:not(.home-app) .licensing-page .inquiry-form {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #332a22 !important;
+  border-color: rgba(166, 52, 42, 0.26) !important;
+}
+
+.app:not(.home-app) .form-section {
+  background: rgba(20, 16, 13, 0.34) !important;
+  border-color: rgba(244, 239, 230, 0.12) !important;
+}
+
+.app:not(.home-app) .form-section legend {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .form-section > p {
+  color: #bfb4a6 !important;
+}
+
+.app:not(.home-app) .licensing-page .inquiry-form label {
+  color: #d6b981 !important;
+  font-size: 12px !important;
+  text-transform: none !important;
+}
+
+.app:not(.home-app) .licensing-page input,
+.app:not(.home-app) .licensing-page select,
+.app:not(.home-app) .licensing-page textarea {
+  min-height: 42px !important;
+  background: rgba(18, 12, 10, 0.72) !important;
+  border-color: rgba(244, 239, 230, 0.1) !important;
+}
+
+.app:not(.home-app) .licensing-summary-panel {
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.16), transparent 17rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.095), rgba(244, 239, 230, 0.035)),
+    #2d221d !important;
+  border-color: rgba(166, 52, 42, 0.32) !important;
+  box-shadow: 0 18px 52px rgba(0, 0, 0, 0.16);
+}
+
+.app:not(.home-app) .licensing-summary-panel h3 {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .workflow-steps em {
+  border-color: rgba(166, 52, 42, 0.42) !important;
+  background: rgba(166, 52, 42, 0.16) !important;
+  color: #f0d4c8 !important;
+}
+
+.app:not(.home-app) .summary-lock {
+  background: rgba(18, 12, 10, 0.58) !important;
+}
+
+/* Contact routing workspace pass. */
+.app:not(.home-app) .contact-page {
+  max-width: 1500px;
+  margin: 0 auto;
+}
+
+.app:not(.home-app) .contact-header,
+.app:not(.home-app) .contact-workspace {
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
+}
+
+.app:not(.home-app) .contact-header .form-intro,
+.app:not(.home-app) .contact-routing-summary,
+.app:not(.home-app) .contact-private-note,
+.app:not(.home-app) .contact-route-cards button,
+.app:not(.home-app) .contact-topic-grid button {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #332a22 !important;
+  border-color: rgba(166, 52, 42, 0.24) !important;
+}
+
+.app:not(.home-app) .contact-routing-summary {
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.16), transparent 17rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.095), rgba(244, 239, 230, 0.035)),
+    #2d221d !important;
+}
+
+.app:not(.home-app) .contact-routing-summary h3,
+.app:not(.home-app) .contact-private-note strong,
+.app:not(.home-app) .contact-topic-grid strong,
+.app:not(.home-app) .contact-route-cards strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .contact-topic-grid button {
+  min-height: 96px;
+}
+
+.app:not(.home-app) .contact-topic-grid button.active {
+  border-color: rgba(166, 52, 42, 0.68) !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.2), transparent 13rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.1), rgba(244, 239, 230, 0.035)),
+    #42231f !important;
+}
+
+.app:not(.home-app) .contact-form {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #332a22 !important;
+  border-color: rgba(166, 52, 42, 0.26) !important;
+}
+
+.app:not(.home-app) .contact-form label {
+  color: #d6b981 !important;
+}
+
+.app:not(.home-app) .contact-route-cards button {
+  min-height: 132px;
+}
+
+.app:not(.home-app) .contact-route-cards button:hover,
+.app:not(.home-app) .contact-topic-grid button:hover {
+  border-color: rgba(166, 52, 42, 0.5) !important;
+}
+
+/* Admin tracks operational control pass. */
+.app:not(.home-app) .track-admin-toolbar button,
+.app:not(.home-app) .track-filter-row button,
+.app:not(.home-app) .track-op-actions button,
+.app:not(.home-app) .rights-review-queue button,
+.app:not(.home-app) .upload-control-grid button {
+  background: rgba(244, 239, 230, 0.075) !important;
+  border-color: rgba(166, 83, 60, 0.25) !important;
+  color: #f4efe6 !important;
+}
+
+.app:not(.home-app) .track-filter-row button:hover,
+.app:not(.home-app) .track-op-actions button:hover,
+.app:not(.home-app) .upload-control-grid button:hover {
+  border-color: rgba(166, 52, 42, 0.5) !important;
+  background: rgba(166, 52, 42, 0.14) !important;
+}
+
+.app:not(.home-app) .track-operation-row,
+.app:not(.home-app) .rights-review-queue,
+.app:not(.home-app) .upload-control-grid button {
+  background:
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #40352a !important;
+  border-color: rgba(95, 113, 103, 0.23) !important;
+}
+
+.app:not(.home-app) .track-operation-row.blocked,
+.app:not(.home-app) .rights-review-queue {
+  border-color: rgba(166, 52, 42, 0.34) !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(166, 52, 42, 0.14), transparent 15rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.085), rgba(244, 239, 230, 0.035)),
+    #40352a !important;
+}
+
+.app:not(.home-app) .track-op-main strong,
+.app:not(.home-app) .rights-review-queue h3,
+.app:not(.home-app) .upload-control-grid strong {
+  color: #fbf6ee !important;
+}
+
+.app:not(.home-app) .track-op-main span,
+.app:not(.home-app) .owner-stack span,
+.app:not(.home-app) .rights-review-queue article span,
+.app:not(.home-app) .upload-control-grid p {
+  color: #d1c7b8 !important;
+}
+
+.app:not(.home-app) .rights-review-queue article {
+  background: rgba(20, 16, 13, 0.35) !important;
+}
+
+.app:not(.home-app) .track-op-badges span,
+.app:not(.home-app) .asset-chip-row span {
+  color: #f4efe6 !important;
+}
+
+.app:not(.home-app) .upload-control-grid {
+  margin-top: 14px !important;
+}
+
+@media (max-width: 1180px) {
+  .app:not(.home-app) .licensing-header,
+  .app:not(.home-app) .form-tier-grid,
+  .app:not(.home-app) .licensing-workspace {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .contact-header,
+  .app:not(.home-app) .contact-workspace,
+  .app:not(.home-app) .contact-topic-grid,
+  .app:not(.home-app) .contact-route-cards {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .track-ops-grid,
+  .upload-control-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .licensing-summary-panel {
+    position: static !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .form-section-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .app:not(.home-app) .contact-header,
+  .app:not(.home-app) .contact-workspace,
+  .app:not(.home-app) .contact-topic-grid,
+  .app:not(.home-app) .contact-route-cards {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Whole-site QA pass: mobile reflow and tap-target hardening. */
+.public-header nav button,
+.image-card button,
+.collection-card button,
+.mini-story button,
+.cards-admin button,
+.site-footer button,
+.chip-button,
+.section-heading button,
+.next-step-list button,
+.project-card button {
+  min-height: 36px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.image-card button,
+.collection-card button,
+.mini-story button,
+.cards-admin button,
+.site-footer button,
+.section-heading button,
+.next-step-list button,
+.project-card button {
+  padding: 6px 0 !important;
+}
+
+.chip-button {
+  padding: 7px 12px !important;
+}
+
+.close-nav {
+  min-width: 40px !important;
+  min-height: 40px !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.admin-tabs {
+  overflow-x: auto !important;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.admin-tabs button {
+  flex: 0 0 auto !important;
+}
+
+.trust-panel,
+.panel,
+.track-row,
+.project-card,
+.image-card,
+.collection-card,
+.mini-story {
+  box-sizing: border-box !important;
+}
+
+@media (max-width: 760px) {
+  .home-app,
+  .home-view {
+    overflow-x: clip !important;
+  }
+
+  .public-header {
+    width: calc(100% - 32px) !important;
+    left: 16px !important;
+    right: auto !important;
+  }
+
+  .hero {
+    width: calc(100% - 32px) !important;
+    max-width: calc(100% - 32px) !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding-top: 104px !important;
+    overflow: visible !important;
+  }
+
+  .hero-copy,
+  .hero-copy h2,
+  .hero-copy p,
+  .hero .button-row,
+  .trust-line {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .hero-copy h2 {
+    font-size: clamp(38px, 11vw, 45px) !important;
+    overflow-wrap: anywhere;
+  }
+
+  .hero .button-row {
+    flex-wrap: wrap !important;
+  }
+
+  .hero .gold-button,
+  .hero .outline-button,
+  .hero .plain-button {
+    white-space: normal !important;
+  }
+
+  .hero-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 240px !important;
+  }
+
+  .hero-media video {
+    inset: 8% !important;
+    width: 84% !important;
+    height: 84% !important;
+  }
+
+  .admin-tabs {
+    margin-inline: -4px !important;
+    padding-bottom: 6px !important;
+  }
+
+  .home-app .track-row {
+    grid-template-columns: 42px 56px minmax(0, 1fr) 42px !important;
+    min-height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .home-app .track-row .waveform,
+  .home-app .track-row .duration,
+  .home-app .track-row .small-button {
+    grid-column: 3 / -1 !important;
+    width: 100% !important;
+    max-width: none !important;
+    justify-self: stretch !important;
+  }
+
+  .home-app .track-row .icon-button {
+    display: none !important;
   }
 }
