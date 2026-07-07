@@ -2134,8 +2134,8 @@ select:focus {
 
 .hero .button-row {
   flex-wrap: wrap !important;
-  gap: 10px !important;
-  max-width: 650px !important;
+  gap: 12px !important;
+  max-width: 520px !important;
 }
 
 .hero .gold-button,
@@ -2146,8 +2146,7 @@ select:focus {
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.22) !important;
 }
 
-.hero .outline-button,
-.hero .plain-button {
+.hero .outline-button {
   background: rgba(244, 239, 230, 0.12) !important;
   border-color: rgba(244, 239, 230, 0.24) !important;
   color: #fff3e5 !important;
@@ -2180,8 +2179,21 @@ select:focus {
     linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 42%, rgba(0, 0, 0, 0.36)) !important;
 }
 
-.editorial-band {
-  margin-top: -42px !important;
+.home-view .editorial-band {
+  margin-top: -30px !important;
+  border-radius: 0 !important;
+  border-left: 0 !important;
+  border-right: 0 !important;
+  box-shadow: none !important;
+  width: 100% !important;
+  max-width: none !important;
+}
+
+.home-view .editorial-band > .section-kicker,
+.home-view .editorial-band > .section-grid {
+  width: var(--page-wide) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 
 .access-tier-band {
@@ -2190,6 +2202,7 @@ select:focus {
     #120d0b !important;
   border-color: rgba(166, 52, 42, 0.36) !important;
   padding: 34px !important;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.2) !important;
 }
 
 .access-tier-band .section-heading h2,
@@ -2212,7 +2225,7 @@ select:focus {
 .tier-card {
   display: grid !important;
   align-content: start !important;
-  min-height: 272px !important;
+  min-height: 292px !important;
   padding: 22px !important;
   background:
     linear-gradient(180deg, rgba(244, 239, 230, 0.065), rgba(244, 239, 230, 0.018)),
@@ -2224,6 +2237,10 @@ select:focus {
 .tier-card h3 {
   color: #fff2e2 !important;
   font-size: 30px !important;
+}
+
+.vip-tier h3 {
+  font-size: 34px !important;
 }
 
 .tier-card strong {
@@ -2261,6 +2278,7 @@ select:focus {
 .image-card {
   min-height: 280px !important;
   padding: 18px !important;
+  background-position: center !important;
 }
 
 .image-card h3 {
@@ -2280,6 +2298,7 @@ select:focus {
     linear-gradient(135deg, #100b0a, #2a1714 64%, #120d0b) !important;
   border-color: rgba(166, 52, 42, 0.48) !important;
   box-shadow: 0 28px 80px rgba(0, 0, 0, 0.22) !important;
+  grid-template-columns: minmax(0, 0.78fr) minmax(390px, 1fr) !important;
 }
 
 .vip-band:before {
@@ -2311,16 +2330,32 @@ select:focus {
 }
 
 .split-section .track-row {
-  min-height: 74px !important;
-  grid-template-columns: 34px 50px minmax(220px, 1.3fr) minmax(150px, 0.8fr) 44px 34px auto 34px !important;
+  min-height: 82px !important;
+  grid-template-columns: 34px 50px minmax(150px, 1fr) minmax(118px, 0.52fr) 44px 34px 126px !important;
+  overflow: hidden !important;
 }
 
 .split-section .track-title div {
   display: none !important;
 }
 
+.split-section .status-stack span {
+  font-size: 9px !important;
+  padding: 4px 7px !important;
+}
+
 .split-section .waveform {
-  opacity: 0.32 !important;
+  display: none !important;
+}
+
+.split-section .track-row .icon-button {
+  display: none !important;
+}
+
+.split-section .track-row .small-button {
+  min-width: 0 !important;
+  width: 126px !important;
+  padding-inline: 8px !important;
 }
 
 .trust-panel {
@@ -2744,6 +2779,69 @@ select:focus {
   box-sizing: border-box !important;
 }
 
+/* Screenshot audit fixes: keep status semantics separate and reduce CTA/layout noise. */
+.track-row,
+.app:not(.home-app) .track-row,
+.app:not(.home-app) .artist-page .track-row,
+.app:not(.home-app) .dashboard-page .compact .track-row {
+  grid-template-columns: 38px 58px minmax(180px, 1.1fr) minmax(124px, 0.62fr) minmax(120px, 0.68fr) 46px 38px auto 38px !important;
+}
+
+.compact .track-row,
+.app:not(.home-app) .compact .track-row {
+  grid-template-columns: 38px 54px minmax(170px, 1.05fr) minmax(118px, 0.58fr) minmax(106px, 0.58fr) 44px 38px auto 38px !important;
+}
+
+.split-section .track-row {
+  grid-template-columns: 34px 50px minmax(150px, 1fr) minmax(118px, 0.52fr) 44px 34px 126px !important;
+}
+
+.status-stack span {
+  background: rgba(95, 113, 103, 0.18) !important;
+  border-color: rgba(95, 113, 103, 0.34) !important;
+  color: #e6eee6 !important;
+}
+
+.status-stack .status-availability {
+  background: rgba(166, 52, 42, 0.16) !important;
+  border-color: rgba(166, 52, 42, 0.45) !important;
+  color: #ffd8cb !important;
+}
+
+.home-view .editorial-band .panel {
+  box-shadow: none !important;
+}
+
+.use-cases .image-card {
+  align-items: end !important;
+}
+
+.use-cases .image-card p {
+  display: block !important;
+  color: #eadbca !important;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, 0.45);
+}
+
+.use-cases .image-card button,
+.collection-card button,
+.mini-story button {
+  min-height: 32px !important;
+  text-align: left !important;
+}
+
+.hero .plain-button {
+  display: none !important;
+}
+
+.access-tier-band .section-heading button {
+  opacity: 0.78 !important;
+}
+
+.vip-tier .gold-button {
+  min-height: 48px !important;
+  font-size: 14px !important;
+}
+
 @media (max-width: 760px) {
   .home-app,
   .home-view {
@@ -2806,7 +2904,13 @@ select:focus {
     padding-bottom: 6px !important;
   }
 
-  .home-app .track-row {
+  .home-app .track-row,
+  .track-row,
+  .compact .track-row,
+  .app:not(.home-app) .track-row,
+  .app:not(.home-app) .artist-page .track-row,
+  .app:not(.home-app) .dashboard-page .compact .track-row,
+  .split-section .track-row {
     grid-template-columns: 42px 56px minmax(0, 1fr) 42px !important;
     min-height: auto !important;
     width: 100% !important;
@@ -2814,15 +2918,48 @@ select:focus {
   }
 
   .home-app .track-row .waveform,
+  .home-app .track-row .status-stack,
   .home-app .track-row .duration,
-  .home-app .track-row .small-button {
+  .home-app .track-row .small-button,
+  .track-row .waveform,
+  .track-row .status-stack,
+  .track-row .duration,
+  .track-row .small-button {
     grid-column: 3 / -1 !important;
     width: 100% !important;
     max-width: none !important;
     justify-self: stretch !important;
   }
 
-  .home-app .track-row .icon-button {
+  .status-stack {
+    display: flex !important;
+    flex-wrap: wrap !important;
+  }
+
+  .vip-band {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+    padding: 24px !important;
+  }
+
+  .vip-band h2 {
+    font-size: clamp(36px, 11vw, 44px) !important;
+    line-height: 1.02 !important;
+    max-width: 100% !important;
+    overflow-wrap: normal !important;
+  }
+
+  .vip-feature-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .vip-feature-grid span {
+    width: 100% !important;
+    min-height: 42px !important;
+  }
+
+  .home-app .track-row .icon-button,
+  .track-row .icon-button {
     display: none !important;
   }
 }

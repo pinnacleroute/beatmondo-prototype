@@ -632,7 +632,11 @@ small {
 }
 
 .use-cases .image-card p {
-  display: none;
+  display: block;
+  max-width: 360px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .image-card button,
@@ -795,7 +799,7 @@ small {
 
 .track-row {
   display: grid;
-  grid-template-columns: 38px 58px minmax(180px, 1.2fr) minmax(150px, 0.9fr) 48px 38px auto 38px;
+  grid-template-columns: 38px 58px minmax(180px, 1.2fr) minmax(132px, 0.72fr) minmax(130px, 0.84fr) 48px 38px auto 38px;
   align-items: center;
   gap: 12px;
   min-height: 78px;
@@ -865,6 +869,36 @@ small {
   flex-wrap: wrap;
 }
 
+.status-stack {
+  display: grid;
+  gap: 5px;
+  align-content: center;
+  min-width: 0;
+}
+
+.status-stack span {
+  width: fit-content;
+  max-width: 100%;
+  border: 1px solid rgba(196, 164, 90, 0.22);
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: rgba(8, 7, 6, 0.36);
+  color: #d8c9b1;
+  font-size: 10px;
+  font-weight: 800;
+  line-height: 1;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-stack .status-availability {
+  border-color: rgba(166, 52, 42, 0.4);
+  background: rgba(166, 52, 42, 0.13);
+  color: #f0d7c4;
+}
+
 .waveform {
   height: 28px;
   border-radius: 4px;
@@ -880,7 +914,7 @@ small {
 }
 
 .compact .track-row {
-  grid-template-columns: 42px 56px minmax(150px, 1fr) minmax(140px, 0.8fr) 50px 42px auto 42px;
+  grid-template-columns: 42px 56px minmax(150px, 1fr) minmax(118px, 0.68fr) minmax(120px, 0.72fr) 50px 42px auto 42px;
 }
 
 .catalog-layout {

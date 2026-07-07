@@ -48,6 +48,12 @@ const img = {
   agency: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
   car: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
   city: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
+  campaign: "https://images.unsplash.com/photo-1517048676732-d65bc937f952?auto=format&fit=crop&w=1200&q=80",
+  broadcast: "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
+  documentary: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=1200&q=80",
+  luxury: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80",
+  trailer: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80",
+  streaming: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
 };
 
 const buyerTiers = [
@@ -63,14 +69,14 @@ const buyerTiers = [
     name: "Professional Buyer",
     description: "Standard licensing workspace for agencies, producers, and serious music buyers.",
     priceLabel: "Quote-based licensing",
-    features: ["Full project workspace", "Request quotes", "Track license status", "Approved WAV delivery"],
+    features: ["Full project workspace", "Request quotes", "Track license status", "Approved WAV master delivery"],
   },
   {
     id: "vip",
     name: "VIP Sync Access",
-    description: "Priority curated access for top-level supervisors, studios, luxury brands, and strategic buyers.",
+    description: "Private selections, concierge review, and faster licensing paths for top-level buyers.",
     priceLabel: "Premium access",
-    features: ["Curated premium catalog", "Priority clearance", "Fast-track licensing", "Concierge support"],
+    features: ["Private curated selections", "Priority review", "Pre-approved terms where available", "Premium secure delivery"],
   },
 ];
 
@@ -104,7 +110,7 @@ const rawTracks = [
     tags: ["Warm", "Uplifting", "Reflective"],
     status: "Rights Reviewed",
     image: img.studio,
-    rights: "One-stop clearance available for select usages. Master controlled by beatmondo partner catalog.",
+    rights: "One-stop clearance available for select usages. Master controlled by a beatmondo partner rightsholder.",
   },
   {
     id: 2,
@@ -248,19 +254,19 @@ const tracks = rawTracks.map((track, index) => ({
 
 const useCases = [
   ["Film & Television", "Emotional themes, source cues, title beds, and end-credit moments.", img.film],
-  ["OTT & Streaming Platforms", "Rights-ready music for premium series, originals, and global streaming campaigns.", img.edit],
-  ["Advertising & Brand Campaigns", "Authentic tracks for launches, product films, and premium storytelling.", img.agency],
-  ["Trailers & Promos", "Impactful builds, emotional lifts, and quote-ready archive tracks.", img.edit],
-  ["Documentary & Editorial", "Human, textured music with provenance and rights context.", img.studio],
-  ["Global Campaigns", "Commercially usable music for international launches, markets, and multi-territory media.", img.agency],
-  ["Events & Experiences", "Atmospheric catalog selections for launches, installations, and live moments.", img.concert],
-  ["Sports & Broadcast", "Driven cues for broadcast packages, promos, and human achievement stories.", img.car],
-  ["Luxury / Lifestyle Campaigns", "Warm, tasteful tracks for refined brand worlds.", img.vinyl],
+  ["OTT & Streaming Platforms", "Rights-ready music for premium series, originals, and global streaming campaigns.", img.streaming],
+  ["Advertising & Brand Campaigns", "Authentic tracks for launches, product films, and premium storytelling.", img.campaign],
+  ["Trailers & Promos", "Impactful builds, emotional lifts, and quote-ready archive tracks.", img.trailer],
+  ["Documentary & Editorial", "Human, textured music with provenance and rights context.", img.documentary],
+  ["Global Campaigns", "Commercially usable music for international launches, markets, and multi-territory media.", img.city],
+  ["Events & Experiences", "Atmospheric selections for launches, installations, and live moments.", img.concert],
+  ["Sports & Broadcast", "Driven cues for broadcast packages, promos, and human achievement stories.", img.broadcast],
+  ["Luxury / Lifestyle Campaigns", "Warm, tasteful tracks for refined brand worlds.", img.luxury],
 ];
 
 const collections = [
   ["Staff Picks", "A weekly edit of tracks with story, restraint, and sync potential.", 42, ["Curated", "New"], img.console],
-  ["From the Archive", "Rare recordings, legacy cuts, and catalog stories worth resurfacing.", 68, ["Archive", "Soul"], img.archive],
+  ["From the Archive", "Rare recordings, legacy cuts, and artist stories worth resurfacing.", 68, ["Archive", "Soul"], img.archive],
   ["Music for Emotional Storytelling", "Piano-led, acoustic, and vocal tracks for human narratives.", 53, ["Film", "Documentary"], img.studio],
   ["Cinematic Instrumentals", "Preview-only instrumentals with protected master delivery.", 37, ["Score", "Trailer"], img.edit],
   ["Americana & Soul", "Warm guitars, lived-in performances, and vocal character.", 29, ["Roots", "Vocal"], img.vinyl],
@@ -324,6 +330,16 @@ function sortTracks(list, sortBy) {
   else if (sortBy === "artist") sorted.sort((a, b) => a.artist.localeCompare(b.artist));
   else if (sortBy === "duration") sorted.sort((a, b) => parseDurationMinutes(a.duration) - parseDurationMinutes(b.duration));
   return sorted;
+}
+
+function getRightsStatus(track) {
+  return track.rightsData.rightsVerified ? "Rights Verified" : "Rights Review";
+}
+
+function getDeliveryStatus(track) {
+  if (track.rightsData.deliveryReady) return "Delivery Ready";
+  if (track.assets.wavMaster) return "Protected Delivery";
+  return "Delivery Locked";
 }
 
 function App() {
@@ -396,7 +412,7 @@ function App() {
         && (filters.vocal === "Any Vocal" || track.vocal === filters.vocal)
         && (filters.availability === "All Availability" || track.availability === filters.availability)
         && matchesDuration(track.duration, filters.duration)
-        && (filters.vipCatalog === "All Access" || (filters.vipCatalog === "VIP Catalog" ? track.vipOnly : !track.vipOnly))
+        && (filters.vipCatalog === "All Access" || (filters.vipCatalog === "VIP Picks" ? track.vipOnly : !track.vipOnly))
         && (filters.stems === "Any Stem Status" || (filters.stems === "Stems Available" ? track.assets.stems : !track.assets.stems))
         && (filters.rightsVerified === "Any Rights Status" || (filters.rightsVerified === "Rights Verified" ? track.rightsData.rightsVerified : !track.rightsData.rightsVerified));
     });
@@ -599,7 +615,7 @@ function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotific
         <div className="panel notification-panel" role="region" aria-label="Notifications">
           <p><CheckCircle size={16} /> Quote sent for Luxury Auto Campaign</p>
           <p><ShieldCheck size={16} /> New inquiry assigned to licensing team</p>
-          <p><DownloadSimple size={16} /> Secure WAV ready for Premium Hotel Launch Film</p>
+          <p><DownloadSimple size={16} /> Secure WAV master ready for Premium Hotel Launch Film</p>
         </div>
       )}
     </header>
@@ -635,8 +651,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
           <p className="trust-line">Preview publicly. License professionally. Deliver securely.</p>
           <div className="button-row">
             <button className="gold-button" onClick={() => setView("licensing")}><LockKey size={18} /> Request Access</button>
-            <button className="outline-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore Curated Music</button>
-            <button className="plain-button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> Apply for VIP Sync Access</button>
+            <button className="outline-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore Music</button>
           </div>
         </div>
         <HeroMedia />
@@ -677,16 +692,16 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       <section className="vip-band">
         <div>
           <span className="eyebrow">VIP Sync Access</span>
-          <h2>Priority catalog access for vetted high-value buyers.</h2>
-          <p>VIP buyers receive private curated selections, pre-approved usage parameters where available, concierge licensing support, faster review, and premium delivery access for serious sync opportunities.</p>
+          <h2>Priority music access for vetted high-value buyers.</h2>
+          <p>VIP buyers receive private selections, priority review, pre-approved terms where available, concierge support, fast-track licensing, and premium secure delivery for serious sync opportunities.</p>
         </div>
         <div className="vip-feature-grid">
-          {["Curated high-value tracks", "Priority quote requests", "Pre-approved terms", "Concierge contact", "Fast-track licensing", "Secure WAV and stems delivery"].map((item) => <span key={item}><ShieldCheck size={16} /> {item}</span>)}
+          {["Private high-value selections", "Priority quote review", "Pre-approved terms where available", "Concierge support", "Fast-track licensing", "Secure WAV master and stems delivery"].map((item) => <span key={item}><ShieldCheck size={16} /> {item}</span>)}
         </div>
       </section>
 
       <section className="warm-band collections-band">
-        <div className="section-heading"><div><span className="eyebrow">Curated collections</span><h2>Editorial paths into the catalog.</h2></div><button onClick={() => setView("catalog")}>View catalog</button></div>
+        <div className="section-heading"><div><span className="eyebrow">Curated selections</span><h2>Editorial paths into Explore Music.</h2></div><button onClick={() => setView("catalog")}>Explore music</button></div>
         <div className="collection-grid">
           {collections.map(([title, text, count, tags, image]) => (
             <CollectionCard key={title} title={title} text={text} count={count} tags={tags} image={image} onView={() => setView("catalog")} />
@@ -716,23 +731,23 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
           <h3>Secure licensing workflow</h3>
           <TrustItem icon={ShieldCheck} title="Rights-aware metadata" text="Usage, territory, term, and clearance notes stay attached to the licensing workflow." />
           <TrustItem icon={LockKey} title="Protected masters" text="WAV files and stems stay locked until approval, payment, and delivery rules are complete." />
-          <TrustItem icon={UsersThree} title="Artist-first catalog" text="Real musicianship, provenance, and relationship-led licensing sit at the center." />
+          <TrustItem icon={UsersThree} title="Artist-first music" text="Real musicianship, provenance, and relationship-led licensing sit at the center." />
         </div>
       </section>
 
       <section className="partner-band">
         <div>
           <span className="eyebrow">For strategic partners</span>
-          <h2>A catalog foundation built for long-term value.</h2>
-          <p>beatmondo combines curated catalog exploration, rights-aware metadata, secure licensing workflows, and artist-first positioning for thoughtful partnership and future catalog expansion.</p>
+          <h2>A rights-controlled foundation built for long-term value.</h2>
+          <p>beatmondo combines selective music exploration, rights-aware metadata, secure licensing workflows, and artist-first positioning for thoughtful partnership and future catalog expansion.</p>
         </div>
         <button className="outline-button" onClick={() => setView("licensing")}><UsersThree size={18} /> Partnership Inquiry</button>
       </section>
 
       <section className="content-preview">
         <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.archive} action={() => setView("legacy")} />
-        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, catalog highlights, VIP picks, and licensing conversations." image={img.console} action={() => setView("stories")} />
-        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, catalog highlights, legacy clips, and supervisor conversations." image={img.portrait} action={() => setView("media")} />
+        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, Catalog Highlights, VIP Picks, and licensing conversations." image={img.console} action={() => setView("stories")} />
+        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, Catalog Highlights, legacy clips, and supervisor conversations." image={img.portrait} action={() => setView("media")} />
       </section>
       <Footer setView={setView} />
     </section>
@@ -821,7 +836,7 @@ function Catalog(props) {
           <Select label="Vocal" value={filters.vocal} options={["Any Vocal", "Instrumental", "Vocal"]} onChange={(vocal) => setFilters({ ...filters, vocal })} />
           <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Option", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />
           <Select label="Duration" value={filters.duration} options={["Any Duration", "Under 3:00", "3:00+"]} onChange={(duration) => setFilters({ ...filters, duration })} />
-          <Select label="Access" value={filters.vipCatalog} options={["All Access", "Standard Access", "VIP Catalog"]} onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })} />
+          <Select label="Access" value={filters.vipCatalog} options={["All Access", "Standard Access", "VIP Picks"]} onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })} />
           <Select label="Stems" value={filters.stems} options={["Any Stem Status", "Stems Available", "Stems Not Ready"]} onChange={(stems) => setFilters({ ...filters, stems })} />
           <Select label="Rights" value={filters.rightsVerified} options={["Any Rights Status", "Rights Verified", "Rights Review Needed"]} onChange={(rightsVerified) => setFilters({ ...filters, rightsVerified })} />
         </div>
@@ -865,9 +880,14 @@ function TrackRow({ track, isSelected, isPlaying, saved, onPlay, onSave, onOpen,
       <button className="play-button" onClick={(event) => { event.stopPropagation(); onPlay(); }} aria-label={isPlaying ? "Pause preview" : "Play preview"}>{isPlaying ? <Pause size={18} weight="fill" /> : <Play size={18} weight="fill" />}</button>
       <div className="cover-art" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.1), rgba(0,0,0,.45)), url(${track.image})` }} />
       <div className="track-title">
-        <strong>{track.title} <span>{track.status}</span>{track.vipOnly && <span className="vip-mini">VIP</span>}</strong>
+        <strong>{track.title}{track.vipOnly && <span className="vip-mini">VIP</span>}</strong>
         <small>{track.artist} · {track.genre} · {track.bpm}</small>
-        <div>{track.tags.slice(0, 3).map((tag) => <em key={tag}>{tag}</em>)}{track.assets.stems && <em>Stems</em>}{track.rightsData.rightsVerified && <em>Rights Verified</em>}</div>
+        <div>{track.tags.slice(0, 2).map((tag) => <em key={tag}>{tag}</em>)}{track.assets.stems && <em>Stems</em>}</div>
+      </div>
+      <div className="status-stack" aria-label={`${track.availability}, ${getRightsStatus(track)}, ${getDeliveryStatus(track)}`}>
+        <span className="status-availability">{track.availability}</span>
+        <span>{getRightsStatus(track)}</span>
+        <span>{getDeliveryStatus(track)}</span>
       </div>
       <div className="waveform" aria-hidden="true" />
       <span className="duration">{track.duration}</span>
@@ -1844,7 +1864,7 @@ function DesignSystem() {
         <Panel title="Buttons & forms" action="Controls"><div className="button-row"><button className="gold-button">Primary</button><button className="outline-button">Secondary</button><button className="plain-button">Text action</button></div><input placeholder="Form input" /></Panel>
         <Panel title="Audio player" action="Components"><div className="large-player small-player"><div className="waveform big" /><span>Preview-only playback state</span></div></Panel>
         <Panel title="Access badges" action="Gated"><div className="tag-row"><span>Discovery Access</span><span>Professional Buyer</span><span>VIP Sync Access</span><span>VIP Only</span></div></Panel>
-        <Panel title="Rights and delivery badges" action="Licensing"><div className="tag-row"><span>Rights Verified</span><span>Preston Approved</span><span>WAV Master</span><span>Stems</span><span>Fast-Track Delivery</span></div></Panel>
+        <Panel title="Rights and delivery badges" action="Licensing"><div className="tag-row"><span>Rights Verified</span><span>Preston Approved</span><span>WAV master</span><span>Stems</span><span>Fast-Track Delivery</span></div></Panel>
         <Panel title="Locked components" action="Private"><p>Locked/VIP-only states, missing rights notes, expired secure links, protected masters, and quote states are represented with restrained, legally serious product language.</p></Panel>
       </div>
     </section>
@@ -1865,11 +1885,11 @@ function MiniPlayer({ track, playingId, onTogglePlay, onOpen }) {
 }
 
 function ImageCard({ title, text, image, action }) {
-  return <article className="image-card" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.64)), url(${image})` }}><div><h3>{title}</h3><p>{text}</p><button onClick={action}>Explore Tracks</button></div></article>;
+  return <article className="image-card" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(0,0,0,.64)), url(${image})` }}><div><h3>{title}</h3><p>{text}</p><button onClick={action}>Explore Music</button></div></article>;
 }
 
 function CollectionCard({ title, text, count, tags, image, onView }) {
-  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>View collection</button></article>;
+  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>Explore selection</button></article>;
 }
 
 function AccessTierCard({ tier, onSelect }) {
@@ -1974,7 +1994,7 @@ function Footer({ setView }) {
             </div>
           ))}
         </nav>
-        <small>Master files are protected and delivered only through approved licensing workflows. Copyright and rights notice applies to all catalog materials.</small>
+        <small>Master files are protected and delivered only through approved licensing workflows. Copyright and rights notices apply to all represented materials.</small>
       </div>
     </footer>
   );
