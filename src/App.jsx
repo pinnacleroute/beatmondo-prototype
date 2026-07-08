@@ -37,14 +37,12 @@ const opener = "/assets/beatmondo-logo-gif.mp4";
 
 const img = {
   studio: "https://images.unsplash.com/photo-1511379938547-c1f69419868d?auto=format&fit=crop&w=1200&q=80",
-  console: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=1200&q=80",
   vinyl: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?auto=format&fit=crop&w=1200&q=80",
   tape: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=1200&q=80",
   film: "https://images.unsplash.com/photo-1485846234645-a62644f84728?auto=format&fit=crop&w=1200&q=80",
   edit: "https://images.unsplash.com/photo-1574717024653-61fd2cf4d44d?auto=format&fit=crop&w=1200&q=80",
   concert: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?auto=format&fit=crop&w=1200&q=80",
   portrait: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=900&q=80",
-  archive: "https://images.unsplash.com/photo-1519682337058-a94d519337bc?auto=format&fit=crop&w=1200&q=80",
   agency: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1200&q=80",
   car: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80",
   city: "https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1200&q=80",
@@ -54,6 +52,12 @@ const img = {
   luxury: "https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1200&q=80",
   trailer: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?auto=format&fit=crop&w=1200&q=80",
   streaming: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
+  privateStudio: "/assets/editorial/private-studio-console.webp",
+  musicArchive: "/assets/editorial/music-archive-room.webp",
+  scoringStage: "/assets/editorial/scoring-stage.webp",
+  soulVocal: "/assets/editorial/soul-vocal-session.webp",
+  supervisorSuite: "/assets/editorial/supervisor-review-suite.webp",
+  mediaDesk: "/assets/editorial/media-production-desk.webp",
 };
 
 const buyerTiers = [
@@ -265,12 +269,12 @@ const useCases = [
 ];
 
 const collections = [
-  ["Staff Picks", "A weekly edit of tracks with story, restraint, and sync potential.", 42, ["Curated", "New"], img.console],
-  ["From the Archive", "Rare recordings, legacy cuts, and artist stories worth resurfacing.", 68, ["Archive", "Soul"], img.archive],
-  ["Music for Emotional Storytelling", "Piano-led, acoustic, and vocal tracks for human narratives.", 53, ["Film", "Documentary"], img.studio],
-  ["Cinematic Instrumentals", "Preview-only instrumentals with protected master delivery.", 37, ["Score", "Trailer"], img.edit],
-  ["Americana & Soul", "Warm guitars, lived-in performances, and vocal character.", 29, ["Roots", "Vocal"], img.vinyl],
-  ["Supervisor Favorites", "Tracks repeatedly saved by professional creative buyers.", 31, ["Buyer", "Proven"], img.film],
+  ["Staff Picks", "A weekly edit of tracks with story, restraint, and sync potential.", 42, ["Curated", "New"], img.privateStudio],
+  ["From the Archive", "Rare recordings, legacy cuts, and artist stories worth resurfacing.", 68, ["Archive", "Soul"], img.musicArchive],
+  ["Music for Emotional Storytelling", "Piano-led, acoustic, and vocal tracks for human narratives.", 53, ["Film", "Documentary"], img.scoringStage],
+  ["Cinematic Instrumentals", "Preview-only instrumentals with protected master delivery.", 37, ["Score", "Trailer"], img.supervisorSuite],
+  ["Americana & Soul", "Warm guitars, lived-in performances, and vocal character.", 29, ["Roots", "Vocal"], img.soulVocal],
+  ["Supervisor Favorites", "Tracks repeatedly saved by professional creative buyers.", 31, ["Buyer", "Proven"], img.mediaDesk],
 ];
 
 const projects = [
@@ -745,9 +749,9 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       </section>
 
       <section className="content-preview">
-        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.archive} action={() => setView("legacy")} />
-        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, Catalog Highlights, VIP Picks, and licensing conversations." image={img.console} action={() => setView("stories")} />
-        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, Catalog Highlights, legacy clips, and supervisor conversations." image={img.portrait} action={() => setView("media")} />
+        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.musicArchive} action={() => setView("legacy")} />
+        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, Catalog Highlights, VIP Picks, and licensing conversations." image={img.mediaDesk} action={() => setView("stories")} />
+        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, Catalog Highlights, legacy clips, and supervisor conversations." image={img.soulVocal} action={() => setView("media")} />
       </section>
       <Footer setView={setView} />
     </section>
@@ -1044,14 +1048,14 @@ function Legacy({ setView, openTrack }) {
   ];
   const legacyCards = [
     ["Preserving the Original Vision", "Archive Notes", img.tape, "A warm space for founding memories, recording context, handwritten notes, and the musician-led spirit behind beatmondo."],
-    ["Studio Memories", "Stories", img.console, "Behind-the-board moments, collaborators, instruments, and session details that give the catalog its human texture."],
+    ["Studio Memories", "Stories", img.privateStudio, "Behind-the-board moments, collaborators, instruments, and session details that give the catalog its human texture."],
     ["Featured Legacy Tracks", "Listen", img.vinyl, "A restrained selection of archive-connected tracks with provenance, preview listening, and protected master delivery.", true],
-    ["Quotes and Stories", "Memories", img.portrait, "Short recollections from artists, collaborators, and partners, gathered as an archive rather than a sales pitch."],
+    ["Quotes and Stories", "Memories", img.musicArchive, "Short recollections from artists, collaborators, and partners, gathered as an archive rather than a sales pitch."],
   ];
 
   return (
     <section className="legacy-page">
-      <div className="legacy-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(10,8,6,.88), rgba(10,8,6,.48), rgba(10,8,6,.2)), url(${img.console})` }}>
+      <div className="legacy-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(10,8,6,.88), rgba(10,8,6,.48), rgba(10,8,6,.2)), url(${img.musicArchive})` }}>
         <div className="legacy-hero-copy">
           <span className="eyebrow">Gary Burke legacy</span>
           <h2>Preserving the original vision.</h2>
@@ -1630,12 +1634,12 @@ function AuditAdmin() {
 
 function ContentPages({ setView, showToast }) {
   const hubCards = [
-    ["Short Sync Clips", "30 sec", "Fast editorial cuts for high-intent discovery, social context, and sync-ready catalog moments.", img.edit, "media"],
-    ["Story Library", "Features", "Rights-aware essays, artist context, Gary Burke legacy notes, and buyer-facing catalog stories.", img.console, "stories"],
-    ["Media Episodes", "Episodes", "Artist stories, studio sessions, licensing conversations, catalog highlights, VIP picks, and legacy clips.", img.portrait, "media"],
-    ["VIP Picks", "Private", "Curated premium selections and catalog intelligence for vetted buyers and strategic sync opportunities.", img.vinyl, "media"],
-    ["Gary Burke Legacy", "Archive", "Original brand spirit, archive memories, collaborator notes, and legacy-aware editorial context.", img.archive, "legacy"],
-    ["Catalog Highlights", "15 sec", "Quick, visual entry points into tracks with strong sync potential, stems, and rights context.", img.film, "media"],
+    ["Short Sync Clips", "30 sec", "Fast editorial cuts for high-intent discovery, social context, and sync-ready catalog moments.", img.mediaDesk, "media"],
+    ["Story Library", "Features", "Rights-aware essays, artist context, Gary Burke legacy notes, and buyer-facing catalog stories.", img.privateStudio, "stories"],
+    ["Media Episodes", "Episodes", "Artist stories, studio sessions, licensing conversations, catalog highlights, VIP picks, and legacy clips.", img.soulVocal, "media"],
+    ["VIP Picks", "Private", "Curated premium selections and catalog intelligence for vetted buyers and strategic sync opportunities.", img.supervisorSuite, "media"],
+    ["Gary Burke Legacy", "Archive", "Original brand spirit, archive memories, collaborator notes, and legacy-aware editorial context.", img.musicArchive, "legacy"],
+    ["Catalog Highlights", "15 sec", "Quick, visual entry points into tracks with strong sync potential, stems, and rights context.", img.scoringStage, "media"],
   ];
   const pathways = [
     ["Stories", "Browse the editorial library", "stories"],
@@ -1645,7 +1649,7 @@ function ContentPages({ setView, showToast }) {
   return (
     <section className="content-page editorial-hub-page">
       <div className="editorial-hub-grid">
-        <article className="editorial-hub-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,9,8,.90), rgba(13,9,8,.42)), url(${img.film})` }}>
+        <article className="editorial-hub-hero" style={{ backgroundImage: `linear-gradient(90deg, rgba(13,9,8,.90), rgba(13,9,8,.42)), url(${img.supervisorSuite})` }}>
           <span className="feature-story-kicker">Hub · Stories · Clips · Catalog intelligence</span>
           <span className="eyebrow">Editorial Hub</span>
           <h2>Stories, clips, and catalog context for serious sync buyers.</h2>
@@ -1684,10 +1688,10 @@ function ContentPages({ setView, showToast }) {
 function StoriesPage({ setView, showToast }) {
   const [selectedStory, setSelectedStory] = useState("The musicians behind unforgettable sounds");
   const stories = [
-    ["The musicians behind unforgettable sounds", "2 min feature", "Provenance, collaborators, recording context, and why the work matters to buyers.", img.console],
-    ["How rights-aware discovery protects the creative process", "45 sec", "A concise guide to usage, territory, term, exclusivity, and quote readiness.", img.edit],
-    ["Gary Burke and the catalog as a living archive", "2 min feature", "A respectful look at the original beatmondo spirit, studio memories, lowercase identity, and musician-led stewardship.", img.archive],
-    ["What supervisors save before they request a quote", "30 sec", "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.", img.film],
+    ["The musicians behind unforgettable sounds", "2 min feature", "Provenance, collaborators, recording context, and why the work matters to buyers.", img.soulVocal],
+    ["How rights-aware discovery protects the creative process", "45 sec", "A concise guide to usage, territory, term, exclusivity, and quote readiness.", img.supervisorSuite],
+    ["Gary Burke and the catalog as a living archive", "2 min feature", "A respectful look at the original beatmondo spirit, studio memories, lowercase identity, and musician-led stewardship.", img.musicArchive],
+    ["What supervisors save before they request a quote", "30 sec", "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.", img.privateStudio],
   ];
   const active = stories.find(([title]) => title === selectedStory) || stories[0];
 
@@ -1732,12 +1736,12 @@ function StoriesPage({ setView, showToast }) {
 function MediaEpisodesPage({ setView, showToast }) {
   const [selectedEpisode, setSelectedEpisode] = useState("Artist interviews");
   const episodes = [
-    ["Short Sync Clips", "Fast 15-45 second clips for premium discovery, social engagement, and high-intent music moments.", "30 sec", img.portrait],
-    ["Artist Stories", "Vocal texture, writing rooms, and the human story behind licensable tracks.", "2 min feature", img.portrait],
-    ["Studio Sessions", "Recording context, stems, session notes, and the craft behind songs that still feel alive.", "45 sec", img.console],
-    ["Licensing Conversations", "Supervisors, producers, and catalog partners discuss quote context and rights confidence.", "2 min feature", img.agency],
-    ["Catalog Highlights", "Private selections, VIP picks, and high-value tracks with strong sync potential.", "15 sec", img.vinyl],
-    ["Legacy Clips", "Short archive-led moments honoring Gary Burke and the original beatmondo spirit.", "45 sec", img.archive],
+    ["Short Sync Clips", "Fast 15-45 second clips for premium discovery, social engagement, and high-intent music moments.", "30 sec", img.mediaDesk],
+    ["Artist Stories", "Vocal texture, writing rooms, and the human story behind licensable tracks.", "2 min feature", img.soulVocal],
+    ["Studio Sessions", "Recording context, stems, session notes, and the craft behind songs that still feel alive.", "45 sec", img.privateStudio],
+    ["Licensing Conversations", "Supervisors, producers, and catalog partners discuss quote context and rights confidence.", "2 min feature", img.supervisorSuite],
+    ["Catalog Highlights", "Private selections, VIP picks, and high-value tracks with strong sync potential.", "15 sec", img.scoringStage],
+    ["Legacy Clips", "Short archive-led moments honoring Gary Burke and the original beatmondo spirit.", "45 sec", img.musicArchive],
   ];
   const active = episodes.find(([title]) => title === selectedEpisode) || episodes[0];
 
