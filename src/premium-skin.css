@@ -2958,8 +2958,91 @@ select:focus {
     min-height: 42px !important;
   }
 
+  .warm-band .collection-grid .collection-card:first-child {
+    grid-column: auto !important;
+    grid-row: auto !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .warm-band .collection-grid .collection-card:first-child > div:first-child {
+    grid-row: auto !important;
+    min-height: 190px !important;
+  }
+
+  .split-section {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 18px !important;
+  }
+
+  .split-section > div:first-child,
+  .split-section .trust-panel {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
   .home-app .track-row .icon-button,
   .track-row .icon-button {
     display: none !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 900px) {
+  .public-header,
+  .hero,
+  .editorial-band,
+  .access-tier-band,
+  .vip-band,
+  .warm-band,
+  .image-card-grid,
+  .split-section,
+  .partner-band,
+  .content-preview {
+    width: calc(100% - 48px) !important;
+    max-width: calc(100% - 48px) !important;
+  }
+
+  .hero {
+    min-height: auto !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 32px !important;
+    padding: 112px 0 72px !important;
+  }
+
+  .hero-copy,
+  .hero-copy h2,
+  .hero-copy p {
+    width: 100% !important;
+    max-width: 680px !important;
+    min-width: 0 !important;
+  }
+
+  .hero-copy h2 {
+    font-size: clamp(52px, 8vw, 66px) !important;
+  }
+
+  .hero-media {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 360px !important;
+  }
+
+  .vip-band {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 24px !important;
+  }
+
+  .vip-feature-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .split-section {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  .split-section > div:first-child,
+  .split-section .trust-panel {
+    width: 100% !important;
+    min-width: 0 !important;
   }
 }

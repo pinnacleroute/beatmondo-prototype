@@ -756,6 +756,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
 
 function HeroMedia() {
   const videoRef = useRef(null);
+  const [videoFailed, setVideoFailed] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -797,8 +798,19 @@ function HeroMedia() {
 
   return (
     <div className="hero-media">
-      <video ref={videoRef} src={opener} poster={logo} autoPlay muted loop playsInline />
-      <img className="hero-logo-fallback" src={logo} alt="beatmondo" />
+      {!videoFailed && (
+        <video
+          ref={videoRef}
+          src={opener}
+          poster={logo}
+          autoPlay
+          muted
+          loop
+          playsInline
+          onError={() => setVideoFailed(true)}
+        />
+      )}
+      {videoFailed && <img className="hero-logo-fallback" src={logo} alt="beatmondo" />}
     </div>
   );
 }
