@@ -58,6 +58,9 @@ const img = {
   soulVocal: "/assets/editorial/soul-vocal-session.webp",
   supervisorSuite: "/assets/editorial/supervisor-review-suite.webp",
   mediaDesk: "/assets/editorial/media-production-desk.webp",
+  legacyDetail: "/assets/editorial/gary-burke-legacy-detail.webp",
+  shortSyncEdit: "/assets/editorial/short-sync-edit-suite.webp",
+  mediaInterview: "/assets/editorial/media-episodes-interview.webp",
 };
 
 const buyerTiers = [
@@ -299,6 +302,7 @@ const artists = [
 const navItems = [
   ["home", "Home", House],
   ["catalog", "Explore Music", MagnifyingGlass],
+  ["usecases", "Use Cases", FilmSlate],
   ["track", "Track Detail", FileAudio],
   ["artist", "Artist Profile", MicrophoneStage],
   ["legacy", "Gary Burke Legacy", Archive],
@@ -313,7 +317,8 @@ const navItems = [
   ["system", "Design System", Sliders],
 ];
 
-const validViews = new Set(navItems.map(([id]) => id));
+const publicViews = new Set(["home", "login", "signup", "forgot"]);
+const validViews = new Set([...navItems.map(([id]) => id), ...publicViews]);
 
 function parseDurationMinutes(duration) {
   const [min, sec] = duration.split(":").map(Number);
@@ -437,12 +442,13 @@ function App() {
     setModalRequestSent(false);
   };
   const playerTrack = tracks.find((track) => track.id === playerTrackId);
+  const isPublicView = publicViews.has(view);
 
   return (
-    <div className={`app ${view === "home" ? "home-app" : ""}`}>
-      {view !== "home" && <Sidebar view={view} setView={navigate} mobileNav={mobileNav} setMobileNav={setMobileNav} />}
+    <div className={`app ${isPublicView ? "home-app public-app" : ""}`}>
+      {!isPublicView && <Sidebar view={view} setView={navigate} mobileNav={mobileNav} setMobileNav={setMobileNav} />}
       <main className="main-shell">
-        {view !== "home" && (
+        {!isPublicView && (
           <Topbar
             view={view}
             setView={navigate}
@@ -463,6 +469,9 @@ function App() {
             requestLicense={requestLicense}
           />
         )}
+        {view === "login" && <AuthPage mode="login" setView={navigate} showToast={showToast} />}
+        {view === "signup" && <AuthPage mode="signup" setView={navigate} showToast={showToast} />}
+        {view === "forgot" && <AuthPage mode="forgot" setView={navigate} showToast={showToast} />}
         {view === "catalog" && (
           <Catalog
             tracks={filteredTracks}
@@ -485,6 +494,7 @@ function App() {
             showToast={showToast}
           />
         )}
+        {view === "usecases" && <UseCasesPage setView={navigate} />}
         {view === "track" && (
           <TrackDetail
             track={selectedTrack}
@@ -626,19 +636,36 @@ function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotific
   );
 }
 
-function PublicHeader({ setView }) {
+function PublicHeader({ setView, authMode = null }) {
   return (
-    <header className="public-header">
+    <header className={`public-header ${authMode ? "auth-header" : ""}`}>
       <button className="public-logo" onClick={() => setView("home")} aria-label="beatmondo home">
         <img src={logo} alt="beatmondo" />
       </button>
-      <nav>
-        <button onClick={() => setView("catalog")}>Explore Music</button>
-        <button onClick={() => setView("licensing")}>Licensing</button>
-        <button onClick={() => setView("legacy")}>Legacy</button>
-        <button onClick={() => setView("stories")}>Stories</button>
-      </nav>
-      <button className="outline-button" onClick={() => setView("licensing")}><SignIn size={18} /> Request Access</button>
+      {authMode ? (
+        <>
+          <div />
+          <div className="public-auth-actions">
+            <button className="plain-button auth-help-button" onClick={() => setView("contact")}>Help</button>
+            <button className="outline-button" onClick={() => setView(authMode === "signup" ? "login" : "signup")}>
+              {authMode === "signup" ? "Log In" : "Request Access"}
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <nav>
+            <button onClick={() => setView("catalog")}>Explore Music</button>
+            <button onClick={() => setView("licensing")}>Licensing</button>
+            <button onClick={() => setView("legacy")}>Legacy</button>
+            <button onClick={() => setView("stories")}>Stories</button>
+          </nav>
+          <div className="public-auth-actions">
+            <button className="plain-button" onClick={() => setView("login")}>Log In</button>
+            <button className="outline-button" onClick={() => setView("signup")}><SignIn size={18} /> Request Access</button>
+          </div>
+        </>
+      )}
     </header>
   );
 }
@@ -654,7 +681,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
           <p>beatmondo connects serious music supervisors, brands, studios, agencies, and strategic buyers with curated music, verified rights, protected masters, stems, and access-controlled licensing workflows.</p>
           <p className="trust-line">Preview publicly. License professionally. Deliver securely.</p>
           <div className="button-row">
-            <button className="gold-button" onClick={() => setView("licensing")}><LockKey size={18} /> Request Access</button>
+            <button className="gold-button" onClick={() => setView("signup")}><LockKey size={18} /> Request Access</button>
             <button className="outline-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore Music</button>
           </div>
         </div>
@@ -679,7 +706,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       <section className="access-tier-band">
         <div className="section-heading">
           <div><span className="eyebrow">Choose your access level</span><h2>Curated access for serious sync buyers.</h2></div>
-          <button onClick={() => setView("licensing")}>Discuss Licensing Access</button>
+          <button className="text-action" onClick={() => setView("licensing")}>Compare access</button>
         </div>
         <div className="tier-grid">
           {buyerTiers.map((tier) => <AccessTierCard key={tier.id} tier={tier} onSelect={() => setView("licensing")} />)}
@@ -689,25 +716,15 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       <section>
         <div className="section-kicker"><span className="eyebrow">Music for global sync opportunities</span><h2>Search by the work, market, and placement you are making.</h2></div>
         <div className="image-card-grid use-cases">
-          {useCases.map(([title, text, image]) => <ImageCard key={title} title={title} text={text} image={image} action={() => setView("catalog")} />)}
+          {useCases.slice(0, 4).map(([title, text, image]) => <ImageCard key={title} title={title} text={text} image={image} action={() => setView("catalog")} />)}
         </div>
-      </section>
-
-      <section className="vip-band">
-        <div>
-          <span className="eyebrow">VIP Sync Access</span>
-          <h2>Priority music access for vetted high-value buyers.</h2>
-          <p>VIP buyers receive private selections, priority review, pre-approved terms where available, concierge support, fast-track licensing, and premium secure delivery for serious sync opportunities.</p>
-        </div>
-        <div className="vip-feature-grid">
-          {["Private high-value selections", "Priority quote review", "Pre-approved terms where available", "Concierge support", "Fast-track licensing", "Secure WAV master and stems delivery"].map((item) => <span key={item}><ShieldCheck size={16} /> {item}</span>)}
-        </div>
+        <div className="section-followup"><button className="text-action" onClick={() => setView("usecases")}>View all use cases</button></div>
       </section>
 
       <section className="warm-band collections-band">
-        <div className="section-heading"><div><span className="eyebrow">Curated selections</span><h2>Editorial paths into Explore Music.</h2></div><button onClick={() => setView("catalog")}>Explore music</button></div>
+        <div className="section-heading"><div><span className="eyebrow">Curated selections</span><h2>Editorial paths into Explore Music.</h2></div><button className="text-action" onClick={() => setView("catalog")}>Explore Music</button></div>
         <div className="collection-grid">
-          {collections.map(([title, text, count, tags, image]) => (
+          {collections.slice(0, 4).map(([title, text, count, tags, image]) => (
             <CollectionCard key={title} title={title} text={text} count={count} tags={tags} image={image} onView={() => setView("catalog")} />
           ))}
         </div>
@@ -715,7 +732,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
 
       <section className="split-section">
         <div>
-          <div className="section-heading"><div><span className="eyebrow">Featured tracks</span><h2>Preview publicly. Deliver securely.</h2></div><button onClick={() => setView("catalog")}>View all music</button></div>
+          <div className="section-heading"><div><span className="eyebrow">Featured tracks</span><h2>Preview publicly. Deliver securely.</h2></div><button className="text-action" onClick={() => setView("catalog")}>Explore Music</button></div>
           <div className="track-list compact">
             {tracks.slice(0, 4).map((track) => (
               <TrackRow
@@ -739,19 +756,10 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
         </div>
       </section>
 
-      <section className="partner-band">
-        <div>
-          <span className="eyebrow">For strategic partners</span>
-          <h2>A rights-controlled foundation built for long-term value.</h2>
-          <p>beatmondo combines selective music exploration, rights-aware metadata, secure licensing workflows, and artist-first positioning for thoughtful partnership and future catalog expansion.</p>
-        </div>
-        <button className="outline-button" onClick={() => setView("licensing")}><UsersThree size={18} /> Partnership Inquiry</button>
-      </section>
-
       <section className="content-preview">
-        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.musicArchive} action={() => setView("legacy")} />
-        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, Catalog Highlights, VIP Picks, and licensing conversations." image={img.mediaDesk} action={() => setView("stories")} />
-        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, Catalog Highlights, legacy clips, and supervisor conversations." image={img.soulVocal} action={() => setView("media")} />
+        <MiniStory title="Gary Burke Legacy" text="A tasteful archive honoring the original vision and musician-led spirit behind beatmondo." image={img.legacyDetail} actionLabel="Read legacy story" action={() => setView("legacy")} />
+        <MiniStory title="Short Sync Clips" text="Fast editorial clips for social discovery, Catalog Highlights, VIP Picks, and licensing conversations." image={img.shortSyncEdit} actionLabel="View clips" action={() => setView("stories")} />
+        <MiniStory title="Media Episodes" text="Artist stories, studio sessions, Catalog Highlights, legacy clips, and supervisor conversations." image={img.mediaInterview} actionLabel="Watch episodes" action={() => setView("media")} />
       </section>
       <Footer setView={setView} />
     </section>
@@ -766,7 +774,8 @@ function HeroMedia() {
     const video = videoRef.current;
     if (!video) return undefined;
 
-    const playMuted = async () => {
+    const playVideo = async () => {
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
       video.muted = true;
       await video.play().catch(() => {});
     };
@@ -774,7 +783,7 @@ function HeroMedia() {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          playMuted();
+          playVideo();
         } else {
           video.pause();
         }
@@ -782,21 +791,11 @@ function HeroMedia() {
       { threshold: 0.45 }
     );
 
-    const unlockAudio = () => {
-      video.muted = false;
-      if (!video.paused) return;
-      video.play().catch(() => {});
-    };
-
     observer.observe(video);
-    playMuted();
-    window.addEventListener("pointerdown", unlockAudio, { once: true });
-    window.addEventListener("keydown", unlockAudio, { once: true });
+    playVideo();
 
     return () => {
       observer.disconnect();
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
     };
   }, []);
 
@@ -807,7 +806,6 @@ function HeroMedia() {
           ref={videoRef}
           src={opener}
           poster={logo}
-          autoPlay
           muted
           loop
           playsInline
@@ -816,6 +814,139 @@ function HeroMedia() {
       )}
       {videoFailed && <img className="hero-logo-fallback" src={logo} alt="beatmondo" />}
     </div>
+  );
+}
+
+function UseCasesPage({ setView }) {
+  return (
+    <section className="use-cases-page">
+      <div className="page-intro">
+        <span className="eyebrow">Music for global sync opportunities</span>
+        <h2>Explore music by placement and market.</h2>
+        <p>Start with the work you are making, then move into curated previews, rights context, and the appropriate licensing path.</p>
+      </div>
+      <div className="image-card-grid use-cases-directory">
+        {useCases.map(([title, text, image]) => (
+          <ImageCard key={title} title={title} text={text} image={image} action={() => setView("catalog")} />
+        ))}
+      </div>
+      <div className="page-cta">
+        <div><span className="eyebrow">Need a private selection?</span><h3>Tell us about the brief and deadline.</h3></div>
+        <button className="gold-button" onClick={() => setView("licensing")}>Request Access</button>
+      </div>
+    </section>
+  );
+}
+
+function AuthPage({ mode, setView, showToast }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(true);
+  const [authError, setAuthError] = useState("");
+  const isSignup = mode === "signup";
+  const isForgot = mode === "forgot";
+  const title = isSignup ? "Request your beatmondo workspace." : isForgot ? "Reset your password." : "Welcome back.";
+  const description = isSignup
+    ? "Create an account request for buyer verification, project tools, licensing workflows, and protected delivery."
+    : isForgot
+      ? "Enter your work email and we’ll simulate sending a secure reset link."
+      : "Log in to access saved tracks, active projects, licensing requests, and secure deliveries.";
+
+  const submit = (event) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const email = String(formData.get("email") || "");
+    setAuthError("");
+    if (!isForgot && email.toLowerCase().includes("locked")) {
+      setAuthError("This demo account is locked. Contact buyer support or request an access review.");
+      return;
+    }
+    setSubmitting(true);
+    window.setTimeout(() => {
+      setSubmitting(false);
+      setSubmitted(true);
+      showToast(isForgot ? "Password reset link simulated." : isSignup ? "Access request account created." : "Signed in to the demo workspace.");
+      if (!isForgot) setView("buyer");
+    }, 700);
+  };
+
+  const socialLogin = (provider) => {
+    showToast(`${provider} sign-in simulated.`);
+    window.setTimeout(() => setView("buyer"), 650);
+  };
+
+  return (
+    <section className="auth-view">
+      <PublicHeader setView={setView} authMode={mode} />
+      <div className="auth-shell">
+        <aside className="auth-story">
+          <span className="eyebrow">Private buyer access</span>
+          <h1>Private access for serious sync work.</h1>
+          <p>Return to curated music, verified rights, licensing requests, and secure delivery.</p>
+          <ul>
+            <li><ShieldCheck size={18} /> Rights-aware metadata</li>
+            <li><BookmarkSimple size={18} /> Private projects and selections</li>
+            <li><LockKey size={18} /> Protected master audio delivery</li>
+          </ul>
+        </aside>
+        <div className="auth-card">
+          <span className="eyebrow">{isForgot ? "Account recovery" : isSignup ? "New buyer account" : "Approved buyer login"}</span>
+          <h2>{title}</h2>
+          <p>{description}</p>
+
+          {!isForgot && (
+            <>
+              <div className="social-auth-grid">
+                <button className="social-provider google" type="button" onClick={() => socialLogin("Google")}><img src="/assets/auth/google-g.png" alt="" />Continue with Google</button>
+                <button className="social-provider apple" type="button" onClick={() => socialLogin("Apple")}><img src="/assets/auth/apple-logo.svg" alt="" />Continue with Apple</button>
+                <button className="social-provider microsoft" type="button" onClick={() => socialLogin("Microsoft")}><img src="/assets/auth/microsoft-symbol.svg" alt="" />Continue with Microsoft</button>
+              </div>
+              <div className="auth-divider"><span>or continue with email</span></div>
+            </>
+          )}
+
+          <form onSubmit={submit}>
+            {isSignup && (
+              <div className="auth-two-col">
+                <label>First name<input required autoComplete="given-name" /></label>
+                <label>Last name<input required autoComplete="family-name" /></label>
+              </div>
+            )}
+            {isSignup && <label>Company<input required autoComplete="organization" /></label>}
+            <label>Work email<input name="email" type="email" required autoComplete="email" placeholder="name@company.com" aria-describedby={authError ? "auth-error" : undefined} /></label>
+            {!isForgot && (
+              <label>Password
+                <span className="password-field">
+                  <input name="password" type={showPassword ? "text" : "password"} required minLength={8} autoComplete={isSignup ? "new-password" : "current-password"} aria-describedby={authError ? "auth-error" : undefined} />
+                  <button type="button" onClick={() => setShowPassword((visible) => !visible)} aria-pressed={showPassword}>{showPassword ? "Hide" : "Show"}</button>
+                </span>
+              </label>
+            )}
+            {isSignup && <label className="auth-consent"><input type="checkbox" required /> I agree to buyer verification and access review.</label>}
+            {!isSignup && !isForgot && (
+              <div className="auth-utilities">
+                <label className="auth-consent"><input type="checkbox" checked={rememberMe} onChange={(event) => setRememberMe(event.target.checked)} /> Remember me</label>
+                <button type="button" className="auth-link" onClick={() => setView("forgot")}>Forgot password?</button>
+              </div>
+            )}
+            {authError && <div id="auth-error" className="auth-error" role="alert"><ShieldCheck size={18} /> {authError}</div>}
+            <button className="gold-button auth-submit" type="submit" disabled={submitted || submitting}>{submitting ? "Signing in…" : submitted ? "Submitted" : isForgot ? "Send reset link" : isSignup ? "Create account request" : "Log In"}</button>
+            {!isForgot && <p className="auth-reassurance"><LockKey size={15} /> Authentication is simulated in this prototype. <button type="button" onClick={() => setView("contact")}>Contact buyer support</button>.</p>}
+          </form>
+
+          {(isForgot || isSignup) && (
+            <div className="auth-switch">
+              {isForgot ? (
+                <button onClick={() => setView("login")}>Return to Log In</button>
+              ) : (
+                <span>Already have access? <button onClick={() => setView("login")}>Log In</button></span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -1369,7 +1500,7 @@ function ProjectDetail({ requestLicense, openTrack, showToast }) {
         </div>
       </div>
       <div className="project-workspace-grid">
-        <Panel title="Track comparison" action="4 shortlisted">
+        <Panel title="Track comparison" action="4 shortlisted" className="track-comparison-panel">
           <div className="comparison-table">
             <div className="comparison-head"><span>Track</span><span>Mood</span><span>Rights</span><span>WAV / Stems</span><span /></div>
             {projectTracks.map((track) => (
@@ -1905,7 +2036,7 @@ function ImageCard({ title, text, image, action }) {
 }
 
 function CollectionCard({ title, text, count, tags, image, onView }) {
-  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>Explore selection</button></article>;
+  return <article className="collection-card"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><span>{count} tracks</span><div className="tag-row">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div><button onClick={onView}>View collection</button></article>;
 }
 
 function AccessTierCard({ tier, onSelect }) {
@@ -1915,8 +2046,8 @@ function AccessTierCard({ tier, onSelect }) {
       <h3>{tier.name}</h3>
       <p>{tier.description}</p>
       <strong>{tier.priceLabel}</strong>
-      <ul>{tier.features.map((feature) => <li key={feature}><CheckCircle size={15} weight="fill" /> {feature}</li>)}</ul>
-      <button className={tier.id === "vip" ? "gold-button" : "outline-button"} onClick={onSelect}>{tier.id === "vip" ? "Apply for VIP Access" : "Request Access"}</button>
+      <ul>{tier.features.slice(0, 3).map((feature) => <li key={feature}><CheckCircle size={15} weight="fill" /> {feature}</li>)}</ul>
+      <button className={tier.id === "vip" ? "gold-button" : "outline-button"} onClick={onSelect}>Request Access</button>
     </article>
   );
 }
@@ -1945,8 +2076,8 @@ function Select({ label, value, options, onChange }) {
   return <label className="select-label"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}>{options.map((option) => <option key={option}>{option}</option>)}</select><CaretDown size={14} /></label>;
 }
 
-function Panel({ title, action, children }) {
-  return <section className="panel"><div className="panel-head"><h3>{title}</h3><span>{action}</span></div>{children}</section>;
+function Panel({ title, action, children, className = "" }) {
+  return <section className={`panel ${className}`.trim()}><div className="panel-head"><h3>{title}</h3><span>{action}</span></div>{children}</section>;
 }
 
 function Metric({ icon: Icon, label, value, note }) {
@@ -1957,8 +2088,8 @@ function TrustItem({ icon: Icon, title, text }) {
   return <div className="trust-item"><Icon size={30} /><div><strong>{title}</strong><p>{text}</p></div></div>;
 }
 
-function MiniStory({ title, text, image, action }) {
-  return <article className="mini-story"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><button onClick={action}>Open</button></article>;
+function MiniStory({ title, text, image, actionLabel = "Open", action }) {
+  return <article className="mini-story"><div style={{ backgroundImage: `url(${image})` }} /><h3>{title}</h3><p>{text}</p><button onClick={action}>{actionLabel}</button></article>;
 }
 
 function RequestRow({ item, detailed }) {
