@@ -40,6 +40,105 @@ body {
   background: var(--black);
 }
 
+.site-password-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(circle at 50% 12%, rgba(166, 52, 42, 0.18), transparent 34%),
+    linear-gradient(145deg, #090806 0%, #15110d 52%, #050505 100%);
+}
+
+.site-password-panel {
+  width: min(100%, 470px);
+  padding: clamp(32px, 6vw, 56px);
+  border: 1px solid rgba(196, 164, 90, 0.25);
+  border-radius: 4px;
+  background: rgba(17, 15, 12, 0.92);
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.48);
+}
+
+.site-password-panel img {
+  display: block;
+  width: min(210px, 70%);
+  height: auto;
+  margin: 0 0 34px;
+}
+
+.site-password-kicker {
+  color: #c4a45a;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.site-password-panel h1 {
+  margin: 14px 0 12px;
+  color: var(--ivory);
+  font-family: var(--font-display);
+  font-size: clamp(34px, 7vw, 48px);
+  font-weight: 600;
+  line-height: 0.98;
+}
+
+.site-password-panel p {
+  margin: 0 0 28px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.site-password-panel label {
+  display: block;
+  margin-bottom: 9px;
+  color: var(--paper);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.site-password-panel input {
+  width: 100%;
+  height: 52px;
+  padding: 0 14px;
+  border: 1px solid rgba(244, 239, 228, 0.22);
+  border-radius: 3px;
+  color: var(--ivory);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+.site-password-panel button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 16px;
+  border: 1px solid #a6342a;
+  border-radius: 3px;
+  color: #fff7ed;
+  background: #a6342a;
+  font-weight: 800;
+}
+
+.site-password-panel button:hover {
+  background: #b63c31;
+}
+
+.site-password-error {
+  display: block;
+  margin-top: 9px;
+  color: #e78b80;
+  font-size: 13px;
+}
+
+.site-password-panel small {
+  display: block;
+  margin-top: 22px;
+  color: #756b5c;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
 button,
 input,
 select,
