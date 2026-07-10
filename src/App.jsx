@@ -317,6 +317,13 @@ const navItems = [
   ["system", "Design System", Sliders],
 ];
 
+const navItemMap = new Map(navItems.map((item) => [item[0], item]));
+const sidebarSections = [
+  ["Buyer workspace", ["home", "catalog", "usecases", "buyer", "project", "licensing"]],
+  ["Editorial", ["legacy", "content", "stories", "media", "contact"]],
+  ["Operations", ["admin"]],
+];
+
 const publicViews = new Set(["home", "login", "signup", "forgot"]);
 const validViews = new Set([...navItems.map(([id]) => id), ...publicViews]);
 
@@ -383,6 +390,8 @@ function App() {
   const navigate = (nextView) => {
     if (!validViews.has(nextView)) return;
     setView(nextView);
+    setModalTrack(null);
+    setShowNotifications(false);
     setMobileNav(false);
     window.history.replaceState(null, "", nextView === "home" ? window.location.pathname : `#${nextView}`);
   };
@@ -392,9 +401,15 @@ function App() {
       const id = window.location.hash.replace("#", "");
       if (!id || id === "home") {
         setView("home");
+        setModalTrack(null);
+        setShowNotifications(false);
         return;
       }
-      if (validViews.has(id)) setView(id);
+      if (validViews.has(id)) {
+        setView(id);
+        setModalTrack(null);
+        setShowNotifications(false);
+      }
     };
     syncFromHash();
     window.addEventListener("hashchange", syncFromHash);
@@ -587,19 +602,21 @@ function Sidebar({ view, setView, mobileNav, setMobileNav }) {
         <img className="brand-logo" src={logo} alt="beatmondo" />
       </button>
       <nav>
-        {navItems.map(([id, label, Icon]) => (
-          <button key={id} className={view === id ? "active" : ""} onClick={() => { setView(id); setMobileNav(false); }}>
-            <Icon size={20} weight={view === id ? "fill" : "regular"} />
-            <span>{label}</span>
-          </button>
+        {sidebarSections.map(([section, ids]) => (
+          <div className="sidebar-section" key={section}>
+            <span>{section}</span>
+            {ids.map((id) => {
+              const [, label, Icon] = navItemMap.get(id);
+              return (
+                <button key={id} className={view === id ? "active" : ""} onClick={() => { setView(id); setMobileNav(false); }}>
+                  <Icon size={20} weight={view === id ? "fill" : "regular"} />
+                  <span>{label}</span>
+                </button>
+              );
+            })}
+          </div>
         ))}
       </nav>
-      <div className="security-card">
-        <ShieldCheck size={28} weight="fill" />
-        <strong>Protected licensing workspace</strong>
-        <span>Preview publicly. Deliver securely.</span>
-        <span>Audit-ready activity logs</span>
-      </div>
     </aside>
   );
 }
@@ -955,8 +972,22 @@ function Catalog(props) {
     tracks: visibleTracks, query, setQuery, filters, setFilters, layout, setLayout, sortBy, setSortBy,
     selectedTrack, setSelectedTrack, playingId, togglePlay, savedIds, saveTrack, openTrack, requestLicense, showToast,
   } = props;
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   const resetFilters = () => setFilters({ genre: "All Genres", mood: "Any Mood", tempo: "Any Tempo", era: "Any Era", usage: "Any Usage", vocal: "Any Vocal", availability: "All Availability", duration: "Any Duration", vipCatalog: "All Access", stems: "Any Stem Status", rightsVerified: "Any Rights Status" });
   const chips = Object.entries(filters).filter(([, value]) => !value.startsWith("All") && !value.startsWith("Any"));
+  const filterControls = {
+    genre: <Select label="Genre" value={filters.genre} options={["All Genres", "Cinematic", "Indie Rock", "Ambient", "Soul", "Acoustic", "Pop"]} onChange={(genre) => setFilters({ ...filters, genre })} />,
+    mood: <Select label="Mood" value={filters.mood} options={["Any Mood", "Reflective", "Driven", "Moody", "Emotional", "Inspiring", "Feel Good"]} onChange={(mood) => setFilters({ ...filters, mood })} />,
+    tempo: <Select label="Tempo" value={filters.tempo} options={["Any Tempo", "Slow", "Midtempo", "Upbeat"]} onChange={(tempo) => setFilters({ ...filters, tempo })} />,
+    era: <Select label="Era" value={filters.era} options={["Any Era", "Modern", "2000s", "1990s", "1970s"]} onChange={(era) => setFilters({ ...filters, era })} />,
+    usage: <Select label="Usage" value={filters.usage} options={["Any Usage", "Film / TV", "Advertising", "Documentary", "Trailer", "Brand Film", "Streaming"]} onChange={(usage) => setFilters({ ...filters, usage })} />,
+    vocal: <Select label="Vocal" value={filters.vocal} options={["Any Vocal", "Instrumental", "Vocal"]} onChange={(vocal) => setFilters({ ...filters, vocal })} />,
+    availability: <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Option", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />,
+    duration: <Select label="Duration" value={filters.duration} options={["Any Duration", "Under 3:00", "3:00+"]} onChange={(duration) => setFilters({ ...filters, duration })} />,
+    vipCatalog: <Select label="Access" value={filters.vipCatalog} options={["All Access", "Standard Access", "VIP Picks"]} onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })} />,
+    stems: <Select label="Stems" value={filters.stems} options={["Any Stem Status", "Stems Available", "Stems Not Ready"]} onChange={(stems) => setFilters({ ...filters, stems })} />,
+    rightsVerified: <Select label="Rights" value={filters.rightsVerified} options={["Any Rights Status", "Rights Verified", "Rights Review Needed"]} onChange={(rightsVerified) => setFilters({ ...filters, rightsVerified })} />,
+  };
   return (
     <section className="catalog-layout">
       <div className="catalog-main">
@@ -974,18 +1005,27 @@ function Catalog(props) {
             <button className="outline-button" onClick={() => requestLicense(selectedTrack)}><Sparkle size={18} /> Need Something Specific?</button>
           </div>
         </div>
-        <div className="filters wide">
-          <Select label="Genre" value={filters.genre} options={["All Genres", "Cinematic", "Indie Rock", "Ambient", "Soul", "Acoustic", "Pop"]} onChange={(genre) => setFilters({ ...filters, genre })} />
-          <Select label="Mood" value={filters.mood} options={["Any Mood", "Reflective", "Driven", "Moody", "Emotional", "Inspiring", "Feel Good"]} onChange={(mood) => setFilters({ ...filters, mood })} />
-          <Select label="Tempo" value={filters.tempo} options={["Any Tempo", "Slow", "Midtempo", "Upbeat"]} onChange={(tempo) => setFilters({ ...filters, tempo })} />
-          <Select label="Era" value={filters.era} options={["Any Era", "Modern", "2000s", "1990s", "1970s"]} onChange={(era) => setFilters({ ...filters, era })} />
-          <Select label="Usage" value={filters.usage} options={["Any Usage", "Film / TV", "Advertising", "Documentary", "Trailer", "Brand Film", "Streaming"]} onChange={(usage) => setFilters({ ...filters, usage })} />
-          <Select label="Vocal" value={filters.vocal} options={["Any Vocal", "Instrumental", "Vocal"]} onChange={(vocal) => setFilters({ ...filters, vocal })} />
-          <Select label="Availability" value={filters.availability} options={["All Availability", "Available Now", "Exclusive Option", "Quote Required"]} onChange={(availability) => setFilters({ ...filters, availability })} />
-          <Select label="Duration" value={filters.duration} options={["Any Duration", "Under 3:00", "3:00+"]} onChange={(duration) => setFilters({ ...filters, duration })} />
-          <Select label="Access" value={filters.vipCatalog} options={["All Access", "Standard Access", "VIP Picks"]} onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })} />
-          <Select label="Stems" value={filters.stems} options={["Any Stem Status", "Stems Available", "Stems Not Ready"]} onChange={(stems) => setFilters({ ...filters, stems })} />
-          <Select label="Rights" value={filters.rightsVerified} options={["Any Rights Status", "Rights Verified", "Rights Review Needed"]} onChange={(rightsVerified) => setFilters({ ...filters, rightsVerified })} />
+        <div className="filter-panel">
+          <div className="filters wide primary-filters">
+            {filterControls.genre}
+            {filterControls.usage}
+            {filterControls.availability}
+            {filterControls.vipCatalog}
+            {filterControls.mood}
+          </div>
+          <button className="filter-toggle" type="button" aria-expanded={showAdvancedFilters} onClick={() => setShowAdvancedFilters((open) => !open)}>
+            <Sliders size={18} /> {showAdvancedFilters ? "Hide advanced filters" : "Show advanced filters"}
+          </button>
+          {showAdvancedFilters && (
+            <div className="filters wide advanced-filters">
+              {filterControls.tempo}
+              {filterControls.era}
+              {filterControls.vocal}
+              {filterControls.duration}
+              {filterControls.stems}
+              {filterControls.rightsVerified}
+            </div>
+          )}
         </div>
         <div className="chip-row">{chips.map(([key, value]) => <span key={key}>{value}</span>)}{chips.length > 0 && <button onClick={resetFilters}>Clear filters</button>}</div>
         <div className="results-meta">
@@ -1292,6 +1332,18 @@ function InquiryModal({ track, requestSent, setRequestSent, onClose }) {
   useEffect(() => {
     const onKeyDown = (event) => {
       if (event.key === "Escape") onClose();
+      if (event.key !== "Tab" || !modalRef.current) return;
+      const focusable = modalRef.current.querySelectorAll("button, [href], input, select, textarea, [tabindex]:not([tabindex='-1'])");
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKeyDown);
     modalRef.current?.querySelector("input, button, select, textarea")?.focus();
@@ -1311,6 +1363,7 @@ function InquiryModal({ track, requestSent, setRequestSent, onClose }) {
 function InquiryForm({ track, onSubmit, compact, selectedTier = currentBuyer.accessTier }) {
   const [form, setForm] = useState({ name: "", email: "", company: "", role: "", project: "Luxury Auto Campaign - Fall 2026", brand: "Aster Automotive", production: "Northstar Pictures", campaign: "Fall launch film", type: "OTT / streaming", media: "Online + paid social", territory: "Worldwide", term: "1 year", exclusivity: "Non-exclusive", paidMedia: "Paid + organic", placements: "3", scale: "Global", budget: "$25k-$50k", releaseDate: "", deadline: "", master: "Yes", stems: "Yes", instrumental: "Yes", vocal: "If available", edit: "Maybe", loop: "Maybe", urgent: "Yes", preApproved: selectedTier === "VIP Sync Access" ? "Yes" : "No", message: "" });
   const [attempted, setAttempted] = useState(false);
+  const [step, setStep] = useState(0);
   const update = (field, value) => setForm({ ...form, [field]: value });
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -1318,59 +1371,118 @@ function InquiryForm({ track, onSubmit, compact, selectedTier = currentBuyer.acc
     if (!event.currentTarget.checkValidity()) return;
     onSubmit();
   };
+  const steps = [
+    {
+      id: "buyer",
+      title: "Buyer details",
+      note: "Who should the licensing team verify and contact?",
+      fields: (
+        <FieldGroup title="Buyer details" note="Who should the licensing team verify and contact?">
+          {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"]].map(([field, label]) => (
+            <label key={field}>
+              {label}
+              <input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} />
+              {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
+            </label>
+          ))}
+          <label>Buyer access tier<input value={selectedTier} readOnly /></label>
+          <label>Buyer verified?<input value={currentBuyer.verified ? "Verified buyer" : "Verification needed"} readOnly /></label>
+          <label>VIP buyer?<input value={selectedTier === "VIP Sync Access" ? "Yes" : "No"} readOnly /></label>
+          <label>Pre-approved usage terms?<select value={form.preApproved} onChange={(event) => update("preApproved", event.target.value)}><option>Yes</option><option>No</option><option>Requested</option></select></label>
+        </FieldGroup>
+      ),
+    },
+    {
+      id: "project",
+      title: "Project",
+      note: "Tell us what the music is supporting.",
+      fields: (
+        <FieldGroup title="Project details" note="Tell us what the music is supporting.">
+          <label>Project name<input required value={form.project} onChange={(event) => update("project", event.target.value)} placeholder="Project name" />{attempted && !form.project && <span className="form-error">This field is required.</span>}</label>
+          <label>Brand / client name<input value={form.brand} onChange={(event) => update("brand", event.target.value)} /></label>
+          <label>Production company<input value={form.production} onChange={(event) => update("production", event.target.value)} /></label>
+          <label>Campaign / title<input value={form.campaign} onChange={(event) => update("campaign", event.target.value)} /></label>
+          <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>OTT / streaming</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Documentary</option><option>Sports / broadcast</option><option>Luxury / lifestyle campaign</option><option>Game</option><option>Live event</option><option>Editorial / Media</option></select></label>
+          <label>Track of interest<input value={track.title} readOnly /></label>
+        </FieldGroup>
+      ),
+    },
+    {
+      id: "usage",
+      title: "Usage terms",
+      note: "These fields shape rights review, quote timing, and delivery readiness.",
+      fields: (
+        <FieldGroup title="Usage terms" note="These fields shape rights review, quote timing, and delivery readiness.">
+          <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
+          <label>Territory<select value={form.territory} onChange={(event) => update("territory", event.target.value)}><option>Worldwide</option><option>North America</option><option>United States</option><option>Europe</option></select></label>
+          <label>Term<select value={form.term} onChange={(event) => update("term", event.target.value)}><option>1 year</option><option>2 years</option><option>Perpetual</option><option>Festival only</option></select></label>
+          <label>Exclusivity<select value={form.exclusivity} onChange={(event) => update("exclusivity", event.target.value)}><option>Non-exclusive</option><option>Category exclusive</option><option>Full exclusive</option></select></label>
+          <label>Paid media or organic use?<select value={form.paidMedia} onChange={(event) => update("paidMedia", event.target.value)}><option>Paid + organic</option><option>Paid media</option><option>Organic only</option><option>Internal only</option></select></label>
+          <label>Number of placements<input value={form.placements} onChange={(event) => update("placements", event.target.value)} /></label>
+          <label>Usage scale<select value={form.scale} onChange={(event) => update("scale", event.target.value)}><option>Global</option><option>National</option><option>Local</option><option>Festival only</option></select></label>
+          <label>Budget range<select value={form.budget} onChange={(event) => update("budget", event.target.value)}><option>$5k-$10k</option><option>$10k-$18k</option><option>$18k-$25k</option><option>$25k-$50k</option><option>$50k+</option></select></label>
+          <label>Expected release date<input type="date" value={form.releaseDate} onChange={(event) => update("releaseDate", event.target.value)} /></label>
+          <label>Deadline<input type="date" value={form.deadline} onChange={(event) => update("deadline", event.target.value)} /></label>
+        </FieldGroup>
+      ),
+    },
+    {
+      id: "delivery",
+      title: "Delivery",
+      note: "Protected files unlock only after approval, payment, or VIP terms.",
+      fields: (
+        <FieldGroup title="Delivery needs" note="Protected files unlock only after approval, payment, or VIP terms.">
+          <label>Need WAV master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
+          <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
+          <label>Need instrumental?<select value={form.instrumental} onChange={(event) => update("instrumental", event.target.value)}><option>Yes</option><option>No</option><option>If available</option></select></label>
+          <label>Need vocal version?<select value={form.vocal} onChange={(event) => update("vocal", event.target.value)}><option>If available</option><option>Yes</option><option>No</option></select></label>
+          <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
+          <label>Need loop/edit points?<select value={form.loop} onChange={(event) => update("loop", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
+          <label>Urgent delivery?<select value={form.urgent} onChange={(event) => update("urgent", event.target.value)}><option>Yes</option><option>No</option></select></label>
+        </FieldGroup>
+      ),
+    },
+    {
+      id: "message",
+      title: "Message",
+      note: "Add scene, campaign, edit, rights, or timing context.",
+      fields: (
+        <FieldGroup title="Message" note="Add scene, campaign, edit, rights, or timing context.">
+          <label className="full-field">
+            Intended usage / message
+            <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
+            {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
+          </label>
+        </FieldGroup>
+      ),
+    },
+  ];
+  const isLastStep = step === steps.length - 1;
   return (
     <form className={`inquiry-form ${compact ? "compact-form" : ""}`} onSubmit={handleSubmit} noValidate>
       {selectedTier === "VIP Sync Access" && <p className="vip-form-note">VIP requests confirm usage parameters first, then move through concierge review and pre-approved terms when available.</p>}
-      <FieldGroup title="Buyer details" note="Who should the licensing team verify and contact?">
-        {[["name", "Name"], ["email", "Email"], ["company", "Company"], ["role", "Role"]].map(([field, label]) => (
-          <label key={field}>
-            {label}
-            <input required={field !== "role"} value={form[field]} onChange={(event) => update(field, event.target.value)} placeholder={field === "email" ? "name@company.com" : label} />
-            {attempted && field !== "role" && !form[field] && <span className="form-error">This field is required.</span>}
-          </label>
+      <div className="request-stepper" aria-label="License request steps">
+        {steps.map((item, index) => (
+          <button type="button" key={item.id} className={index === step ? "active" : index < step ? "complete" : ""} onClick={() => setStep(index)}>
+            <em>{index + 1}</em>
+            <span>{item.title}</span>
+          </button>
         ))}
-        <label>Buyer access tier<input value={selectedTier} readOnly /></label>
-        <label>Buyer verified?<input value={currentBuyer.verified ? "Verified buyer" : "Verification needed"} readOnly /></label>
-        <label>VIP buyer?<input value={selectedTier === "VIP Sync Access" ? "Yes" : "No"} readOnly /></label>
-        <label>Pre-approved usage terms?<select value={form.preApproved} onChange={(event) => update("preApproved", event.target.value)}><option>Yes</option><option>No</option><option>Requested</option></select></label>
-      </FieldGroup>
-      <FieldGroup title="Project details" note="Tell us what the music is supporting.">
-        <label>Project name<input required value={form.project} onChange={(event) => update("project", event.target.value)} placeholder="Project name" />{attempted && !form.project && <span className="form-error">This field is required.</span>}</label>
-        <label>Brand / client name<input value={form.brand} onChange={(event) => update("brand", event.target.value)} /></label>
-        <label>Production company<input value={form.production} onChange={(event) => update("production", event.target.value)} /></label>
-        <label>Campaign / title<input value={form.campaign} onChange={(event) => update("campaign", event.target.value)} /></label>
-        <label>Project type<select value={form.type} onChange={(event) => update("type", event.target.value)}><option>Film / TV</option><option>OTT / streaming</option><option>Advertising</option><option>Brand Film</option><option>Trailer / Promo</option><option>Documentary</option><option>Sports / broadcast</option><option>Luxury / lifestyle campaign</option><option>Game</option><option>Live event</option><option>Editorial / Media</option></select></label>
-        <label>Track of interest<input value={track.title} readOnly /></label>
-      </FieldGroup>
-      <FieldGroup title="Usage terms" note="These fields shape rights review, quote timing, and delivery readiness.">
-        <label>Media type<input value={form.media} onChange={(event) => update("media", event.target.value)} /></label>
-        <label>Territory<select value={form.territory} onChange={(event) => update("territory", event.target.value)}><option>Worldwide</option><option>North America</option><option>United States</option><option>Europe</option></select></label>
-        <label>Term<select value={form.term} onChange={(event) => update("term", event.target.value)}><option>1 year</option><option>2 years</option><option>Perpetual</option><option>Festival only</option></select></label>
-        <label>Exclusivity<select value={form.exclusivity} onChange={(event) => update("exclusivity", event.target.value)}><option>Non-exclusive</option><option>Category exclusive</option><option>Full exclusive</option></select></label>
-        <label>Paid media or organic use?<select value={form.paidMedia} onChange={(event) => update("paidMedia", event.target.value)}><option>Paid + organic</option><option>Paid media</option><option>Organic only</option><option>Internal only</option></select></label>
-        <label>Number of placements<input value={form.placements} onChange={(event) => update("placements", event.target.value)} /></label>
-        <label>Usage scale<select value={form.scale} onChange={(event) => update("scale", event.target.value)}><option>Global</option><option>National</option><option>Local</option><option>Festival only</option></select></label>
-        <label>Budget range<select value={form.budget} onChange={(event) => update("budget", event.target.value)}><option>$5k-$10k</option><option>$10k-$18k</option><option>$18k-$25k</option><option>$25k-$50k</option><option>$50k+</option></select></label>
-        <label>Expected release date<input type="date" value={form.releaseDate} onChange={(event) => update("releaseDate", event.target.value)} /></label>
-        <label>Deadline<input type="date" value={form.deadline} onChange={(event) => update("deadline", event.target.value)} /></label>
-      </FieldGroup>
-      <FieldGroup title="Delivery needs" note="Protected files unlock only after approval, payment, or VIP terms.">
-        <label>Need WAV master?<select value={form.master} onChange={(event) => update("master", event.target.value)}><option>Yes</option><option>No</option></select></label>
-        <label>Need stems?<select value={form.stems} onChange={(event) => update("stems", event.target.value)}><option>No</option><option>Yes</option></select></label>
-        <label>Need instrumental?<select value={form.instrumental} onChange={(event) => update("instrumental", event.target.value)}><option>Yes</option><option>No</option><option>If available</option></select></label>
-        <label>Need vocal version?<select value={form.vocal} onChange={(event) => update("vocal", event.target.value)}><option>If available</option><option>Yes</option><option>No</option></select></label>
-        <label>Need custom edit?<select value={form.edit} onChange={(event) => update("edit", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
-        <label>Need loop/edit points?<select value={form.loop} onChange={(event) => update("loop", event.target.value)}><option>Maybe</option><option>Yes</option><option>No</option></select></label>
-        <label>Urgent delivery?<select value={form.urgent} onChange={(event) => update("urgent", event.target.value)}><option>Yes</option><option>No</option></select></label>
-      </FieldGroup>
-      <FieldGroup title="Message" note="Add scene, campaign, edit, rights, or timing context.">
-        <label className="full-field">
-          Intended usage / message
-          <textarea required value={form.message} onChange={(event) => update("message", event.target.value)} placeholder="Describe the scene, campaign, media placement, edit needs, and timing." />
-          {attempted && !form.message && <span className="form-error">Please describe the intended usage.</span>}
-        </label>
-      </FieldGroup>
-      <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> {selectedTier === "VIP Sync Access" ? "Submit VIP Priority Request" : "Submit License Request"}</button>
+      </div>
+      <div className="step-intro">
+        <span className="eyebrow">Step {step + 1} of {steps.length}</span>
+        <h3>{steps[step].title}</h3>
+        <p>{steps[step].note}</p>
+      </div>
+      {steps[step].fields}
+      <div className="form-step-actions">
+        <button type="button" className="outline-button" disabled={step === 0} onClick={() => setStep((current) => Math.max(0, current - 1))}>Back</button>
+        {isLastStep ? (
+          <button className="gold-button form-submit" type="submit"><ShieldCheck size={18} /> {selectedTier === "VIP Sync Access" ? "Submit VIP Priority Request" : "Submit License Request"}</button>
+        ) : (
+          <button type="button" className="gold-button form-submit" onClick={() => setStep((current) => Math.min(steps.length - 1, current + 1))}>Continue</button>
+        )}
+      </div>
     </form>
   );
 }
@@ -1572,6 +1684,12 @@ function AdminDashboard({ showToast, togglePlay }) {
     ["Track uploaded: Midnight Conversations", "Asset", "26m ago"],
     ["Permissions updated", "Audit", "34m ago"],
   ];
+  const priorityItems = [
+    ["Rights checks", "14 blocked", "Review ownership proof, PRO data, and Preston approvals before tracks become licensing eligible.", "Tracks"],
+    ["Quotes needed", "9 open", "Move high-intent buyer requests from review into quote-ready status.", "Inquiries"],
+    ["VIP priority", "7 active", "Fast-track concierge review, pre-approved terms, and secure delivery for top-tier buyers.", "Buyers"],
+    ["Delivery ready", "5 waiting", "Confirm payment or VIP terms before protected master audio is released.", "Secure Delivery"],
+  ];
 
   const renderAdminPanel = () => {
     if (adminTab === "Artists") return <ArtistAdmin showToast={showToast} />;
@@ -1599,6 +1717,15 @@ function AdminDashboard({ showToast, togglePlay }) {
           <div><span>VIP priority</span><strong>7</strong></div>
         </div>
       )}
+      <div className="admin-priority-strip" aria-label="Priority admin queues">
+        {priorityItems.map(([title, count, note, target]) => (
+          <button key={title} type="button" onClick={() => setAdminTab(target)}>
+            <span>{title}</span>
+            <strong>{count}</strong>
+            <small>{note}</small>
+          </button>
+        ))}
+      </div>
       <div className="admin-tabs">{tabs.map((tab) => <button key={tab} className={adminTab === tab ? "active" : ""} onClick={() => setAdminTab(tab)}>{tab}</button>)}</div>
       <div className="admin-metric-groups">
         {metricGroups.map(([group, metrics]) => (
@@ -2025,7 +2152,18 @@ function MiniPlayer({ track, playingId, onTogglePlay, onOpen }) {
       <button onClick={onTogglePlay} aria-label={isPlaying ? "Pause preview" : "Resume preview"}>{isPlaying ? <Pause weight="fill" /> : <Play weight="fill" />}</button>
       <div className="cover-art small" style={{ backgroundImage: `url(${track.image})` }} />
       <div><strong>{track.title}</strong><span>{track.artist} · Preview Only</span></div>
-      <div className="waveform" aria-hidden="true" />
+      <div className="cut-track-strip" aria-label="Selected track cut from 0:18 to 1:42">
+        <div className="cut-track-meta">
+          <span>0:18</span>
+          <strong>Cut Track</strong>
+          <span>1:42</span>
+        </div>
+        <div className="cut-waveform" aria-hidden="true">
+          <span className="cut-selection" />
+          <span className="cut-handle start" />
+          <span className="cut-handle end" />
+        </div>
+      </div>
       <button className="outline-button" onClick={onOpen}>Details</button>
     </aside>
   );

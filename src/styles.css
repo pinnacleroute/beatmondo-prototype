@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Inter:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap");
 
 :root {
   --black: #050505;
@@ -18,9 +18,11 @@
   --line: rgba(196, 164, 90, 0.28);
   --line-soft: rgba(44, 35, 22, 0.12);
   --page-wide: min(1640px, calc(100% - 64px));
+  --font-display: "Canela", "Cormorant Garamond", Georgia, serif;
+  --font-sans: "Söhne", "Sohne", Manrope, Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ivory);
   background: var(--black);
-  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   font-synthesis: none;
   text-rendering: geometricPrecision;
 }
@@ -33,6 +35,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   background: var(--black);
 }
@@ -198,7 +201,7 @@ textarea:focus-visible {
 .partner-band h2,
 .project-hero h2,
 .confirmation h2 {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   letter-spacing: 0;
 }
 
@@ -670,7 +673,7 @@ small {
 }
 
 .collection-grid .collection-card:first-child h3 {
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 38px;
   line-height: 1;
 }
@@ -1623,7 +1626,7 @@ textarea {
 
 .licensing-summary-panel h3 {
   margin: 0;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 32px;
 }
 
@@ -1702,7 +1705,7 @@ textarea {
 
 .contact-routing-summary h3 {
   margin: 0;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 32px;
 }
 
@@ -1942,7 +1945,7 @@ textarea {
 
 .next-steps h2 {
   margin: 4px 0 0;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 32px;
   line-height: 1;
 }
@@ -2332,7 +2335,7 @@ td small {
 
 .rights-review-queue h3 {
   margin: 0;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 28px;
 }
 
@@ -2454,7 +2457,7 @@ td small {
 .editorial-hub-hero h2 {
   max-width: 760px;
   margin: 8px 0 14px;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(38px, 4vw, 62px);
   line-height: 1;
 }
@@ -3052,9 +3055,13 @@ td small {
     left: 12px;
   }
 
-  .mini-player .waveform,
   .mini-player .outline-button {
     display: none;
+  }
+
+  .mini-player .cut-track-strip {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .admin-tabs {
@@ -3232,7 +3239,7 @@ td small {
 
 .tier-card h3 {
   margin: 14px 0 8px;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: 28px;
 }
 
@@ -3310,7 +3317,7 @@ td small {
 .buyer-profile-card h2,
 .vip-dashboard-panel h2 {
   margin: 4px 0 10px;
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: var(--font-display);
   font-size: clamp(32px, 4vw, 56px);
   font-weight: 600;
 }
