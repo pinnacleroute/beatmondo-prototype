@@ -4173,3 +4173,97 @@ select:focus {
     padding-bottom: 8px;
   }
 }
+
+/* Collection cards: align every editorial path card to the same grid and indentation. */
+.home-view .collections-band {
+  padding: 34px !important;
+}
+
+.home-view .collections-band .section-heading {
+  align-items: start !important;
+  margin-bottom: 24px !important;
+}
+
+.home-view .collections-band .collection-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 20px !important;
+  align-items: stretch !important;
+}
+
+.home-view .collections-band .collection-card,
+.home-view .collections-band .collection-card:first-child {
+  grid-column: auto !important;
+  grid-row: auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  grid-template-rows: 210px auto 1fr auto auto auto !important;
+  gap: 16px !important;
+  min-height: 0 !important;
+  padding: 16px !important;
+  align-content: stretch !important;
+}
+
+.home-view .collections-band .collection-card > div:first-child,
+.home-view .collections-band .collection-card:first-child > div:first-child {
+  grid-row: auto !important;
+  min-height: 0 !important;
+  height: 210px !important;
+  width: 100% !important;
+  border-radius: 7px !important;
+}
+
+.home-view .collections-band .collection-card h3,
+.home-view .collections-band .collection-card:first-child h3 {
+  margin: 0 !important;
+  color: #211d17 !important;
+  font-family: var(--font-sans) !important;
+  font-size: 20px !important;
+  line-height: 1.25 !important;
+}
+
+.home-view .collections-band .collection-card p,
+.home-view .collections-band .collection-card:first-child p {
+  max-width: 520px !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  color: #74695b !important;
+  font-size: 15px !important;
+  line-height: 1.55 !important;
+}
+
+.home-view .collections-band .collection-card > span {
+  align-self: end !important;
+  color: #211d17 !important;
+}
+
+.home-view .collections-band .collection-card .tag-row {
+  min-height: 28px !important;
+  align-items: start !important;
+}
+
+.home-view .collections-band .collection-card button,
+.home-view .collections-band .collection-card:first-child button {
+  justify-self: start !important;
+  margin-top: 0 !important;
+  min-height: 34px !important;
+}
+
+@media (max-width: 760px) {
+  .home-view .collections-band {
+    padding: 22px !important;
+  }
+
+  .home-view .collections-band .collection-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .home-view .collections-band .collection-card,
+  .home-view .collections-band .collection-card:first-child {
+    grid-template-rows: 190px auto 1fr auto auto auto !important;
+  }
+
+  .home-view .collections-band .collection-card > div:first-child,
+  .home-view .collections-band .collection-card:first-child > div:first-child {
+    height: 190px !important;
+  }
+}
