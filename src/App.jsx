@@ -846,7 +846,7 @@ function Topbar({ view, setView, setMobileNav, showNotifications, setShowNotific
     <header className="topbar">
       <button className="mobile-menu" onClick={() => setMobileNav(true)}><FadersHorizontal size={20} /> Menu</button>
       <div>
-        <span className="eyebrow">beatmondo private sync workspace</span>
+        <span className="eyebrow"><span className="brand-name">beatmondo</span> private sync workspace</span>
         <h1>{navItems.find(([id]) => id === view)?.[1]}</h1>
       </div>
       <div className="top-actions">
@@ -914,7 +914,7 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
       <div className="hero">
         <div className="hero-copy">
           <span className="eyebrow">Premium gated sync licensing ecosystem</span>
-          <h2>Curated Music. Protected Rights. Premium Sync Access.</h2>
+          <h2>Premium Sync Access.</h2>
           <p>A private music licensing ecosystem connecting exceptional catalogs with film, television, streaming, advertising, premium brands, and global creative buyers.</p>
           <p className="trust-line">Built for professional buyers. Designed for long-term catalog value.</p>
           <div className="button-row">
@@ -1007,7 +1007,7 @@ function InvestorSummaryStrip({ setView }) {
   return (
     <section className="investor-summary-section" aria-labelledby="beatmondo-standard-title">
       <div className="investor-summary-intro">
-        <span className="eyebrow">the beatmondo standard</span>
+        <span className="eyebrow">the <span className="brand-name">beatmondo</span> standard</span>
         <h2 id="beatmondo-standard-title">From first listen to cleared delivery.</h2>
         <div className="investor-summary-intro-copy">
           <p>A trusted path through discovery, rights, licensing, and secure delivery for serious sync buyers.</p>
@@ -1071,7 +1071,7 @@ function BusinessModelSection() {
   ];
   return (
     <section className="business-model-band">
-      <div className="section-kicker"><span className="eyebrow">How beatmondo generates revenue</span><h2>Multiple Revenue Pathways</h2></div>
+      <div className="section-kicker"><span className="eyebrow">How <span className="brand-name">beatmondo</span> generates revenue</span><h2>Multiple Revenue Pathways</h2></div>
       <div className="business-model-grid">
         {models.map(([Icon, title, text]) => (
           <article key={title} className="business-model-card">
@@ -2907,7 +2907,7 @@ function MediaEpisodesPage({ setView, showToast }) {
     <section className="content-page media-page">
       <div className="content-grid">
         <article className="feature-story" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.18), rgba(0,0,0,.70)), url(${active[3]})` }}>
-          <span className="feature-story-kicker">Episode · {active[2]} · beatmondo Media</span>
+          <span className="feature-story-kicker">Episode · {active[2]} · <span className="brand-name">beatmondo</span> Media</span>
           <span className="eyebrow">Media Episodes</span>
           <h2>{active[0]}</h2>
           <p>{active[1]}</p>
@@ -2975,7 +2975,7 @@ function ContactPage({ setView }) {
     <section className="form-page wide-page contact-page">
       <div className="contact-header">
         <div className="form-intro">
-          <span className="eyebrow">Contact beatmondo</span>
+          <span className="eyebrow">Contact <span className="brand-name">beatmondo</span></span>
           <h2>The right conversation, routed clearly.</h2>
           <p>Reach the team for licensing questions, buyer access, VIP review, artist or contributor interest, strategic partnerships, media conversations, and Gary Burke legacy/archive notes.</p>
         </div>

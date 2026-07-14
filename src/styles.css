@@ -112,15 +112,16 @@ body {
   width: 100%;
   min-height: 52px;
   margin-top: 16px;
-  border: 1px solid #a6342a;
+  border: 1px solid var(--gold);
   border-radius: 3px;
-  color: #fff7ed;
-  background: #a6342a;
+  color: #15110d;
+  background: var(--gold);
   font-weight: 800;
 }
 
 .site-password-panel button:hover {
-  background: #b63c31;
+  border-color: var(--gold-2);
+  background: var(--gold-2);
 }
 
 .site-password-error {
@@ -362,6 +363,10 @@ textarea:focus-visible {
   letter-spacing: 0.16em;
   font-size: 12px;
   font-weight: 800;
+}
+
+.brand-name {
+  text-transform: lowercase !important;
 }
 
 .top-actions,

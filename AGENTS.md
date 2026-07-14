@@ -14,4 +14,12 @@ Durable terminology direction: use "Explore Music" for buyer-facing discovery an
 
 Durable homepage direction: retain the existing beatmondo logo video in the hero. Keep the public homepage selective and conversion-focused rather than exposing every use case, collection, or internal detail; use "Request Access" as the primary account CTA, "Explore Music" for discovery, and "Request License" only at track or project level.
 
+Durable homepage hero headline: show only "Premium Sync Access." Do not prepend "Curated Music. Protected Rights."
+
 Durable account direction: provide buyer-facing Sign Up / Request Access, Log In, Forgot Password, and social sign-in entry points as polished simulated frontend flows. Keep authentication and social login behavior mocked unless a real backend is explicitly requested.
+
+Durable password gate direction: use a gold primary button on the password preview page, not Gary Burke red.
+
+Durable interaction direction: commercial use-case tiles should pop up on hover with a polished lift, slight scale, stronger depth, and a restrained gold border highlight; preserve keyboard focus and reduced-motion behavior.
+
+Durable editorial collections direction: use Gary Burke red for the section-level Explore Music CTA and the collection actions; make every View collection action bold and high-contrast.

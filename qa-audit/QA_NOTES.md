@@ -1,10 +1,10 @@
-# Beatmondo Prototype QA Notes
+# beatmondo Prototype QA Notes
 
 Date: 2026-07-07
 
 ## Scope
 
-Complete visual, responsive, route-loading, console, image, overflow, and basic interaction-target QA for the Beatmondo prototype.
+Complete visual, responsive, route-loading, console, image, overflow, and basic interaction-target QA for the beatmondo prototype.
 
 ## Evidence
 

@@ -4245,7 +4245,36 @@ select:focus {
 .home-view .collections-band .collection-card:first-child button {
   justify-self: start !important;
   margin-top: 0 !important;
-  min-height: 34px !important;
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border: 1px solid rgba(166, 52, 42, 0.3) !important;
+  border-radius: 999px !important;
+  background: rgba(166, 52, 42, 0.08) !important;
+  color: #8f2d25 !important;
+  font-weight: 800 !important;
+  transition: color 160ms ease, background 160ms ease, border-color 160ms ease, transform 160ms ease !important;
+}
+
+.home-view .collections-band .collection-card button:hover,
+.home-view .collections-band .collection-card button:focus-visible {
+  border-color: #a6342a !important;
+  background: #a6342a !important;
+  color: #fff7ed !important;
+  transform: translateY(-1px);
+}
+
+.home-view .collections-band .section-heading .text-action {
+  border-color: #a6342a !important;
+  background: #a6342a !important;
+  color: #fff7ed !important;
+  box-shadow: 0 10px 24px rgba(166, 52, 42, 0.2) !important;
+}
+
+.home-view .collections-band .section-heading .text-action:hover,
+.home-view .collections-band .section-heading .text-action:focus-visible {
+  border-color: #b63c31 !important;
+  background: #b63c31 !important;
+  color: #ffffff !important;
 }
 
 @media (max-width: 760px) {
@@ -4646,6 +4675,45 @@ select:focus {
 
 .use-cases-full {
   grid-template-columns: repeat(4, 1fr) !important;
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .use-cases .image-card,
+  .use-cases-directory .image-card {
+    position: relative;
+    z-index: 0;
+    transform: translateY(0) scale(1);
+    transform-origin: center;
+    border-color: rgba(17, 16, 13, 0.14) !important;
+    box-shadow: 0 12px 28px rgba(24, 17, 9, 0.12) !important;
+    transition:
+      transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 220ms ease,
+      box-shadow 220ms ease;
+    will-change: transform;
+  }
+
+  .use-cases .image-card:hover,
+  .use-cases .image-card:focus-within,
+  .use-cases-directory .image-card:hover,
+  .use-cases-directory .image-card:focus-within {
+    z-index: 2;
+    transform: translateY(-9px) scale(1.025);
+    border-color: rgba(196, 164, 90, 0.58) !important;
+    box-shadow: 0 24px 52px rgba(24, 17, 9, 0.3) !important;
+  }
+
+  .use-cases .image-card > div,
+  .use-cases-directory .image-card > div {
+    transition: transform 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .use-cases .image-card:hover > div,
+  .use-cases .image-card:focus-within > div,
+  .use-cases-directory .image-card:hover > div,
+  .use-cases-directory .image-card:focus-within > div {
+    transform: translateY(-3px);
+  }
 }
 
 @media (max-width: 1100px) {
