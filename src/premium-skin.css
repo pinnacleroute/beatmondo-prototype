@@ -4270,64 +4270,175 @@ select:focus {
 
 /* ── Investor Summary Strip ── */
 
+.investor-summary-section {
+  max-width: var(--page-wide);
+  margin: 0 auto;
+  padding: clamp(36px, 4.5vw, 58px) clamp(20px, 4vw, 64px) clamp(28px, 3.5vw, 46px);
+}
+
+.investor-summary-intro {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 0.65fr);
+  column-gap: clamp(28px, 4vw, 64px);
+  align-items: end;
+  margin-bottom: clamp(22px, 2.5vw, 32px);
+}
+
+.investor-summary-intro .eyebrow {
+  grid-column: 1 / -1;
+  margin-bottom: 12px;
+  color: #7f2c25;
+  text-transform: none;
+  letter-spacing: 0.1em;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.investor-summary-intro h2 {
+  margin: 0;
+  max-width: 760px;
+  color: var(--black);
+  font-size: clamp(30px, 3.1vw, 46px);
+  line-height: 1.06;
+}
+
+.investor-summary-intro-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.investor-summary-intro-copy p {
+  margin: 0;
+  color: #403a34;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.62;
+  max-width: 460px;
+}
+
+.investor-summary-intro-copy .text-action {
+  color: var(--black);
+}
+
 .investor-summary-strip {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1px;
-  margin: 0 auto;
-  padding: 0 clamp(20px, 4vw, 64px);
-  max-width: var(--page-wide);
-  background: rgba(166, 52, 42, 0.15);
-  border: 1px solid rgba(166, 52, 42, 0.18);
-  border-radius: 6px;
+  background: rgba(196, 167, 124, 0.22);
+  border: 1px solid rgba(196, 167, 124, 0.24);
+  border-radius: 10px;
   overflow: hidden;
+  box-shadow: 0 22px 54px rgba(18, 12, 9, 0.12);
 }
 
 .investor-summary-card {
-  padding: clamp(24px, 3vw, 40px);
-  background: rgba(24, 19, 15, 0.92);
+  position: relative;
+  min-height: 250px;
+  padding: clamp(26px, 2.5vw, 36px);
+  background: rgba(24, 19, 15, 0.96);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.investor-summary-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: var(--beatmondo-red);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.investor-summary-card:hover,
+.investor-summary-card:focus-within {
+  background: rgba(31, 24, 19, 0.99);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 30px rgba(10, 7, 5, 0.2);
+  z-index: 1;
+}
+
+.investor-summary-card:hover::before,
+.investor-summary-card:focus-within::before {
+  transform: scaleX(1);
+}
+
+.investor-summary-card-topline {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
 }
 
 .investor-summary-card svg {
   color: var(--gold);
-  opacity: 0.85;
+  opacity: 0.95;
+  flex: 0 0 auto;
+}
+
+.investor-summary-step {
+  color: rgba(226, 216, 199, 0.64);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
 }
 
 .investor-summary-card h3 {
   font-family: var(--font-display);
-  font-size: clamp(17px, 1.5vw, 21px);
+  font-size: clamp(20px, 1.65vw, 25px);
   font-weight: 600;
   color: var(--ivory);
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.15;
 }
 
 .investor-summary-card p {
-  font-size: 13.5px;
-  line-height: 1.65;
-  color: var(--muted);
+  font-size: 13.75px;
+  line-height: 1.7;
+  color: rgba(244, 239, 230, 0.76);
   margin: 0;
 }
 
 @media (max-width: 900px) {
+  .investor-summary-intro {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .investor-summary-intro-copy {
+    margin-top: 14px;
+  }
+
   .investor-summary-strip {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 560px) {
+  .investor-summary-section {
+    padding-inline: 16px;
+  }
+
   .investor-summary-strip {
     grid-template-columns: 1fr;
+  }
+
+  .investor-summary-card {
+    min-height: 220px;
   }
 }
 
 /* ── Problem & Solution ── */
 
 .problem-solution-band {
-  padding: clamp(40px, 6vw, 80px) clamp(20px, 4vw, 64px);
+  padding: clamp(28px, 3.5vw, 46px) clamp(20px, 4vw, 64px) clamp(36px, 5vw, 64px);
   max-width: var(--page-wide);
   margin: 0 auto;
 }
@@ -4335,14 +4446,15 @@ select:focus {
 .problem-solution-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: clamp(32px, 4vw, 64px);
-  align-items: start;
+  gap: clamp(20px, 2.5vw, 36px);
+  align-items: stretch;
 }
 
 .problem-side,
 .solution-side {
-  padding: clamp(28px, 3vw, 44px);
-  border-radius: 6px;
+  min-height: 310px;
+  padding: clamp(28px, 3vw, 40px);
+  border-radius: 10px;
 }
 
 .problem-side {
@@ -4694,6 +4806,79 @@ button.capability-card {
 
 button.capability-card:hover {
   border-color: rgba(166, 52, 42, 0.3);
+}
+
+/* ── Fluid homepage content width ── */
+
+@media (min-width: 761px) {
+  .home-view {
+    --home-content-wide: calc(100vw - clamp(32px, 4vw, 64px));
+  }
+
+  .home-view > section {
+    width: var(--home-content-wide) !important;
+    max-width: none !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  .home-view > .investor-summary-section,
+  .home-view > .problem-solution-band,
+  .home-view > .business-model-band,
+  .home-view > .differentiation-band {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .home-view > section > .section-kicker,
+  .home-view > section > .section-heading,
+  .home-view > section > .image-card-grid,
+  .home-view > section > .collection-grid,
+  .home-view > section > .business-model-grid,
+  .home-view > section > .differentiation-grid,
+  .home-view > section > .problem-solution-grid,
+  .home-view > section > .investor-summary-strip {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .home-view > .warm-band,
+  .home-view > .access-tier-band,
+  .home-view > .split-section,
+  .home-view > .content-preview {
+    width: var(--home-content-wide) !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1180px) {
+  .business-model-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* VIP access is consistently represented with premium gold. */
+.vip-access-button,
+.app:not(.home-app) .vip-access-button {
+  background: linear-gradient(180deg, #e4c878 0%, #c29b48 58%, #9a7229 100%) !important;
+  border-color: rgba(238, 211, 145, 0.88) !important;
+  color: #1b1409 !important;
+  box-shadow: 0 10px 28px rgba(169, 133, 82, 0.28) !important;
+}
+
+.vip-access-button:hover,
+.app:not(.home-app) .vip-access-button:hover {
+  background: linear-gradient(180deg, #efd990 0%, #cda955 58%, #a37b2f 100%) !important;
+  border-color: #efd990 !important;
+  box-shadow: 0 13px 32px rgba(169, 133, 82, 0.36) !important;
+}
+
+.app:not(.home-app) .tier-pick.vip-tier-pick.active {
+  border-color: rgba(210, 183, 122, 0.82) !important;
+  background:
+    radial-gradient(circle at 100% 0, rgba(210, 183, 122, 0.24), transparent 15rem),
+    linear-gradient(180deg, rgba(210, 183, 122, 0.14), rgba(244, 239, 230, 0.03)),
+    #362c1e !important;
+  box-shadow: inset 0 0 0 1px rgba(210, 183, 122, 0.18) !important;
 }
 
 .capability-card svg {
@@ -5576,22 +5761,98 @@ button.capability-card:hover {
 
 /* ── Enhanced Gary Burke Legacy Styles ── */
 
+.app:not(.home-app) .legacy-page .legacy-hero {
+  min-height: clamp(300px, 29vw, 430px);
+  padding: clamp(34px, 4vw, 58px);
+  background:
+    linear-gradient(90deg, rgba(20, 14, 10, 0.94) 0%, rgba(20, 14, 10, 0.82) 34%, rgba(20, 14, 10, 0.3) 68%, rgba(20, 14, 10, 0.14) 100%),
+    url("/assets/editorial/gary-burke-legacy-detail.webp") center / cover no-repeat !important;
+  border-color: rgba(210, 183, 122, 0.3) !important;
+}
+
+.legacy-hero-copy {
+  max-width: min(600px, 48%);
+}
+
+.legacy-hero-copy .legacy-primary-button {
+  width: auto;
+  justify-self: start;
+}
+
+.legacy-hero-copy .eyebrow {
+  color: #e0c377 !important;
+}
+
+.legacy-hero h2 {
+  font-size: clamp(48px, 5vw, 78px);
+  color: #fff8ee;
+}
+
+.legacy-hero p {
+  max-width: 520px;
+  color: rgba(244, 239, 230, 0.84) !important;
+  font-size: clamp(16px, 1.25vw, 19px);
+  line-height: 1.65;
+}
+
 .legacy-grid-two {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
   gap: clamp(16px, 2.5vw, 28px);
-  margin-top: clamp(24px, 3.5vw, 44px);
-  margin-bottom: clamp(24px, 3.5vw, 44px);
-  max-width: var(--page-wide);
+  width: 100%;
+  margin-top: clamp(24px, 3vw, 38px);
+  margin-bottom: clamp(38px, 4vw, 56px);
+  max-width: none;
   margin-left: auto;
   margin-right: auto;
-  padding: 0 clamp(20px, 4vw, 64px);
+  padding: 0;
+}
+
+.legacy-grid-two > .panel {
+  height: 100%;
+  padding: clamp(24px, 2.4vw, 36px) !important;
+  border-color: rgba(210, 183, 122, 0.2) !important;
 }
 
 .biography-text {
-  font-size: 15px;
-  line-height: 1.75;
-  color: var(--taupe);
+  font-size: clamp(15px, 1.05vw, 17px);
+  line-height: 1.78;
+  color: rgba(244, 239, 230, 0.8);
+}
+
+.legacy-biography-layout {
+  display: grid;
+  grid-template-columns: minmax(320px, 1fr) minmax(330px, 1fr);
+  gap: clamp(22px, 2.4vw, 34px);
+  align-items: center;
+}
+
+.gary-burke-portrait {
+  margin: 0;
+}
+
+.gary-burke-portrait img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1.04;
+  object-fit: cover;
+  object-position: 43% center;
+  border-radius: 7px;
+  border: 1px solid rgba(210, 183, 122, 0.24);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.24);
+}
+
+.gary-burke-portrait figcaption {
+  margin-top: 12px;
+  color: rgba(226, 205, 155, 0.88);
+  font-size: 12px;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+}
+
+.biography-text strong {
+  color: var(--ivory);
+  font-weight: 700;
 }
 
 .biography-text p {
@@ -5605,7 +5866,9 @@ button.capability-card:hover {
 .timeline-vertical {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  justify-content: space-between;
+  gap: 24px;
+  min-height: calc(100% - 8px);
   padding: 8px 4px;
 }
 
@@ -5627,34 +5890,56 @@ button.capability-card:hover {
 }
 
 .timeline-node strong {
-  font-size: 14.5px;
+  font-size: clamp(14.5px, 1vw, 16px);
   color: var(--ivory);
   display: block;
   margin-bottom: 4px;
 }
 
 .timeline-node p {
-  font-size: 13.5px;
-  color: var(--muted);
+  font-size: clamp(13.5px, 0.92vw, 15px);
+  color: rgba(244, 239, 230, 0.72);
   line-height: 1.6;
   margin: 0;
+}
+
+.legacy-editorial-section {
+  width: 100%;
+  margin-bottom: clamp(42px, 5vw, 68px);
+}
+
+.legacy-section-heading {
+  margin-bottom: 20px;
+}
+
+.legacy-section-heading .eyebrow {
+  display: block;
+  margin-bottom: 8px;
+  color: #d2b77a;
+}
+
+.legacy-section-heading h3 {
+  margin: 0;
+  color: var(--ivory);
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.5vw, 40px);
+  line-height: 1.08;
 }
 
 .editorial-row {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: clamp(16px, 2.5vw, 28px);
-  margin-bottom: clamp(32px, 4vw, 56px);
-  max-width: var(--page-wide);
-  margin-left: auto;
-  margin-right: auto;
-  padding: 0 clamp(20px, 4vw, 64px);
+  width: 100%;
+  margin: 0;
+  max-width: none;
+  padding: 0;
 }
 
 .story-card-editorial {
-  height: 280px;
-  border-radius: 6px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  min-height: clamp(300px, 25vw, 390px);
+  border-radius: 9px;
+  border: 1px solid rgba(210, 183, 122, 0.18);
   background-size: cover;
   background-position: center;
   padding: clamp(20px, 3vw, 36px);
@@ -5674,15 +5959,15 @@ button.capability-card:hover {
 
 .story-card-editorial h3 {
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: clamp(24px, 2vw, 32px);
   color: var(--ivory);
   margin: 0;
   line-height: 1.2;
 }
 
 .story-card-editorial p {
-  font-size: 13.5px;
-  color: var(--taupe);
+  font-size: clamp(14px, 1vw, 16px);
+  color: rgba(244, 239, 230, 0.82);
   margin: 0;
   line-height: 1.65;
   max-width: 520px;
@@ -5691,9 +5976,25 @@ button.capability-card:hover {
 /* ── Featured Legacy Tracks ── */
 
 .featured-legacy-tracks {
-  max-width: var(--page-wide);
+  width: 100%;
+  max-width: none;
   margin: 0 auto clamp(40px, 6vw, 80px);
-  padding: 0 clamp(20px, 4vw, 64px);
+  padding: 0;
+}
+
+.featured-legacy-tracks > .section-heading {
+  margin-bottom: 22px;
+}
+
+.featured-legacy-tracks > .section-heading .eyebrow {
+  color: #d2b77a;
+}
+
+.featured-legacy-tracks > .section-heading h3 {
+  margin-top: 7px;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 2.3vw, 38px);
+  color: var(--ivory);
 }
 
 .legacy-tracks-grid {
@@ -5704,6 +6005,7 @@ button.capability-card:hover {
 }
 
 .legacy-track-card {
+  min-height: 180px;
   display: flex;
   background: rgba(24, 19, 15, 0.85);
   border: 1px solid rgba(169, 133, 82, 0.18);
@@ -5721,8 +6023,9 @@ button.capability-card:hover {
 }
 
 .track-img-block {
-  width: 140px;
-  height: 140px;
+  width: clamp(160px, 11vw, 210px);
+  min-height: 180px;
+  align-self: stretch;
   background-size: cover;
   background-position: center;
   flex-shrink: 0;
@@ -5738,34 +6041,52 @@ button.capability-card:hover {
 
 .track-desc-block h4 {
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: clamp(19px, 1.35vw, 23px);
   color: var(--ivory);
   margin: 0;
   line-height: 1.2;
 }
 
 .track-desc-block p {
-  font-size: 13.5px;
+  font-size: 14.5px;
   color: var(--taupe);
   margin: 0;
 }
 
 .track-desc-block span {
-  font-size: 12px;
-  color: var(--muted);
+  font-size: 12.5px;
+  color: rgba(244, 239, 230, 0.66);
   font-style: italic;
 }
 
 .legacy-track-card .gold-button {
   margin-right: 20px;
   flex-shrink: 0;
-  padding: 8px 16px;
-  font-size: 12.5px;
+  min-height: 44px;
+  padding: 8px 18px;
+  font-size: 13px;
+}
+
+.legacy-primary-button,
+.app:not(.home-app) .legacy-primary-button {
+  background: linear-gradient(180deg, #e4c878 0%, #c29b48 58%, #9a7229 100%) !important;
+  border-color: rgba(238, 211, 145, 0.88) !important;
+  color: #1b1409 !important;
+  box-shadow: 0 10px 28px rgba(169, 133, 82, 0.25) !important;
+}
+
+.legacy-primary-button:hover,
+.app:not(.home-app) .legacy-primary-button:hover {
+  background: linear-gradient(180deg, #efd990 0%, #cda955 58%, #a37b2f 100%) !important;
+  border-color: #efd990 !important;
 }
 
 @media (max-width: 900px) {
   .legacy-grid-two {
     grid-template-columns: 1fr;
+  }
+  .legacy-biography-layout {
+    grid-template-columns: minmax(260px, 0.8fr) minmax(0, 1fr);
   }
   .editorial-row {
     grid-template-columns: 1fr;
@@ -5776,6 +6097,27 @@ button.capability-card:hover {
 }
 
 @media (max-width: 600px) {
+  .app:not(.home-app) .legacy-page .legacy-hero {
+    min-height: 520px;
+    align-content: end;
+    background:
+      linear-gradient(180deg, rgba(20, 14, 10, 0.08) 12%, rgba(20, 14, 10, 0.88) 62%, rgba(20, 14, 10, 0.98) 100%),
+      url("/assets/editorial/gary-burke-legacy-detail.webp") 58% center / cover no-repeat !important;
+  }
+
+  .legacy-hero-copy {
+    max-width: 100%;
+  }
+
+  .legacy-biography-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .gary-burke-portrait img {
+    aspect-ratio: 1.08 / 1;
+    object-position: 43% 34%;
+  }
+
   .legacy-track-card {
     flex-direction: column;
     align-items: stretch;
@@ -5783,7 +6125,7 @@ button.capability-card:hover {
   }
   .track-img-block {
     width: 100%;
-    height: 160px;
+    min-height: 220px;
   }
   .legacy-track-card .gold-button {
     margin-left: 20px;
@@ -5841,9 +6183,3 @@ button.capability-card:hover {
 .outline-button:active {
   transform: translateY(0);
 }
-
-
-
-
-
-

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Archive,
+  ArrowRight,
   Article,
   Bell,
   BookmarkSimple,
@@ -919,13 +920,13 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
           <div className="button-row">
             <button className="outline-button" onClick={() => setView("catalog")}><Play size={18} weight="fill" /> Explore the Catalog</button>
             <button className="outline-button" onClick={() => setView("licensing")}><ShieldCheck size={18} /> See How Licensing Works</button>
-            <button className="gold-button" onClick={() => setView("signup")}><LockKey size={18} /> Request VIP Sync Access</button>
+            <button className="gold-button vip-access-button" onClick={() => setView("signup")}><LockKey size={18} /> Request VIP Sync Access</button>
           </div>
         </div>
         <HeroMedia />
       </div>
 
-      <InvestorSummaryStrip />
+      <InvestorSummaryStrip setView={setView} />
 
       <ProblemSolution />
 
@@ -996,22 +997,35 @@ function Home({ setView, setSelectedTrack, playingId, togglePlay, savedIds, save
   );
 }
 
-function InvestorSummaryStrip() {
+function InvestorSummaryStrip({ setView }) {
   const cards = [
-    [ShieldCheck, "Curated Catalog", "Only selected artists, tracks, and catalogs are accepted. Quality and rights integrity are maintained at intake."],
-    [LockKey, "Verified Rights", "Ownership, publishing, master, and contributor information are managed within the platform before licensing."],
-    [FileAudio, "Professional Licensing", "Structured workflows support discovery, requests, quotes, approvals, payments, and secure delivery."],
-    [Sparkle, "Catalog Intelligence", "Usage, demand, licensing, and asset-level activity create long-term data value across the catalog."],
+    [ShieldCheck, "Discover", "Music Worth Shortlisting", "Selected music reviewed for quality, provenance, and sync potential."],
+    [LockKey, "Verify", "Rights You Can Trust", "Ownership, publishing, master, and contributor details reviewed before licensing."],
+    [FileAudio, "License", "A Clear Path to Clearance", "Guided requests, quotes, approvals, and payment in one professional workflow."],
+    [DownloadSimple, "Deliver", "Protected Files, Ready", "Approved WAV masters and stems delivered through controlled, secure access."],
   ];
   return (
-    <section className="investor-summary-strip">
-      {cards.map(([Icon, title, text]) => (
-        <article key={title} className="investor-summary-card">
-          <Icon size={28} weight="duotone" />
-          <h3>{title}</h3>
-          <p>{text}</p>
-        </article>
-      ))}
+    <section className="investor-summary-section" aria-labelledby="beatmondo-standard-title">
+      <div className="investor-summary-intro">
+        <span className="eyebrow">the beatmondo standard</span>
+        <h2 id="beatmondo-standard-title">From first listen to cleared delivery.</h2>
+        <div className="investor-summary-intro-copy">
+          <p>A trusted path through discovery, rights, licensing, and secure delivery for serious sync buyers.</p>
+          <button className="text-action" onClick={() => setView("catalog")}>Explore Music <ArrowRight size={16} aria-hidden="true" /></button>
+        </div>
+      </div>
+      <div className="investor-summary-strip">
+        {cards.map(([Icon, step, title, text], index) => (
+          <article key={title} className="investor-summary-card">
+            <div className="investor-summary-card-topline">
+              <Icon size={30} weight="duotone" aria-hidden="true" />
+              <span className="investor-summary-step">0{index + 1} · {step}</span>
+            </div>
+            <h3>{title}</h3>
+            <p>{text}</p>
+          </article>
+        ))}
+      </div>
     </section>
   );
 }
@@ -1020,18 +1034,14 @@ function ProblemSolution() {
   const problems = [
     "Discovery is disconnected from rights",
     "Licensing can be slow and unclear",
-    "Valuable catalogs are difficult to navigate",
-    "Buyers lack consistent access to masters and stems",
     "Rights information is often scattered",
-    "Artists lack visibility into demand",
+    "Approved masters and stems are hard to access",
   ];
   const solutions = [
     "Curated professional discovery",
-    "Structured licensing workflows",
-    "Protected master delivery",
-    "Rights-aware metadata",
-    "Controlled artist participation",
-    "Buyer and catalog intelligence",
+    "Verified, rights-aware metadata",
+    "Structured licensing and approvals",
+    "Protected master and stems delivery",
   ];
   return (
     <section className="problem-solution-band">
@@ -1043,7 +1053,7 @@ function ProblemSolution() {
         </div>
         <div className="solution-side">
           <span className="eyebrow">The solution</span>
-          <h2>beatmondo connects discovery, rights, licensing, and delivery.</h2>
+          <h2>One connected licensing path.</h2>
           <ul>{solutions.map((item) => <li key={item}><CheckCircle size={16} weight="fill" /> {item}</li>)}</ul>
         </div>
       </div>
@@ -1659,7 +1669,7 @@ function Legacy({ setView, openTrack }) {
       image: img.musicArchive
     },
     {
-      title: " starlite studio console",
+      title: "Inside the Starlite Studio Console",
       kicker: "Stewardship Notes",
       desc: "Built on custom transformers and Class-A circuitry. The classic warmth of these recordings cannot be replicated in modern digital environments. It is a highly differentiated asset for premium film cues.",
       image: img.privateStudio
@@ -1673,15 +1683,22 @@ function Legacy({ setView, openTrack }) {
           <span className="eyebrow">Stewardship · Archive</span>
           <h2>The Gary Burke Legacy</h2>
           <p>A respectful look at the original beatmondo spirit, analog studio memories, lowercase brand identity, and musician-led sync stewardship.</p>
-          <button className="gold-button" onClick={() => setView("catalog")}><MusicNote size={18} /> Explore Legacy Catalog</button>
+          <button className="gold-button legacy-primary-button" onClick={() => setView("catalog")}><MusicNote size={18} /> Explore Legacy Music</button>
         </div>
       </div>
 
       <div className="legacy-grid-two">
         <Panel title="Gary Burke & beatmondo" action="Biography">
-          <div className="biography-text">
-            <p>Gary Burke was a recordist, visionary, and defender of artist rights. In a time when mass market libraries began to commoditize music, Gary established **beatmondo** as a private sanctuary for authentic musicianship.</p>
-            <p>He famously insisted on lowercase typography for the brand name, believing that premium works do not need to shout. To Gary, sync licensing was not a transaction — it was a respectful placement of art into a storytelling medium. Today, we maintain that exact philosophy: selective catalog access, verified rights, and secure WAV master delivery.</p>
+          <div className="legacy-biography-layout">
+            <figure className="gary-burke-portrait">
+              <img src="/assets/editorial/gary-burke-studio-portrait.webp" alt="Gary Burke seated in a recording studio beside a drum kit" />
+              <figcaption>Gary Burke in the studio · musician, recordist, and original steward of beatmondo</figcaption>
+            </figure>
+            <div className="biography-text">
+              <p>Gary Burke was a recordist, visionary, and defender of artist rights. In a time when mass-market libraries began to commoditize music, Gary established <strong>beatmondo</strong> as a private sanctuary for authentic musicianship.</p>
+              <p>He famously insisted on lowercase typography for the brand name, believing that premium works do not need to shout. To Gary, sync licensing was not a transaction — it was a respectful placement of art into a storytelling medium.</p>
+              <p>Today, we maintain that philosophy through selective access, verified rights, and protected delivery.</p>
+            </div>
           </div>
         </Panel>
 
@@ -1697,15 +1714,21 @@ function Legacy({ setView, openTrack }) {
         </Panel>
       </div>
 
-      <div className="editorial-row">
-        {legacyStories.map(story => (
-          <article className="story-card-editorial" key={story.title} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.15), rgba(0,0,0,.68)), url(${story.image})` }}>
-            <span className="story-kicker">{story.kicker}</span>
-            <h3>{story.title}</h3>
-            <p>{story.desc}</p>
-          </article>
-        ))}
-      </div>
+      <section className="legacy-editorial-section">
+        <div className="legacy-section-heading">
+          <span className="eyebrow">Archive stories</span>
+          <h3>Studio memories and stewardship notes</h3>
+        </div>
+        <div className="editorial-row">
+          {legacyStories.map(story => (
+            <article className="story-card-editorial" key={story.title} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,.08), rgba(8,6,4,.9)), url(${story.image})` }}>
+              <span className="story-kicker">{story.kicker}</span>
+              <h3>{story.title}</h3>
+              <p>{story.desc}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
       <section className="featured-legacy-tracks">
         <div className="section-heading">
@@ -1713,7 +1736,7 @@ function Legacy({ setView, openTrack }) {
             <span className="eyebrow">Archive selections</span>
             <h3>Featured Legacy Recordings</h3>
           </div>
-          <button className="outline-button" onClick={() => setView("catalog")}>View All Tracks</button>
+          <button className="outline-button" onClick={() => setView("catalog")}>Explore Music</button>
         </div>
         <div className="legacy-tracks-grid">
           <article className="legacy-track-card" onClick={() => openTrack(tracks[3])}>
@@ -1724,7 +1747,7 @@ function Legacy({ setView, openTrack }) {
               <p>{tracks[3].artist} · {tracks[3].era} · {tracks[3].genre}</p>
               <span>Original Soho session master · 100% publishing verified</span>
             </div>
-            <button className="gold-button">Listen & Clear</button>
+            <button className="gold-button legacy-primary-button">Request License</button>
           </article>
 
           <article className="legacy-track-card" onClick={() => openTrack(tracks[12])}>
@@ -1735,7 +1758,7 @@ function Legacy({ setView, openTrack }) {
               <p>{tracks[12].artist} · {tracks[12].era} · {tracks[12].genre}</p>
               <span>Multi-track tape transfer complete · Stems ready</span>
             </div>
-            <button className="gold-button">Listen & Clear</button>
+            <button className="gold-button legacy-primary-button">Request License</button>
           </article>
         </div>
       </section>
@@ -1764,7 +1787,7 @@ function LicensingAccess({ selectedTrack, requestSent, setRequestSent, setView }
       </div>
       <div className="tier-grid form-tier-grid">
         {buyerTiers.map((tier) => (
-          <button type="button" key={tier.id} className={`tier-pick ${selectedTier === tier.name ? "active" : ""}`} onClick={() => setSelectedTier(tier.name)}>
+          <button type="button" key={tier.id} className={`tier-pick ${tier.id === "vip" ? "vip-tier-pick" : ""} ${selectedTier === tier.name ? "active" : ""}`} onClick={() => setSelectedTier(tier.name)}>
             <span className="tier-badge">{tier.name}</span>
             <strong>{tier.name}</strong>
             <small>{tier.priceLabel}</small>
@@ -2165,7 +2188,7 @@ function AccessForm({ onSubmit, selectedTier = currentBuyer.accessTier }) {
       <label>Membership / payment status<input value={selectedTier === "Discovery Access" ? "Entry approval required" : "Verification required"} readOnly /></label>
       <label className="full-field">Intended use<textarea required placeholder="Tell us how you expect to use beatmondo." /></label>
       <label className="full-field">Message<textarea placeholder="Anything the team should know?" /></label>
-      <button className="gold-button form-submit" type="submit"><SignIn size={18} /> Request Access</button>
+      <button className={`gold-button form-submit ${selectedTier === "VIP Sync Access" ? "vip-access-button" : ""}`} type="submit"><SignIn size={18} /> Request Access</button>
     </form>
   );
 }
@@ -2431,7 +2454,7 @@ function ProjectDetail({ requestLicense, openTrack, showToast }) {
           <div className="project-meta-strip">
             <span>VIP Sync Access</span><span>Global brand campaign</span><span>$25k-$50k</span><span>Deadline Sep 18</span><span>Pre-approved terms</span><span>3 WAV masters ready</span>
           </div>
-          <div className="button-row"><button className="gold-button" onClick={requestLicense}><ShieldCheck size={18} /> Open VIP Licensing Workspace</button><button className="outline-button" onClick={() => showToast("Multi-track quote request opened.")}><BookmarkSimple size={18} /> Request Multiple Tracks</button><button className="outline-button" onClick={() => showToast("VIP fast-track review requested.")}><Sparkle size={18} /> Fast-Track Review</button></div>
+          <div className="button-row"><button className="gold-button vip-access-button" onClick={requestLicense}><ShieldCheck size={18} /> Open VIP Licensing Workspace</button><button className="outline-button" onClick={() => showToast("Multi-track quote request opened.")}><BookmarkSimple size={18} /> Request Multiple Tracks</button><button className="outline-button" onClick={() => showToast("VIP fast-track review requested.")}><Sparkle size={18} /> Fast-Track Review</button></div>
         </div>
       </div>
       <div className="project-workspace-grid">
@@ -3178,7 +3201,7 @@ function AccessTierCard({ tier, onSelect }) {
       <p>{tier.description}</p>
       <strong>{tier.priceLabel}</strong>
       <ul>{tier.features.map((feature) => <li key={feature}><CheckCircle size={15} weight="fill" /> {feature}</li>)}</ul>
-      <button className={tier.id === "vip" ? "gold-button" : "outline-button"} onClick={onSelect}>Request Access</button>
+      <button className={tier.id === "vip" ? "gold-button vip-access-button" : "outline-button"} onClick={onSelect}>Request Access</button>
     </article>
   );
 }
