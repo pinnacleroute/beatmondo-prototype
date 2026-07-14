@@ -6,9 +6,10 @@ import "./premium-skin.css";
 
 const SITE_PASSWORD = "surfaceboy";
 const ACCESS_KEY = "beatmondo-site-access";
+const isDemoMode = new URLSearchParams(window.location.search).get("demo") === "investor";
 
 function PasswordGate({ children }) {
-  const [unlocked, setUnlocked] = useState(() => sessionStorage.getItem(ACCESS_KEY) === "granted");
+  const [unlocked, setUnlocked] = useState(() => isDemoMode || sessionStorage.getItem(ACCESS_KEY) === "granted");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
