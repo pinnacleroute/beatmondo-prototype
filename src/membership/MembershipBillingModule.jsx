@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import {
+  ArrowLeft,
   CheckCircle,
   CreditCard,
   FileText,
@@ -26,6 +27,8 @@ import {
   formatMoney,
   membershipService,
 } from "./membershipService.js";
+
+export const MEMBERSHIP_RETURN_KEY = "beatmondo-membership-return-view";
 
 export const MEMBERSHIP_VIEWS = new Set([
   "membership",
@@ -185,6 +188,29 @@ export function MembershipPlans({ navigate, showToast }) {
   const membership = user
     ? membershipService.getCurrentMembership(user.id)
     : null;
+  const buyerPlans = MEMBERSHIP_PLANS.filter(
+    (plan) => plan.id !== "plan-enterprise",
+  );
+  const enterprisePlan = MEMBERSHIP_PLANS.find(
+    (plan) => plan.id === "plan-enterprise",
+  );
+  const returnView = useMemo(() => {
+    try {
+      const saved = JSON.parse(
+        window.sessionStorage.getItem(MEMBERSHIP_RETURN_KEY) || "null",
+      );
+      const isRecent = Date.now() - Number(saved?.recordedAt || 0) < 86400000;
+      return isRecent && saved?.view && saved.view !== "membership-plans"
+        ? saved.view
+        : "home";
+    } catch {
+      return "home";
+    }
+  }, []);
+  const goBack = () => {
+    window.sessionStorage.removeItem(MEMBERSHIP_RETURN_KEY);
+    navigate(returnView);
+  };
   const choose = (plan) => {
     if (plan.id === "plan-enterprise") {
       setEnterprise(true);
@@ -218,6 +244,12 @@ export function MembershipPlans({ navigate, showToast }) {
   };
   return (
     <section className="membership-page plans-page">
+      <nav className="membership-back-nav" aria-label="Membership navigation">
+        <button type="button" className="membership-back-button" onClick={goBack}>
+          <ArrowLeft size={18} aria-hidden="true" />
+          {returnView === "home" ? "Back to homepage" : "Back to previous page"}
+        </button>
+      </nav>
       <header className="billing-hero">
         <span className="eyebrow">Membership and service access</span>
         <h2>Choose the beatmondo access level that fits your sync work.</h2>
@@ -228,7 +260,7 @@ export function MembershipPlans({ navigate, showToast }) {
         <BillingIntervalToggle value={interval} onChange={setInterval} />
       </header>
       <div className="plan-grid">
-        {MEMBERSHIP_PLANS.map((plan) => {
+        {buyerPlans.map((plan) => {
           const price = planPrice(plan, interval);
           const annualSaving =
             plan.monthlyPriceCents && plan.annualPriceCents
@@ -237,6 +269,13 @@ export function MembershipPlans({ navigate, showToast }) {
           const current =
             membership?.planId === plan.id &&
             !["Cancelled", "Expired", "Free"].includes(membership.status);
+          const buttonLabel = current
+            ? "Current Plan"
+            : plan.id === "plan-discovery"
+              ? "Start Discovery Access"
+              : plan.id === "plan-professional"
+                ? "Upgrade to Professional"
+                : "Request VIP Sync Access";
           return (
             <article
               className={`plan-card ${plan.recommended ? "recommended" : ""}`}
@@ -249,16 +288,15 @@ export function MembershipPlans({ navigate, showToast }) {
               <h3>{plan.name}</h3>
               <p>{plan.description}</p>
               <div className="plan-price">
-                {price === null ? (
-                  <strong>Custom</strong>
+                {price === 0 ? (
+                  <>
+                    <strong>Free</strong>
+                    <small>No membership fee</small>
+                  </>
                 ) : (
                   <>
                     <strong>{formatMoney(price)}</strong>
-                    <small>
-                      {price
-                        ? `/${interval === "Annual" ? "year" : "month"}`
-                        : "Free"}
-                    </small>
+                    <small>/{interval === "Annual" ? "year" : "month"}</small>
                   </>
                 )}
                 {interval === "Annual" && annualSaving > 0 && (
@@ -285,25 +323,20 @@ export function MembershipPlans({ navigate, showToast }) {
                 membership={membership}
               />
               <button
-                className={
-                  plan.id === "plan-vip"
-                    ? "vip-loop-button"
-                    : plan.id === "plan-enterprise"
-                      ? "outline-button"
-                      : "gold-button"
-                }
+                className={`plan-cta plan-cta-${plan.slug} ${
+                  plan.id === "plan-vip" ? "gold-button vip-access-button" : ""
+                }`}
                 disabled={current}
                 onClick={() => choose(plan)}
               >
-                {current
-                  ? "Current Plan"
-                  : plan.id === "plan-discovery"
-                    ? "Start Discovery Access"
-                    : plan.id === "plan-professional"
-                      ? "Upgrade to Professional"
-                      : plan.id === "plan-vip"
-                        ? "Request VIP Sync Access"
-                        : "Contact Enterprise Team"}
+                {plan.id === "plan-vip" ? (
+                  <>
+                    <span className="motion-button-label">{buttonLabel}</span>
+                    <span className="vip-acoustic-ripple" aria-hidden="true" />
+                  </>
+                ) : (
+                  buttonLabel
+                )}
               </button>
             </article>
           );
@@ -320,6 +353,33 @@ export function MembershipPlans({ navigate, showToast }) {
           </p>
         </div>
       </section>
+      {enterprisePlan && (
+        <section
+          className="enterprise-callout"
+          aria-labelledby="enterprise-heading"
+        >
+          <div className="enterprise-callout-copy">
+            <span className="eyebrow">Organization and strategic access</span>
+            <h3 id="enterprise-heading">Enterprise / Strategic Partner</h3>
+            <p>{enterprisePlan.description}</p>
+            <small>{enterprisePlan.eligibility}</small>
+          </div>
+          <ul aria-label="Enterprise services">
+            {enterprisePlan.features.map((feature) => (
+              <li key={feature}>
+                <CheckCircle />
+                {feature}
+              </li>
+            ))}
+          </ul>
+          <button
+            className="outline-button enterprise-cta"
+            onClick={() => choose(enterprisePlan)}
+          >
+            Contact Enterprise Team
+          </button>
+        </section>
+      )}
       <BillingFaqs />
       {enterprise && (
         <EnterpriseInquiry

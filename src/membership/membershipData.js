@@ -157,7 +157,7 @@ export const MEMBERSHIP_PLANS = [
     currency: "USD",
     entitlements: discoveryEntitlements,
     features: [
-      "Public and Discovery catalog",
+      "Public and Discovery music",
       "Protected previews",
       "Save tracks",
       "Basic collections",
@@ -186,7 +186,7 @@ export const MEMBERSHIP_PLANS = [
     currency: "USD",
     entitlements: professionalEntitlements,
     features: [
-      "Expanded professional catalog",
+      "Expanded professional music",
       "Up to 10 active projects",
       "Licensing requests",
       "Quote and contract workflow",
@@ -218,7 +218,7 @@ export const MEMBERSHIP_PLANS = [
     entitlements: vipEntitlements,
     features: [
       "Everything in Professional Buyer",
-      "VIP-only catalog",
+      "VIP-only selections",
       "Priority and fast-track review",
       "Concierge support",
       "Premium project workspace",

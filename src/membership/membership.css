@@ -9,6 +9,46 @@
   margin: 0 auto;
   padding: 34px clamp(18px, 3vw, 44px) 80px;
 }
+.membership-page.plans-page {
+  width: 100%;
+  max-width: none;
+  min-height: 100vh;
+  margin: 0;
+  padding-block: clamp(42px, 6vw, 82px) 96px;
+  background: #110e0c;
+}
+.plans-page > .billing-hero,
+.plans-page > .membership-back-nav,
+.plans-page > .plan-grid,
+.plans-page > .billing-trust-note,
+.plans-page > .enterprise-callout,
+.plans-page > .billing-faq {
+  width: min(1320px, 100%);
+  margin-inline: auto;
+}
+.membership-back-nav {
+  margin-bottom: clamp(26px, 4vw, 46px);
+}
+.membership-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  color: rgba(242, 234, 220, 0.78);
+  background: transparent;
+  font-weight: 700;
+  transition: color 180ms ease, transform 180ms ease;
+}
+.membership-back-button:hover {
+  color: var(--billing-ivory);
+  transform: translateX(-3px);
+}
+.membership-back-button:focus-visible {
+  outline: 2px solid #f0d38e;
+  outline-offset: 5px;
+}
 .membership-page h2,
 .membership-page h3 {
   font-family: var(--font-display, Georgia, serif);
@@ -25,12 +65,14 @@
   margin: 0 auto 40px;
 }
 .billing-hero h2 {
-  font-size: clamp(2rem, 5vw, 4.6rem);
-  line-height: 1;
-  margin: 12px 0 18px;
+  max-width: 900px;
+  margin: 12px auto 18px;
+  font-size: clamp(2.35rem, 4.5vw, 4.4rem);
+  line-height: 0.98;
+  text-wrap: balance;
 }
 .billing-hero p {
-  color: rgba(242, 234, 220, 0.72);
+  color: rgba(242, 234, 220, 0.78);
   font-size: 1.05rem;
 }
 .billing-interval {
@@ -59,34 +101,35 @@
 .billing-interval button[aria-pressed="true"] {
   color: #1b1510;
   background: var(--billing-gold);
+  font-weight: 700;
 }
 .billing-interval small {
   display: block;
   font-size: 0.64rem;
+  color: inherit;
+  opacity: 0.82;
 }
 .plan-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
   align-items: stretch;
 }
 .plan-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 13px;
   min-width: 0;
-  padding: 28px 24px;
-  background: linear-gradient(
-    160deg,
-    rgba(255, 255, 255, 0.055),
-    rgba(255, 255, 255, 0.015)
-  );
+  padding: 30px 28px 26px;
+  background: #1a1512;
   border: 1px solid var(--billing-border);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.2);
 }
 .plan-card.recommended {
-  border-color: rgba(200, 168, 107, 0.7);
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.25);
+  border-color: rgba(200, 168, 107, 0.82);
+  background: #211a14;
+  box-shadow: 0 24px 58px rgba(0, 0, 0, 0.32);
 }
 .recommended-badge {
   position: absolute;
@@ -104,7 +147,8 @@
   color: var(--billing-gold);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-size: 0.7rem;
+  font-size: 0.74rem;
+  line-height: 1.45;
 }
 .plan-card h3 {
   font-size: 1.75rem;
@@ -112,7 +156,7 @@
 }
 .plan-card > p,
 .plan-eligibility small {
-  color: rgba(242, 234, 220, 0.66);
+  color: rgba(242, 234, 220, 0.74);
   line-height: 1.55;
 }
 .plan-price {
@@ -126,7 +170,7 @@
   font-size: 2rem;
 }
 .plan-price small {
-  color: rgba(242, 234, 220, 0.6);
+  color: rgba(242, 234, 220, 0.7);
 }
 .plan-price em {
   color: var(--billing-gold);
@@ -144,8 +188,9 @@
 .checkout-card li {
   display: flex;
   gap: 8px;
-  color: rgba(242, 234, 220, 0.82);
-  font-size: 0.87rem;
+  color: rgba(242, 234, 220, 0.88);
+  font-size: 0.9rem;
+  line-height: 1.35;
 }
 .plan-card li svg,
 .checkout-card li svg {
@@ -155,7 +200,11 @@
 .plan-eligibility {
   display: grid;
   gap: 5px;
-  margin-top: auto;
+  padding-top: 14px;
+  border-top: 1px solid var(--billing-border);
+}
+.plan-eligibility > span {
+  color: rgba(242, 234, 220, 0.88);
 }
 .eligibility-note {
   display: flex;
@@ -163,8 +212,9 @@
   gap: 7px;
   padding: 11px;
   background: rgba(200, 168, 107, 0.06);
-  color: rgba(242, 234, 220, 0.78);
-  font-size: 0.76rem;
+  color: rgba(242, 234, 220, 0.84);
+  font-size: 0.79rem;
+  line-height: 1.4;
 }
 .eligibility-note svg {
   flex: 0 0 17px;
@@ -179,6 +229,40 @@
 }
 .plan-card > button {
   min-height: 48px;
+  margin-top: auto;
+}
+.plan-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0 16px;
+  border: 1px solid rgba(200, 168, 107, 0.5);
+  border-radius: 4px;
+  color: var(--billing-ivory);
+  background: #2a211a;
+  font-weight: 750;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+.plan-cta-professional {
+  border-color: #c8a86b;
+  color: #17110d;
+  background: #c8a86b;
+  box-shadow: 0 12px 30px rgba(200, 168, 107, 0.16);
+}
+.plan-cta:not(:disabled):hover {
+  transform: translateY(-2px);
+  border-color: #e1c17f;
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.26);
+}
+.plan-cta:focus-visible {
+  outline: 2px solid #f0d38e;
+  outline-offset: 3px;
+}
+.plan-cta:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 .billing-trust-note,
 .billing-warning {
@@ -205,27 +289,83 @@
   margin: 0;
   color: rgba(242, 234, 220, 0.7);
 }
+.enterprise-callout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(24px, 4vw, 56px);
+  padding: clamp(26px, 4vw, 42px);
+  margin-top: 22px;
+  border: 1px solid rgba(200, 168, 107, 0.28);
+  background: #181310;
+}
+.enterprise-callout-copy {
+  display: grid;
+  gap: 9px;
+}
+.enterprise-callout h3 {
+  margin: 0;
+  font-size: clamp(1.7rem, 3vw, 2.4rem);
+}
+.enterprise-callout p {
+  margin: 0;
+  color: rgba(242, 234, 220, 0.76);
+  line-height: 1.55;
+}
+.enterprise-callout small {
+  color: var(--billing-gold);
+}
+.enterprise-callout ul {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.enterprise-callout li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: rgba(242, 234, 220, 0.84);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+.enterprise-callout li svg {
+  flex: 0 0 17px;
+  color: var(--billing-gold);
+}
+.enterprise-cta {
+  min-width: 210px;
+  min-height: 48px;
+}
 .billing-warning.critical {
   border-color: rgba(167, 53, 44, 0.55);
   background: rgba(167, 53, 44, 0.12);
 }
 .billing-faq {
-  margin-top: 60px;
+  margin-top: 72px;
   max-width: 920px;
 }
 .billing-faq h3 {
-  font-size: 2rem;
+  margin: 8px 0 20px;
+  color: var(--billing-ivory);
+  font-size: 2.15rem;
 }
 .billing-faq details {
-  border-top: 1px solid var(--billing-border);
-  padding: 16px 0;
+  border-top: 1px solid rgba(213, 183, 124, 0.28);
+  padding: 18px 0;
 }
 .billing-faq summary {
   cursor: pointer;
+  color: rgba(242, 234, 220, 0.94);
   font-weight: 700;
+  line-height: 1.45;
 }
 .billing-faq p {
-  color: rgba(242, 234, 220, 0.68);
+  max-width: 760px;
+  color: rgba(242, 234, 220, 0.76);
+  line-height: 1.6;
 }
 .billing-modal-backdrop {
   position: fixed;
@@ -935,6 +1075,13 @@
   .payment-method-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .enterprise-callout {
+    grid-template-columns: 1fr 1fr;
+  }
+  .enterprise-cta {
+    grid-column: 1 / -1;
+    width: max-content;
+  }
 }
 @media (max-width: 760px) {
   .membership-page {
@@ -950,6 +1097,13 @@
   .payment-method-grid,
   .invoice-parties {
     grid-template-columns: 1fr;
+  }
+  .enterprise-callout,
+  .enterprise-callout ul {
+    grid-template-columns: 1fr;
+  }
+  .enterprise-cta {
+    width: 100%;
   }
   .billing-form-grid,
   .cycle-comparison,
@@ -1038,6 +1192,20 @@
   }
   .billing-profile {
     grid-template-columns: 1fr;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan-cta {
+    transition: none;
+  }
+  .plan-cta:not(:disabled):hover {
+    transform: none;
+  }
+  .membership-back-button {
+    transition: none;
+  }
+  .membership-back-button:hover {
+    transform: none;
   }
 }
 @media print {

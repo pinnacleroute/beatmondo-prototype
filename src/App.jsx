@@ -7,6 +7,7 @@ import {
 } from "./verification/BuyerVerificationModule.jsx";
 import { buyerVerificationService } from "./verification/buyerVerificationService.js";
 import {
+  MEMBERSHIP_RETURN_KEY,
   MEMBERSHIP_VIEWS,
   renderMembershipView,
 } from "./membership/MembershipBillingModule.jsx";
@@ -1581,6 +1582,12 @@ function App() {
       return;
     }
     setAccessReason("");
+    if (nextView === "membership-plans" && view !== "membership-plans") {
+      window.sessionStorage.setItem(
+        MEMBERSHIP_RETURN_KEY,
+        JSON.stringify({ view, recordedAt: Date.now() }),
+      );
+    }
     setRoute(nextView);
   };
 
