@@ -83,6 +83,18 @@ import {
   PRIVACY_VIEWS,
   renderPrivacyView,
 } from "./privacy/CompliancePrivacyModule.jsx";
+import { quoteService } from "./quotes/quoteService.js";
+import { contractService } from "./contracts/contractService.js";
+import { paymentService } from "./payments/paymentService.js";
+import { licenceService } from "./licences/licenceService.js";
+import { secureDeliveryService } from "./delivery/secureDeliveryService.js";
+import { expiringAccessService } from "./expiring-access/expiringAccessService.js";
+import { auditService } from "./audit/auditService.js";
+import { emailService } from "./email/emailService.js";
+import { resetAdminPermissionsDemoData } from "./permissions/authorizationService.js";
+import { resetCompliancePrivacyDemoData } from "./privacy/privacyService.js";
+import { ingestionService } from "./ingestion/ingestionService.js";
+import { analyticsService } from "./analytics/analyticsService.js";
 import {
   Archive,
   ArrowRight,
@@ -128,6 +140,7 @@ import {
   WarningCircle,
   Waveform,
   X,
+  Repeat,
 } from "@phosphor-icons/react";
 
 const logo = "/assets/beatmondo-logo.png";
@@ -1506,6 +1519,40 @@ function App() {
 
   useEffect(() => {
     watermarkedPreviewService.syncReadyPreviewsToStorage();
+  }, []);
+
+  useEffect(() => {
+    window.resetAllBeatmondoDemoData = () => {
+      buyerVerificationService.resetDemoData();
+      membershipService.resetMembershipBillingDemoData();
+      rightsService.resetRightsDatabaseDemoData();
+      searchService.resetSearchInfrastructureDemoData();
+      storageService.resetFileStorageStreamingDemoData();
+      watermarkedPreviewService.resetWatermarkedPreviewsDemoData();
+      quoteService.reset();
+      contractService.resetContractsESignatureDemoData();
+      paymentService.resetPaymentsDemoData();
+      licenceService.reset();
+      secureDeliveryService.resetSecureDeliveryDemoData();
+      expiringAccessService.resetExpiringUrlsDemoData();
+      auditService.reset();
+      emailService.reset();
+      resetAdminPermissionsDemoData();
+      resetCompliancePrivacyDemoData();
+      ingestionService.resetTrackIngestionDemoData();
+      analyticsService.resetAnalyticsReportingDemoData();
+      // Clean selected keys from localStorage
+      localStorage.removeItem("beatmondo-selected-track");
+      localStorage.removeItem("beatmondo-selected-quote");
+      localStorage.removeItem("beatmondo-selected-contract");
+      localStorage.removeItem("beatmondo-selected-licence");
+      localStorage.removeItem("beatmondo-selected-delivery");
+      localStorage.removeItem("beatmondo-selected-asset");
+      localStorage.removeItem("beatmondo-selected-preview");
+    };
+    return () => {
+      delete window.resetAllBeatmondoDemoData;
+    };
   }, []);
 
   const setRoute = (nextView) => {
@@ -6884,6 +6931,29 @@ function SettingsAdmin({ showToast }) {
         </p>
         <button onClick={() => showToast("Security controls opened.")}>
           Manage security
+        </button>
+      </article>
+      <article className="destructive-panel">
+        <Repeat size={28} style={{ color: "var(--beatmondo-red)" }} />
+        <h3>Reset all demo data</h3>
+        <p>
+          Restores all mock databases (quotes, contracts, payments, licences, files, permissions, etc.) to default seeded state.
+        </p>
+        <button
+          className="danger-button"
+          onClick={() => {
+            if (window.confirm("Are you sure you want to reset all beatmondo demo data? This will restore all databases to their default seeded states.")) {
+              if (window.resetAllBeatmondoDemoData) {
+                window.resetAllBeatmondoDemoData();
+                showToast("All beatmondo demo data has been successfully reset.");
+                window.location.reload();
+              } else {
+                showToast("Reset function is not registered.");
+              }
+            }
+          }}
+        >
+          Reset demo data
         </button>
       </article>
     </div>
