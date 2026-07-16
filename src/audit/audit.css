@@ -1,0 +1,533 @@
+.au-page {
+  --au-red: #b83a31;
+  --au-gold: #b89a5b;
+  display: grid;
+  gap: 1.35rem;
+  color: #eee7dc;
+}
+.au-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: flex-end;
+  padding: 1.2rem 0 0.45rem;
+}
+.au-header > div:first-child {
+  max-width: 850px;
+}
+.au-header span,
+.au-card > span,
+.au-metric span {
+  color: #b9ad9d;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+.au-header h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(2.1rem, 4vw, 3.9rem);
+  font-weight: 400;
+  margin: 0.28rem 0;
+}
+.au-header p,
+.au-card p {
+  color: #b9ad9d;
+  line-height: 1.6;
+  margin: 0.3rem 0;
+}
+.au-actions {
+  display: flex;
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+.au-notice {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  border: 1px solid rgba(184, 154, 91, 0.35);
+  background: rgba(184, 154, 91, 0.08);
+  padding: 1rem 1.15rem;
+  color: #d8ccba;
+  line-height: 1.5;
+}
+.au-notice svg {
+  color: var(--au-gold);
+  font-size: 1.35rem;
+  flex: none;
+}
+.au-subnav {
+  display: flex;
+  gap: 0.2rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.au-subnav button {
+  white-space: nowrap;
+  border: 0;
+  background: transparent;
+  color: #aaa097;
+  padding: 0.8rem 1rem;
+  border-bottom: 2px solid transparent;
+}
+.au-subnav button:hover,
+.au-subnav button.active {
+  color: #f5efe7;
+  border-color: var(--au-red);
+}
+.au-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.au-metric,
+.au-card {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #191715;
+  padding: 1.1rem;
+}
+.au-metric {
+  border-top: 2px solid var(--au-gold);
+}
+.au-metric.warning {
+  border-top-color: #d49843;
+}
+.au-metric.danger {
+  border-top-color: var(--au-red);
+}
+.au-metric strong {
+  display: block;
+  font-family: Georgia, serif;
+  font-size: 2rem;
+  margin-top: 0.45rem;
+}
+.au-toolbar {
+  display: grid;
+  grid-template-columns: minmax(250px, 2fr) repeat(5, minmax(130px, 1fr));
+  gap: 0.55rem;
+}
+.au-toolbar label {
+  display: flex;
+  gap: 0.55rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #131210;
+  padding: 0 0.75rem;
+}
+.au-toolbar input,
+.au-toolbar select,
+.au-toolbar label input,
+.au-card select,
+.au-card textarea {
+  width: 100%;
+  min-height: 42px;
+  background: #131210;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #eee7dc;
+  padding: 0.65rem;
+}
+.au-toolbar label input {
+  border: 0;
+  padding-left: 0;
+}
+.au-count {
+  font-size: 0.82rem;
+  color: #9f9588;
+}
+.au-table-wrap {
+  max-width: 100%;
+  overflow: auto;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+.au-table {
+  width: 100%;
+  min-width: 1080px;
+  border-collapse: collapse;
+  background: #151412;
+}
+.au-table th {
+  text-align: left;
+  color: #9f9588;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+}
+.au-table td {
+  padding: 0.9rem 0.8rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  vertical-align: top;
+}
+.au-table td > strong,
+.au-table td > span {
+  display: block;
+}
+.au-table td > span {
+  color: #968d82;
+  font-size: 0.78rem;
+  margin-top: 0.3rem;
+}
+.au-status,
+.au-visibility {
+  display: inline-flex !important;
+  width: max-content;
+  padding: 0.24rem 0.48rem;
+  border: 1px solid rgba(184, 154, 91, 0.3);
+  color: #d9c79f !important;
+  background: rgba(184, 154, 91, 0.08);
+  font-size: 0.68rem !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.au-failure,
+.au-denied,
+.au-blocked,
+.au-critical,
+.au-escalated {
+  border-color: rgba(184, 58, 49, 0.5);
+  color: #e69a93 !important;
+  background: rgba(184, 58, 49, 0.12);
+}
+.au-success,
+.au-resolved,
+.au-reviewed,
+.au-active,
+.au-ready {
+  border-color: rgba(88, 151, 112, 0.45);
+  color: #9fcdae !important;
+  background: rgba(88, 151, 112, 0.1);
+}
+.au-warning,
+.au-not-reviewed,
+.au-in-review,
+.au-approval-required {
+  border-color: rgba(212, 152, 67, 0.45);
+  color: #e0b678 !important;
+  background: rgba(212, 152, 67, 0.1);
+}
+.au-empty {
+  text-align: center !important;
+  color: #9f9588 !important;
+  padding: 2.5rem !important;
+}
+.au-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.au-summary {
+  grid-column: 1/-1;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+}
+.au-summary > div {
+  display: grid;
+  gap: 0.35rem;
+}
+.au-card h2,
+.au-section-heading h2 {
+  font-family: Georgia, serif;
+  font-weight: 400;
+  margin: 0 0 0.8rem;
+}
+.au-card dl {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 0.65rem;
+  margin: 0;
+}
+.au-card dt {
+  color: #8f867b;
+}
+.au-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.au-card dd svg {
+  vertical-align: middle;
+  color: var(--au-gold);
+}
+.au-changes > div {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1rem;
+  align-items: center;
+}
+.au-changes pre {
+  white-space: pre-wrap;
+  background: #100f0d;
+  padding: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #d9d1c6;
+}
+.au-redaction {
+  display: flex;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.8rem 1rem;
+  background: rgba(184, 58, 49, 0.08);
+  border-left: 3px solid var(--au-red);
+  color: #d9bbb7;
+}
+.au-review textarea {
+  min-height: 90px;
+  resize: vertical;
+  margin-bottom: 0.8rem;
+}
+.au-timeline {
+  display: grid;
+  gap: 0.45rem;
+}
+.au-timeline button {
+  display: grid;
+  grid-template-columns: 180px 1fr 1fr;
+  text-align: left;
+  gap: 1rem;
+  background: #11100f;
+  color: #eee7dc;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.75rem;
+}
+.au-timeline button:hover {
+  border-color: var(--au-gold);
+}
+.au-timeline span,
+.au-timeline small {
+  color: #978d82;
+}
+.au-export-create {
+  display: grid;
+  grid-template-columns: 1fr 160px auto;
+  gap: 1rem;
+  align-items: center;
+}
+.au-export-create > div {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+.au-export-create svg {
+  font-size: 2rem;
+  color: var(--au-gold);
+}
+.au-export-create h2 {
+  margin-bottom: 0.2rem;
+}
+.au-section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 1rem;
+}
+.au-section-heading p {
+  margin: 0;
+  color: #9f9588;
+}
+.au-policy-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.au-policy-grid .au-card {
+  border-top: 2px solid var(--au-gold);
+}
+.au-health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+.au-health-grid article {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+.au-health-grid article > div {
+  display: flex;
+  gap: 0.7rem;
+  align-items: center;
+}
+.au-health-grid article svg {
+  color: #72b08a;
+  font-size: 1.45rem;
+}
+.au-health-grid article span {
+  display: block;
+  color: #9f9588;
+  font-size: 0.75rem;
+  margin-top: 0.25rem;
+}
+.au-health-grid select {
+  width: auto;
+}
+.au-governance-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+.au-governance-grid strong {
+  font-family: Georgia, serif;
+  font-size: 1.7rem;
+}
+.au-analytics-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 0.8rem;
+}
+.au-bars {
+  display: grid;
+  gap: 0.65rem;
+}
+.au-bars > div {
+  display: grid;
+  grid-template-columns: 180px 1fr 30px;
+  gap: 0.7rem;
+  align-items: center;
+  font-size: 0.82rem;
+}
+.au-bars > div > div {
+  height: 8px;
+  background: #0e0d0c;
+}
+.au-bars i {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--au-red), var(--au-gold));
+}
+.au-result-list {
+  display: grid;
+  gap: 0.7rem;
+}
+.au-result-list > div {
+  display: flex;
+  justify-content: space-between;
+}
+.au-context {
+  display: grid;
+  gap: 0.4rem;
+}
+.au-context button {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+}
+.au-context button span {
+  flex: 1;
+  display: grid;
+}
+.au-context small {
+  color: #978d82;
+}
+.text-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.au-table a {
+  text-decoration: none;
+}
+.au-hold {
+  display: grid;
+  grid-template-columns: minmax(250px, 1fr) minmax(180px, 0.55fr) minmax(
+      180px,
+      0.55fr
+    ) auto;
+  gap: 0.75rem;
+  align-items: center;
+}
+.au-hold > div {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+}
+.au-hold > div > svg {
+  flex: none;
+  color: var(--au-gold);
+  font-size: 1.7rem;
+}
+.au-hold h2 {
+  margin-bottom: 0.2rem;
+}
+.au-hold input {
+  min-height: 42px;
+  padding: 0.65rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #131210;
+  color: #eee7dc;
+}
+@media (max-width: 1100px) {
+  .au-toolbar {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .au-toolbar label {
+    grid-column: 1/-1;
+  }
+  .au-policy-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .au-health-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+@media (max-width: 720px) {
+  .au-page {
+    gap: 1rem;
+  }
+  .au-header,
+  .au-section-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .au-metrics,
+  .au-detail-grid,
+  .au-summary,
+  .au-health-grid,
+  .au-governance-grid,
+  .au-analytics-grid,
+  .au-policy-grid {
+    grid-template-columns: 1fr;
+  }
+  .au-summary {
+    grid-column: auto;
+  }
+  .au-toolbar {
+    grid-template-columns: 1fr;
+  }
+  .au-toolbar label {
+    grid-column: auto;
+  }
+  .au-export-create {
+    grid-template-columns: 1fr;
+  }
+  .au-hold {
+    grid-template-columns: 1fr;
+  }
+  .au-changes > div {
+    grid-template-columns: 1fr;
+  }
+  .au-changes svg {
+    transform: rotate(90deg);
+    justify-self: center;
+  }
+  .au-timeline button {
+    grid-template-columns: 1fr;
+  }
+  .au-bars > div {
+    grid-template-columns: 110px 1fr 24px;
+  }
+  .au-card dl {
+    grid-template-columns: 1fr;
+  }
+  .au-card dt {
+    margin-top: 0.4rem;
+  }
+  .au-health-grid article {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .au-health-grid select {
+    width: 100%;
+  }
+}

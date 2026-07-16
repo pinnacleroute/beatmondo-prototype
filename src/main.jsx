@@ -1,15 +1,27 @@
 import React, { useState } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "./App.jsx";
+import { AuthProvider } from "./auth/AuthContext.jsx";
 import "./styles.css";
 import "./premium-skin.css";
+import "./auth/auth.css";
+import "./verification/verification.css";
+import "./membership/membership.css";
+import "./rights/rights.css";
+import "./search/search.css";
+import "./ingestion/ingestion.css";
+import "./storage/storage.css";
+import "./previews/previews.css";
 
 const SITE_PASSWORD = "surfaceboy";
 const ACCESS_KEY = "beatmondo-site-access";
-const isDemoMode = new URLSearchParams(window.location.search).get("demo") === "investor";
+const isDemoMode =
+  new URLSearchParams(window.location.search).get("demo") === "investor";
 
 function PasswordGate({ children }) {
-  const [unlocked, setUnlocked] = useState(() => isDemoMode || sessionStorage.getItem(ACCESS_KEY) === "granted");
+  const [unlocked, setUnlocked] = useState(
+    () => isDemoMode || sessionStorage.getItem(ACCESS_KEY) === "granted",
+  );
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
@@ -50,7 +62,15 @@ function PasswordGate({ children }) {
           aria-invalid={Boolean(error)}
           aria-describedby={error ? "site-password-error" : undefined}
         />
-        {error && <span id="site-password-error" className="site-password-error" role="alert">{error}</span>}
+        {error && (
+          <span
+            id="site-password-error"
+            className="site-password-error"
+            role="alert"
+          >
+            {error}
+          </span>
+        )}
         <button type="submit">Enter beatmondo</button>
         <small>Approved access only · Protected licensing environment</small>
       </form>
@@ -61,7 +81,9 @@ function PasswordGate({ children }) {
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <PasswordGate>
-      <App />
+      <AuthProvider>
+        <App />
+      </AuthProvider>
     </PasswordGate>
   </React.StrictMode>,
 );
