@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.14.2/dist/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Archive Serif";
+        src: local("Georgia");
+        font-style: normal;
+        font-weight: 400 900;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 1920px;
+        height: 1080px;
+        overflow: hidden;
+        background: #120e0c;
+      }
+      body {
+        font-family: "IBM Plex Mono", monospace;
+      }
+      #root {
+        position: relative;
+        overflow: hidden;
+        background: #120e0c;
+      }
+      .footage-wrap {
+        position: absolute;
+        inset: 0;
+        overflow: hidden;
+        background: #120e0c;
+      }
+      .footage-wrap::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background:
+          linear-gradient(90deg, rgba(18, 14, 12, 0.58), rgba(18, 14, 12, 0.04) 55%, rgba(18, 14, 12, 0.22)),
+          linear-gradient(0deg, rgba(18, 14, 12, 0.74), rgba(18, 14, 12, 0) 42%);
+      }
+      #a-roll {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .grain {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        opacity: 0.11;
+        pointer-events: none;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.92' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.42'/%3E%3C/svg%3E");
+      }
+      .frame-rule {
+        position: absolute;
+        z-index: 3;
+        left: 92px;
+        right: 92px;
+        bottom: 74px;
+        height: 4px;
+        background: #c6a55d;
+        transform-origin: left center;
+      }
+      .opening {
+        position: absolute;
+        z-index: 4;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        width: 100%;
+        height: 100%;
+        padding: 0 96px 128px;
+        gap: 22px;
+        color: #f4ebdd;
+      }
+      .opening h1 {
+        max-width: 1480px;
+        font-family: "Archive Serif", serif;
+        font-size: 104px;
+        font-weight: 800;
+        line-height: 0.95;
+        letter-spacing: -0.04em;
+        text-shadow: 0 8px 42px rgba(18, 14, 12, 0.68);
+      }
+      .opening p,
+      .closing-meta {
+        font-size: 24px;
+        font-weight: 500;
+        letter-spacing: 0.12em;
+        line-height: 1.45;
+        text-transform: uppercase;
+        color: #c6a55d;
+      }
+      .closing {
+        position: absolute;
+        z-index: 5;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        align-items: flex-start;
+        width: 100%;
+        height: 100%;
+        padding: 0 96px 126px;
+        gap: 18px;
+        color: #f4ebdd;
+        background: linear-gradient(90deg, rgba(18, 14, 12, 0.91), rgba(18, 14, 12, 0.20) 70%);
+        opacity: 0;
+      }
+      .closing strong {
+        max-width: 1440px;
+        font-family: "Archive Serif", serif;
+        font-size: 88px;
+        font-weight: 800;
+        line-height: 0.98;
+        letter-spacing: -0.04em;
+      }
+      .closing .brand {
+        color: #c43a40;
+      }
+      .closing .rights-note {
+        max-width: 1180px;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #f4ebdd;
+      }
+      .light-pass {
+        position: absolute;
+        z-index: 6;
+        left: -30%;
+        bottom: 73px;
+        width: 28%;
+        height: 6px;
+        background: #b2242a;
+        box-shadow: 0 0 28px rgba(198, 165, 93, 0.7);
+      }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="30"
+      data-width="1920"
+      data-height="1080"
+    >
+      <div class="footage-wrap" data-layout-allow-overflow>
+        <video
+          id="a-roll"
+          class="clip"
+          src="the_slambovian_circus_of_dreams____2022_teaser_video_ (720p).mp4"
+          muted
+          playsinline
+          data-start="0"
+          data-duration="30"
+          data-media-start="70"
+          data-track-index="0"
+        ></video>
+      </div>
+      <audio
+        id="a-roll-audio"
+        class="clip"
+        src="the_slambovian_circus_of_dreams____2022_teaser_video_ (720p).mp4"
+        data-start="0"
+        data-duration="30"
+        data-media-start="70"
+        data-track-index="2"
+        data-volume="1"
+      ></audio>
+      <div class="grain" data-layout-ignore aria-hidden="true"></div>
+      <div class="frame-rule" aria-hidden="true"></div>
+      <section id="opening" class="opening clip" data-start="0" data-duration="5.4" data-track-index="4">
+        <p>beatmondo artist story · archival performance</p>
+        <h1>The Slambovian Circus of Dreams</h1>
+      </section>
+      <section id="closing" class="closing clip" data-start="24" data-duration="6" data-track-index="4">
+        <span class="closing-meta">Editorial feature · rights review required</span>
+        <strong>Enter the strange, vivid world of the <span class="brand">Slambovians.</span></strong>
+        <span class="rights-note">Explore Music on beatmondo. Track licensing remains subject to verified rights and approval.</span>
+      </section>
+      <div class="light-pass" aria-hidden="true"></div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      tl.from("#a-roll", { scale: 1.055, duration: 9, ease: "sine.out" }, 0.1);
+      tl.from(".frame-rule", { scaleX: 0, duration: 0.72, ease: "expo.out" }, 0.18);
+      tl.from(".opening p", { x: -56, opacity: 0, duration: 0.48, ease: "power3.out" }, 0.28);
+      tl.from(".opening h1", { y: 70, opacity: 0, scale: 0.985, duration: 0.86, ease: "expo.out" }, 0.42);
+      tl.to("#opening", { opacity: 0, duration: 0.32, ease: "power3.in" }, 4.88);
+      tl.to("#closing", { opacity: 1, duration: 0.66, ease: "sine.out" }, 24.05);
+      tl.from(".closing-meta", { x: -46, opacity: 0, duration: 0.4, ease: "power4.out" }, 24.18);
+      tl.from(".closing strong", { y: 58, opacity: 0, duration: 0.72, ease: "expo.out" }, 24.32);
+      tl.from(".rights-note", { opacity: 0, y: 26, duration: 0.46, ease: "power2.out" }, 24.62);
+      tl.to(".light-pass", { x: 2500, duration: 2.8, ease: "sine.inOut" }, 25.2);
+      tl.to("#closing", { opacity: 0, duration: 0.72, ease: "power2.in" }, 29.2);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>

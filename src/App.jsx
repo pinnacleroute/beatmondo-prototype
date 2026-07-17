@@ -147,6 +147,11 @@ import {
 
 const logo = "/assets/beatmondo-logo.png";
 const FEATURED_TRACK_ID = 15;
+const SLAMBOVIAN_AUDIO_TRACK_ID = 21;
+const PINNED_GENERAL_TRACK_IDS = [
+  FEATURED_TRACK_ID,
+  SLAMBOVIAN_AUDIO_TRACK_ID,
+];
 const heroVideo = "/assets/hero/smyrk-live-to-record.mp4";
 const heroPoster = "/assets/hero/smyrk-live-to-record-poster.png";
 const footerLogoAnimation = "/assets/footer/beatmondo-logo-animation.mp4";
@@ -192,6 +197,23 @@ const img = {
   smyrkCard: "/assets/artists/the-smyrk/d-hoppin-card.webp",
   smyrkPortrait: "/assets/artists/the-smyrk/ari-d-red-hood.webp",
   smyrkLive: "/assets/artists/the-smyrk/the-smyrk-live.webp",
+  slambovianHero:
+    "/assets/artists/the-slambovian-circus-of-dreams/live-hero.webp",
+  slambovianCard:
+    "/assets/artists/the-slambovian-circus-of-dreams/live-stage-card.webp",
+  slambovianArchive:
+    "/assets/artists/the-slambovian-circus-of-dreams/psychedelic-archive.webp",
+};
+
+const slambovianMedia = {
+  teaser:
+    "/assets/artists/the-slambovian-circus-of-dreams/2022-teaser-web.mp4",
+  teaserCaptions:
+    "/assets/artists/the-slambovian-circus-of-dreams/2022-teaser-captions.vtt",
+  shortClip:
+    "/assets/artists/the-slambovian-circus-of-dreams/slambovian-short-sync-clip.mp4",
+  shortClipCaptions:
+    "/assets/artists/the-slambovian-circus-of-dreams/short-sync-clip-captions.vtt",
 };
 
 const buyerTiers = [
@@ -611,6 +633,59 @@ const rawTracks = [
     },
   },
   {
+    id: 21,
+    title: "2022 Teaser Video (Audio Extract)",
+    artist: "The Slambovian Circus of Dreams",
+    composer: "Composition and recording credits pending verification",
+    genre: "Alternative / Americana",
+    mood: "Theatrical",
+    tempo: "Mixed",
+    bpm: "BPM pending",
+    era: "2020s",
+    vocal: "Mixed",
+    usage: "Editorial Discovery",
+    availability: "Quote Required",
+    duration: "1:59",
+    key: "Pending analysis",
+    instrumentation:
+      "Mixed promotional-montage audio; individual recordings, performers, and session credits pending verification",
+    tags: ["Theatrical", "Psychedelic", "Live Energy"],
+    status: "Rights Review",
+    image: img.slambovianCard,
+    heroImage: img.slambovianHero,
+    rights:
+      "Audio extracted from the supplied 2022 promotional teaser. It is available for protected editorial listening only; individual song titles, master ownership, publishing, samples, performers, and licensing authority remain unverified.",
+    previewSrc:
+      "/assets/artists/the-slambovian-circus-of-dreams/2022-teaser-audio-extract.wav",
+    previewFallbackSrc:
+      "/assets/artists/the-slambovian-circus-of-dreams/2022-teaser-audio-extract.m4a",
+    previewSourceStart: 0,
+    previewDuration: 119.637,
+    editorialAudioExtract: true,
+    assetOverrides: {
+      wavMaster: false,
+      stems: false,
+      instrumental: false,
+      vocal: false,
+      alternateMixes: false,
+      loopEdit: false,
+      thirtySecondEdit: false,
+      drumStem: false,
+      bassStem: false,
+      guitarStem: false,
+      keysStem: false,
+      percStem: false,
+    },
+    rightsOverrides: {
+      proAffiliation: "Pending verification",
+      registrationId: "No track registration represented",
+      publisher: "Publishing control under review",
+      masterOwner: "Promotional-video audio authority under review",
+      publishingOwner: "Publishing documentation under review",
+      ownershipPercentage: "Pending verification",
+    },
+  },
+  {
     id: 16,
     title: "Northern Lines",
     artist: "Arco North",
@@ -831,21 +906,21 @@ const tracks = rawTracks
       percStem: track.assetOverrides?.percStem ?? [7, 9].includes(track.id),
     },
     commercial: {
-      pricingType: [4, 8, 13, 15].includes(track.id)
+      pricingType: [4, 8, 13, 15, 21].includes(track.id)
         ? "Quote Required"
         : [10].includes(track.id)
           ? "Private Pricing"
           : [1].includes(track.id)
             ? "VIP Pricing"
             : "Fixed Price",
-      priceRange: [4, 8, 13, 15].includes(track.id)
+      priceRange: [4, 8, 13, 15, 21].includes(track.id)
         ? "Request quote"
         : [10].includes(track.id)
           ? "Contact for terms"
           : [1].includes(track.id)
             ? "VIP terms apply"
             : "$5,000 – $25,000",
-      rightsReviewRequired: [4, 8, 13, 15].includes(track.id),
+      rightsReviewRequired: [4, 8, 13, 15, 21].includes(track.id),
       exclusivityAvailable: [1, 4, 10].includes(track.id),
     },
     rightsData: {
@@ -861,28 +936,30 @@ const tracks = rawTracks
         track.rightsOverrides?.masterOwner ?? "beatmondo Partner Catalog",
       publishingOwner:
         track.rightsOverrides?.publishingOwner ?? `${track.artist} Publishing`,
-      ownershipProof: [4, 8, 13, 15].includes(track.id)
+      ownershipProof: [4, 8, 13, 15, 21].includes(track.id)
         ? "Rights Review Needed"
         : "Verified",
-      contractStatus: [4, 8, 13, 15].includes(track.id)
+      contractStatus: [4, 8, 13, 15, 21].includes(track.id)
         ? "Legal Review Needed"
         : "On File",
-      legalReview: [4, 8, 13, 15].includes(track.id) ? "Pending" : "Approved",
-      prestonApproval: [4, 8, 13, 15].includes(track.id)
+      legalReview: [4, 8, 13, 15, 21].includes(track.id)
         ? "Pending"
         : "Approved",
-      licensingEligible: ![4, 8, 13, 15].includes(track.id),
-      rightsVerified: ![4, 8, 13, 15].includes(track.id),
+      prestonApproval: [4, 8, 13, 15, 21].includes(track.id)
+        ? "Pending"
+        : "Approved",
+      licensingEligible: ![4, 8, 13, 15, 21].includes(track.id),
+      rightsVerified: ![4, 8, 13, 15, 21].includes(track.id),
       deliveryReady: [
         "Delivery Ready",
         "Protected Delivery",
         "Ready to License",
       ].includes(track.status),
       lastReview: "Jul 2026",
-      territory: [4, 8, 13, 15].includes(track.id)
+      territory: [4, 8, 13, 15, 21].includes(track.id)
         ? "Territory restrictions may apply"
         : "Worldwide",
-      verificationStatus: [4, 8, 13, 15].includes(track.id)
+      verificationStatus: [4, 8, 13, 15, 21].includes(track.id)
         ? "Documentation Required"
         : "Verified",
       ownershipPercentage:
@@ -890,10 +967,12 @@ const tracks = rawTracks
         (track.id <= 6 ? "100%" : index % 3 === 0 ? "50% (co-owned)" : "100%"),
     },
   }))
-  .sort(
-    (a, b) =>
-      Number(b.id === FEATURED_TRACK_ID) - Number(a.id === FEATURED_TRACK_ID),
-  );
+  .sort((a, b) => {
+    const aRank = PINNED_GENERAL_TRACK_IDS.indexOf(a.id);
+    const bRank = PINNED_GENERAL_TRACK_IDS.indexOf(b.id);
+    return (aRank < 0 ? Number.MAX_SAFE_INTEGER : aRank) -
+      (bRank < 0 ? Number.MAX_SAFE_INTEGER : bRank);
+  });
 
 const useCases = [
   [
@@ -1130,6 +1209,20 @@ const artists = [
     stage: "Metadata Review",
     openItems: 1,
     priority: "Low",
+  },
+  {
+    name: "The Slambovian Circus of Dreams",
+    credit:
+      "Theatrical psychedelic Americana with a vivid live identity, eccentric character, and festival-scale energy",
+    tracks: 1,
+    image: img.slambovianCard,
+    heroImage: img.slambovianHero,
+    archiveImage: img.slambovianArchive,
+    stage: "Editorial Review",
+    openItems: 8,
+    priority: "High",
+    featureTrackId: SLAMBOVIAN_AUDIO_TRACK_ID,
+    media: slambovianMedia,
   },
 ];
 
@@ -1702,10 +1795,12 @@ function sortTracks(list, sortBy) {
       (a, b) =>
         parseDurationMinutes(a.duration) - parseDurationMinutes(b.duration),
     );
-  sorted.sort(
-    (a, b) =>
-      Number(b.id === FEATURED_TRACK_ID) - Number(a.id === FEATURED_TRACK_ID),
-  );
+  sorted.sort((a, b) => {
+    const aRank = PINNED_GENERAL_TRACK_IDS.indexOf(a.id);
+    const bRank = PINNED_GENERAL_TRACK_IDS.indexOf(b.id);
+    return (aRank < 0 ? Number.MAX_SAFE_INTEGER : aRank) -
+      (bRank < 0 ? Number.MAX_SAFE_INTEGER : bRank);
+  });
   return sorted;
 }
 
@@ -1730,6 +1825,7 @@ function App() {
   const [view, setView] = useState("home");
   const [accessReason, setAccessReason] = useState("");
   const [selectedTrack, setSelectedTrack] = useState(tracks[0]);
+  const [selectedArtistName, setSelectedArtistName] = useState(null);
   const [playingId, setPlayingId] = useState(null);
   const [playerTrackId, setPlayerTrackId] = useState(null);
   const [streamSessionId, setStreamSessionId] = useState(null);
@@ -1816,6 +1912,7 @@ function App() {
           : `#${nextView}`;
     }
     window.history.replaceState(null, "", hash || window.location.pathname);
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   };
 
   const navigate = (nextView) => {
@@ -1953,6 +2050,21 @@ function App() {
     };
     const syncPausedTrack = () => setPlayingId(null);
     const syncPlaybackError = () => {
+      const fallbackSrc = audio.dataset.fallbackSrc;
+      if (fallbackSrc && audio.dataset.fallbackAttempted !== "true") {
+        const resumeAt = audio.currentTime || 0;
+        audio.dataset.fallbackAttempted = "true";
+        audio.src = fallbackSrc;
+        audio.load();
+        audio.currentTime = resumeAt;
+        audio.play().catch(() => {
+          setPlayingId(null);
+          showToast(
+            "The protected preview could not be played. Please try again.",
+          );
+        });
+        return;
+      }
       setPlayingId(null);
       showToast("The protected preview could not be played. Please try again.");
     };
@@ -2130,6 +2242,8 @@ function App() {
     if (!isActiveTrack) {
       audio.pause();
       audio.src = nextTrack.previewSrc;
+      audio.dataset.fallbackSrc = nextTrack.previewFallbackSrc || "";
+      delete audio.dataset.fallbackAttempted;
       audio.dataset.trackId = String(id);
       audio.currentTime = 0;
       audio.load();
@@ -2204,6 +2318,7 @@ function App() {
   }, [streamSessionId]);
   const openTrack = (track) => {
     setSelectedTrack(track);
+    setSelectedArtistName(track.artist);
     if (!validViews.has("track")) return;
     const decision = getRouteDecision("track", auth.user, auth.ready);
     if (!decision.allowed) {
@@ -2218,7 +2333,20 @@ function App() {
     setAccessReason("");
     setRoute("track", track.id);
   };
+  const openArtistProfile = (artistName) => {
+    if (!artists.some((artist) => artist.name === artistName)) return;
+    setSelectedArtistName(artistName);
+    navigate("artist");
+  };
   const requestLicense = (track) => {
+    if (track.editorialAudioExtract) {
+      setSelectedTrack(track);
+      showToast(
+        "This teaser audio extract is available for protected editorial listening only while track-level rights and licensing authority are reviewed.",
+      );
+      navigate("track");
+      return;
+    }
     const rights = rightsService.getBuyerSummary(track.id, {
       territory: "Worldwide",
       usageType: "commercial",
@@ -2429,7 +2557,7 @@ function App() {
             saved={savedIds.includes(selectedTrack.id)}
             requestLicense={requestLicense}
             openTrack={openTrack}
-            openArtist={() => navigate("artist")}
+            openArtist={() => openArtistProfile(selectedTrack.artist)}
           />
         )}
         {view === "artist" && (
@@ -2442,6 +2570,7 @@ function App() {
             savedIds={savedIds}
             saveTrack={saveTrack}
             setView={navigate}
+            selectedArtistName={selectedArtistName}
           />
         )}
         {view === "legacy" && (
@@ -2508,13 +2637,25 @@ function App() {
           />
         )}
         {view === "content" && (
-          <ContentPages setView={navigate} showToast={showToast} />
+          <ContentPages
+            setView={navigate}
+            showToast={showToast}
+            openArtistProfile={openArtistProfile}
+          />
         )}
         {view === "stories" && (
-          <StoriesPage setView={navigate} showToast={showToast} />
+          <StoriesPage
+            setView={navigate}
+            showToast={showToast}
+            openArtistProfile={openArtistProfile}
+          />
         )}
         {view === "media" && (
-          <MediaEpisodesPage setView={navigate} showToast={showToast} />
+          <MediaEpisodesPage
+            setView={navigate}
+            showToast={showToast}
+            openArtistProfile={openArtistProfile}
+          />
         )}
         {view === "contact" && <ContactPage setView={navigate} />}
         {view === "investor" && <InvestorOverview setView={navigate} />}
@@ -3764,12 +3905,14 @@ function TrackRow({
       </button>
       <button
         className="small-button license-action-button"
+        disabled={track.editorialAudioExtract}
+        aria-disabled={track.editorialAudioExtract || undefined}
         onClick={(event) => {
           event.stopPropagation();
           onRequest();
         }}
       >
-        Request License
+        {track.editorialAudioExtract ? "Rights Review" : "Request License"}
       </button>
       <button
         className="icon-button"
@@ -3841,9 +3984,11 @@ function TrackCard({
         </button>
         <button
           className="gold-button license-action-button"
+          disabled={track.editorialAudioExtract}
+          aria-disabled={track.editorialAudioExtract || undefined}
           onClick={onRequest}
         >
-          Request License
+          {track.editorialAudioExtract ? "Rights Review" : "Request License"}
         </button>
       </div>
     </article>
@@ -3886,7 +4031,11 @@ function TrackSidePanel({ track, requestLicense, playingId, onTogglePlay }) {
         <span>
           <Clock size={16} /> Preview {getPlayableDuration(track)}
         </span>
-        <span>Full track {track.duration}</span>
+        <span>
+          {track.editorialAudioExtract
+            ? `Source montage ${track.duration}`
+            : `Full track ${track.duration}`}
+        </span>
         <span>
           <MusicNote size={16} /> {track.bpm}
         </span>
@@ -3910,11 +4059,17 @@ function TrackSidePanel({ track, requestLicense, playingId, onTogglePlay }) {
       </div>
       <button
         className={`gold-button full license-action-button ${track.vipOnly ? "vip-access-button" : ""}`}
+        disabled={track.editorialAudioExtract}
+        aria-disabled={track.editorialAudioExtract || undefined}
         onClick={() => requestLicense(track)}
       >
         <span className="motion-button-label">
           <ShieldCheck size={18} />{" "}
-          {track.vipOnly ? "Fast-Track License" : "Request License"}
+          {track.editorialAudioExtract
+            ? "Rights Review"
+            : track.vipOnly
+              ? "Fast-Track License"
+              : "Request License"}
         </span>
         {track.vipOnly && (
           <span className="vip-acoustic-ripple" aria-hidden="true" />
@@ -3947,7 +4102,8 @@ function TrackDetail({
     !rightsSummary || rightsSummary.allowedAssets.includes("Master");
   const stemsAllowed =
     !rightsSummary || rightsSummary.allowedAssets.includes("Stems");
-  const rightsBlocked = rightsSummary && !rightsSummary.licensable;
+  const rightsBlocked =
+    track.editorialAudioExtract || (rightsSummary && !rightsSummary.licensable);
   const assetsList = [
     ["Preview", track.assets.preview, "Public-limited preview"],
     [
@@ -4105,9 +4261,9 @@ function TrackDetail({
               </button>
             )}
           </div>
-          {rightsBlocked && rightsSummary?.wording && (
+          {rightsBlocked && (rightsSummary?.wording || track.rights) && (
             <p className="rights-blocked-note" role="status">
-              {rightsSummary.wording}
+              {rightsSummary?.wording || track.rights}
             </p>
           )}
           <WatermarkNotice trackId={track.id} />
@@ -4129,8 +4285,10 @@ function TrackDetail({
         <div className="player-top">
           <strong>Protected preview</strong>
           <span>
-            {getPlayableDuration(track)} preview · Full track {track.duration} ·
-            WAV after approval
+            {getPlayableDuration(track)} preview ·{" "}
+            {track.editorialAudioExtract
+              ? "Complete teaser montage audio · Source WAV is not a licensable master"
+              : `Full track ${track.duration} · WAV after approval`}
           </span>
         </div>
         <div className="compact-preview-actions">
@@ -4147,8 +4305,9 @@ function TrackDetail({
             {playingId === track.id ? "Pause" : "Play preview"}
           </button>
           <span className="preview-band-note">
-            Master audio stays locked until clearance and delivery terms are
-            complete.
+            {track.editorialAudioExtract
+              ? "Protected editorial listening only; individual recordings and licensing authority remain under review."
+              : "Master audio stays locked until clearance and delivery terms are complete."}
           </span>
         </div>
       </div>
@@ -4162,7 +4321,9 @@ function TrackDetail({
             <dd>{track.artist}</dd>
             <dt>Album</dt>
             <dd>
-              {track.artist} – {track.title} (Single)
+              {track.editorialAudioExtract
+                ? "2022 Teaser Video · Promotional montage"
+                : `${track.artist} – ${track.title} (Single)`}
             </dd>
             <dt>Genre</dt>
             <dd>
@@ -4174,7 +4335,11 @@ function TrackDetail({
             <dd>{track.energy}</dd>
             <dt>BPM</dt>
             <dd>{track.bpm}</dd>
-            <dt>Full track duration</dt>
+            <dt>
+              {track.editorialAudioExtract
+                ? "Source montage duration"
+                : "Full track duration"}
+            </dt>
             <dd>{track.duration}</dd>
             <dt>Protected preview</dt>
             <dd>{getPlayableDuration(track)}</dd>
@@ -4272,6 +4437,7 @@ function TrackDetail({
 
 function ArtistProfile({
   selectedTrack,
+  selectedArtistName,
   requestLicense,
   openTrack,
   playingId,
@@ -4281,12 +4447,241 @@ function ArtistProfile({
   setView,
 }) {
   const artist =
-    artists.find((item) => item.name === selectedTrack.artist) || artists[0];
+    artists.find(
+      (item) => item.name === (selectedArtistName || selectedTrack.artist),
+    ) || artists[0];
   const artistTracks = tracks.filter((track) => track.artist === artist.name);
   const featuredTrack =
     tracks.find((track) => track.id === artist.featureTrackId) ||
     artistTracks[0] ||
     selectedTrack;
+
+  if (artist.name === "The Slambovian Circus of Dreams") {
+    return (
+      <section className="artist-page slambovian-artist-page">
+        <div
+          className="slambovian-artist-hero"
+          style={{ backgroundImage: `url(${artist.heroImage})` }}
+        >
+          <div className="slambovian-hero-scrim" aria-hidden="true" />
+          <div className="slambovian-hero-content">
+            <span className="eyebrow">Artist profile · Editorial spotlight</span>
+            <h2>The Slambovian Circus of Dreams</h2>
+            <p>
+              {artist.credit}. A strong editorial introduction while individual
+              track rights and licensing authority remain under review.
+            </p>
+            <div className="slambovian-status-row" aria-label="Artist status">
+              <span>2022 teaser</span>
+              <span>Archival promotional media</span>
+              <span>1 protected audio extract</span>
+            </div>
+            <div className="button-row">
+              <button
+                className="gold-button sound-ring-button"
+                onClick={() =>
+                  document
+                    .getElementById("slambovian-feature-media")
+                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }
+              >
+                <Play size={18} weight="fill" /> Watch Artist Story
+              </button>
+              <button
+                className="outline-button explore-action-button"
+                onClick={() => setView("catalog")}
+              >
+                Explore Music <ArrowRight size={16} aria-hidden="true" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="slambovian-profile-grid">
+          <Panel title="Sync character" action="Editorial assessment">
+            <p>
+              The teaser suggests a theatrical psychedelic-Americana world with
+              eccentric character, strong live presence, and audience-facing
+              energy. This is creative positioning, not track-level metadata.
+            </p>
+            <div className="slambovian-fit-list">
+              <span>Outsider stories</span>
+              <span>Strange journeys</span>
+              <span>Festival scenes</span>
+              <span>Wonder with an edge</span>
+              <span>Character-led indie</span>
+            </div>
+          </Panel>
+          <Panel title="Publication boundary" action="Rights-aware">
+            <p>
+              The supplied teaser may be presented as archival promotional
+              media. It does not verify ownership, publishing, samples,
+              performers, quoted endorsements, or authority to license any song
+              heard in the edit.
+            </p>
+            <div className="rights-review-callout">
+              <LockKey size={18} /> Editorial feature available · Track
+              licensing remains locked
+            </div>
+          </Panel>
+        </div>
+
+        <section
+          id="slambovian-feature-media"
+          className="slambovian-feature-media"
+          aria-labelledby="slambovian-feature-title"
+        >
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Media Episode · 1 min 59 sec</span>
+              <h2 id="slambovian-feature-title">2022 Teaser Video</h2>
+            </div>
+            <span className="slambovian-media-badge">Archival promotional media</span>
+          </div>
+          <video
+            controls
+            playsInline
+            preload="metadata"
+            poster={artist.image}
+            aria-label="The Slambovian Circus of Dreams 2022 teaser video"
+          >
+            <source src={artist.media.teaser} type="video/mp4" />
+            <track
+              kind="captions"
+              src={artist.media.teaserCaptions}
+              srcLang="en"
+              label="English"
+              default
+            />
+          </video>
+          <div className="slambovian-media-notes">
+            <span><strong>Source:</strong> supplied 2022 promotional teaser</span>
+            <span><strong>Format:</strong> optimized 720p H.264 web media</span>
+            <span><strong>Accessibility:</strong> reviewed descriptive captions</span>
+          </div>
+        </section>
+
+        <section
+          className="slambovian-audio-listing"
+          aria-labelledby="slambovian-audio-listing-title"
+        >
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Protected editorial listening</span>
+              <h2 id="slambovian-audio-listing-title">
+                Complete teaser audio extract
+              </h2>
+            </div>
+            <button
+              className="text-action"
+              onClick={() => openTrack(featuredTrack)}
+            >
+              View audio details <ArrowRight size={16} aria-hidden="true" />
+            </button>
+          </div>
+          <TrackRow
+            track={featuredTrack}
+            isSelected
+            isPlaying={playingId === featuredTrack.id}
+            saved={savedIds.includes(featuredTrack.id)}
+            onPlay={() => togglePlay(featuredTrack.id)}
+            onSave={() => saveTrack(featuredTrack.id)}
+            onOpen={() => openTrack(featuredTrack)}
+            onRequest={() => requestLicense(featuredTrack)}
+          />
+          <p className="slambovian-audio-note">
+            This 1:59 WAV is derived from the supplied promotional video. It is
+            not represented as a song master, and its component recordings
+            remain unavailable for licensing until separately identified and
+            cleared.
+          </p>
+        </section>
+
+        <section className="slambovian-story-grid" aria-label="Artist context">
+          <article className="slambovian-story-card">
+            <img
+              src={artist.archiveImage}
+              alt="The band presented in a whimsical illustrated scene from the supplied teaser"
+            />
+            <div>
+              <span className="eyebrow">Visual identity</span>
+              <h3>A world as distinctive as the performance.</h3>
+              <p>
+                Kaleidoscopic and theatrical imagery gives the band immediate
+                recall. On beatmondo it is treated as archival character, with
+                live photography carrying the primary premium presentation.
+              </p>
+            </div>
+          </article>
+          <article className="slambovian-story-card slambovian-short-card">
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster={artist.image}
+              aria-label="Thirty-second Slambovian short sync clip"
+            >
+              <source src={artist.media.shortClip} type="video/mp4" />
+              <track
+                kind="captions"
+                src={artist.media.shortClipCaptions}
+                srcLang="en"
+                label="English"
+                default
+              />
+            </video>
+            <div>
+              <span className="eyebrow">Short Sync Clip · 30 sec</span>
+              <h3>A faster route into the live identity.</h3>
+              <p>
+                A continuous performance excerpt framed for high-intent
+                discovery. It remains editorial media and is not a protected
+                music preview or delivery asset.
+              </p>
+            </div>
+          </article>
+        </section>
+
+        <section className="slambovian-readiness">
+          <div>
+            <span className="eyebrow">Catalog readiness</span>
+            <h2>Publish the story now. Clear each track before licensing.</h2>
+            <p>
+              No song title has been inferred from the montage. The clearly
+              labelled teaser audio extract can support protected editorial
+              discovery, while separately supplied recordings still require
+              verified titles, credits, ownership, publishing, restrictions,
+              and approved preview assets.
+            </p>
+          </div>
+          <ol>
+            <li><CheckCircle size={18} /> Editorial identity and teaser reviewed</li>
+            <li><WarningCircle size={18} /> Video, likeness, animation, and quotation permissions required</li>
+            <li><WarningCircle size={18} /> Track titles, masters, writers, publishers, and splits required</li>
+            <li><WarningCircle size={18} /> Samples, featured performers, restrictions, and territories required</li>
+            <li><WarningCircle size={18} /> Instrumentals, stems, clean versions, and edit points to be declared</li>
+          </ol>
+        </section>
+
+        <div className="slambovian-profile-footer">
+          <div>
+            <span className="eyebrow">Explore Music</span>
+            <h3>One protected teaser extract is listed for discovery.</h3>
+            <p>
+              It remains clearly separated from licensable song recordings and
+              protected master delivery.
+            </p>
+          </div>
+          <button
+            className="outline-button explore-action-button"
+            onClick={() => setView("catalog")}
+          >
+            Explore Music <ArrowRight size={16} aria-hidden="true" />
+          </button>
+        </div>
+      </section>
+    );
+  }
 
   if (artist.name === "The SMYRK") {
     return (
@@ -8440,8 +8835,15 @@ function MediaAdmin({ showToast, setView }) {
 }
 
 
-function ContentPages({ setView, showToast }) {
+function ContentPages({ setView, showToast, openArtistProfile }) {
   const hubCards = [
+    [
+      "The Slambovian Circus of Dreams",
+      "Artist Story",
+      "A theatrical psychedelic-Americana world introduced through archival promotional media while track rights remain under review.",
+      img.slambovianCard,
+      "slambovian",
+    ],
     [
       "Short Sync Clips",
       "30 sec",
@@ -8531,9 +8933,12 @@ function ContentPages({ setView, showToast }) {
             <button
               key={title}
               className="hub-card"
-              onClick={() =>
-                target === "legacy" ? setView("legacy") : setView(target)
-              }
+              onClick={() => {
+                if (target === "slambovian")
+                  openArtistProfile("The Slambovian Circus of Dreams");
+                else if (target === "legacy") setView("legacy");
+                else setView(target);
+              }}
             >
               <span
                 className="hub-card-image"
@@ -8559,11 +8964,19 @@ function ContentPages({ setView, showToast }) {
   );
 }
 
-function StoriesPage({ setView, showToast }) {
+function StoriesPage({ setView, showToast, openArtistProfile }) {
   const [selectedStory, setSelectedStory] = useState(
-    "The musicians behind unforgettable sounds",
+    "Inside the strange, vivid world of the Slambovians",
   );
   const stories = [
+    [
+      "Inside the strange, vivid world of the Slambovians",
+      "2 min artist story",
+      "A theatrical live identity, psychedelic imagery, and a rights-aware path from editorial discovery to separately verified tracks.",
+      img.slambovianHero,
+      [],
+      "The Slambovian Circus of Dreams",
+    ],
     [
       "The musicians behind unforgettable sounds",
       "2 min feature",
@@ -8617,11 +9030,12 @@ function StoriesPage({ setView, showToast }) {
           <div className="button-row story-hero-actions">
             <button
               className="gold-button"
-              onClick={() =>
-                showToast(`Opened "${active[0]}" in the story reader.`)
-              }
+              onClick={() => {
+                if (active[5]) openArtistProfile(active[5]);
+                else showToast(`Opened "${active[0]}" in the story reader.`);
+              }}
             >
-              <Article size={18} /> Open Story
+              <Article size={18} /> {active[5] ? "View Artist Story" : "Open Story"}
             </button>
             <button className="text-action" onClick={() => setView("media")}>
               Related Media
@@ -8709,9 +9123,19 @@ function StoriesPage({ setView, showToast }) {
   );
 }
 
-function MediaEpisodesPage({ setView, showToast }) {
-  const [selectedEpisode, setSelectedEpisode] = useState("Artist interviews");
+function MediaEpisodesPage({ setView, showToast, openArtistProfile }) {
+  const [selectedEpisode, setSelectedEpisode] = useState(
+    "The Slambovian Circus of Dreams — 2022 Teaser",
+  );
   const episodes = [
+    [
+      "The Slambovian Circus of Dreams — 2022 Teaser",
+      "A theatrical psychedelic-Americana artist introduction presented as archival promotional media, separate from track-level licensing readiness.",
+      "1 min 59 sec",
+      img.slambovianHero,
+      slambovianMedia.teaser,
+      slambovianMedia.teaserCaptions,
+    ],
     [
       "Short Sync Clips",
       "Fast 15-45 second clips for premium discovery, social engagement, and high-intent music moments.",
@@ -8771,7 +9195,13 @@ function MediaEpisodesPage({ setView, showToast }) {
           <div className="button-row story-hero-actions">
             <button
               className="gold-button sound-ring-button"
-              onClick={() => showToast(`Playing preview for ${active[0]}.`)}
+              onClick={() => {
+                if (active[4])
+                  document
+                    .getElementById("featured-media-episode")
+                    ?.scrollIntoView({ behavior: "smooth", block: "center" });
+                else showToast(`Playing preview for ${active[0]}.`);
+              }}
             >
               <Play size={18} weight="fill" /> Play Episode
             </button>
@@ -8783,6 +9213,47 @@ function MediaEpisodesPage({ setView, showToast }) {
             </button>
           </div>
         </article>
+        {active[4] && (
+          <section
+            id="featured-media-episode"
+            className="editorial-episode-player"
+            aria-label={`${active[0]} player`}
+          >
+            <video
+              controls
+              playsInline
+              preload="metadata"
+              poster={active[3]}
+              aria-label={active[0]}
+            >
+              <source src={active[4]} type="video/mp4" />
+              <track
+                kind="captions"
+                src={active[5]}
+                srcLang="en"
+                label="English"
+                default
+              />
+            </video>
+            <div>
+              <span className="eyebrow">Editorial media boundary</span>
+              <h3>Artist identity, not licensing evidence.</h3>
+              <p>
+                The episode introduces the band without treating the montage as
+                a protected track preview. Individual recordings enter Explore
+                Music only after separate rights and metadata review.
+              </p>
+              <button
+                className="outline-button"
+                onClick={() =>
+                  openArtistProfile("The Slambovian Circus of Dreams")
+                }
+              >
+                View Artist Profile
+              </button>
+            </div>
+          </section>
+        )}
         <Panel title="Episode library" action="Selectable">
           <div className="state-grid">
             {episodes.map(([title, text, duration]) => (

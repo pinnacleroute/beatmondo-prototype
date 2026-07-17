@@ -8720,3 +8720,393 @@ button.auth-social-btn,
     align-items: stretch;
   }
 }
+
+/* The Slambovian Circus of Dreams editorial-first artist feature. */
+.slambovian-artist-page {
+  display: grid;
+  gap: 22px;
+  padding-bottom: 34px;
+}
+
+.slambovian-artist-hero {
+  position: relative;
+  min-height: 590px;
+  display: grid;
+  align-items: end;
+  isolation: isolate;
+  overflow: hidden;
+  background-position: center 38%;
+  background-size: cover;
+  border: 1px solid rgba(216, 203, 185, 0.16);
+  border-radius: 10px;
+  box-shadow: 0 30px 78px rgba(10, 7, 5, 0.38);
+}
+
+.slambovian-hero-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(90deg, rgba(15, 11, 8, 0.97), rgba(19, 14, 10, 0.84) 43%, rgba(19, 14, 10, 0.2) 76%),
+    linear-gradient(0deg, rgba(15, 11, 8, 0.82), transparent 54%);
+}
+
+.slambovian-hero-content {
+  width: min(790px, 66%);
+  padding: 52px;
+}
+
+.slambovian-hero-content h2 {
+  max-width: 770px;
+  margin: 10px 0 16px;
+  color: #fbf6ee;
+  font-family: var(--font-display);
+  font-size: clamp(48px, 5.8vw, 86px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+  line-height: 0.94;
+}
+
+.slambovian-hero-content > p {
+  max-width: 690px;
+  margin: 0;
+  color: #e3d8ca;
+  font-size: clamp(17px, 1.45vw, 21px);
+  line-height: 1.64;
+}
+
+.slambovian-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 24px 0 19px;
+}
+
+.slambovian-status-row span,
+.slambovian-media-badge {
+  padding: 7px 10px;
+  color: #e8d7ba;
+  background: rgba(18, 13, 10, 0.68);
+  border: 1px solid rgba(210, 183, 122, 0.3);
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.075em;
+  text-transform: uppercase;
+}
+
+.slambovian-profile-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.slambovian-profile-grid .panel {
+  min-height: 270px !important;
+  padding: 28px !important;
+  background:
+    radial-gradient(circle at 94% 5%, rgba(166, 52, 42, 0.12), transparent 16rem),
+    linear-gradient(180deg, rgba(244, 239, 230, 0.075), rgba(244, 239, 230, 0.025)),
+    #30271f !important;
+}
+
+.slambovian-profile-grid .panel p {
+  color: #ddd2c4;
+  font-size: 16px;
+  line-height: 1.74;
+}
+
+.slambovian-fit-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 22px;
+}
+
+.slambovian-fit-list span {
+  padding: 8px 10px;
+  color: #ead9bd;
+  background: rgba(166, 52, 42, 0.1);
+  border: 1px solid rgba(166, 52, 42, 0.34);
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.slambovian-feature-media {
+  scroll-margin-top: 24px;
+  padding: 28px;
+  background: #2d251d;
+  border: 1px solid rgba(216, 203, 185, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 22px 62px rgba(13, 9, 7, 0.26);
+}
+
+.slambovian-feature-media .section-heading {
+  margin-bottom: 18px;
+}
+
+.slambovian-feature-media .section-heading h2 {
+  margin-top: 4px !important;
+  color: #fbf6ee !important;
+  font-size: clamp(32px, 4vw, 54px) !important;
+}
+
+.slambovian-feature-media > video,
+.editorial-episode-player video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  display: block;
+  object-fit: cover;
+  background: #120e0c;
+  border: 1px solid rgba(210, 183, 122, 0.22);
+  border-radius: 8px;
+}
+
+.slambovian-media-notes {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  margin-top: 14px;
+  overflow: hidden;
+  background: rgba(216, 203, 185, 0.11);
+  border: 1px solid rgba(216, 203, 185, 0.1);
+  border-radius: 6px;
+}
+
+.slambovian-media-notes span {
+  padding: 13px 14px;
+  color: #cfc2b2;
+  background: #32291f;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.slambovian-media-notes strong {
+  color: #e2c884;
+}
+
+.slambovian-audio-listing {
+  padding: clamp(20px, 3vw, 32px);
+  border: 1px solid rgba(199, 164, 91, 0.24);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(132, 16, 22, 0.12), transparent 44%),
+    rgba(17, 15, 12, 0.82);
+}
+
+.slambovian-audio-listing .track-row {
+  margin-top: 16px;
+}
+
+.slambovian-audio-note {
+  max-width: 76ch;
+  margin: 16px 0 0;
+  color: #bfb2a3;
+  line-height: 1.65;
+}
+
+.slambovian-story-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.slambovian-story-card {
+  overflow: hidden;
+  background: #342a21;
+  border: 1px solid rgba(216, 203, 185, 0.14);
+  border-radius: 10px;
+  box-shadow: 0 20px 54px rgba(14, 10, 8, 0.2);
+}
+
+.slambovian-story-card img,
+.slambovian-story-card video {
+  width: 100%;
+  height: 330px;
+  display: block;
+  object-fit: cover;
+  background: #120e0c;
+}
+
+.slambovian-story-card > div {
+  padding: 24px 26px 28px;
+}
+
+.slambovian-story-card h3,
+.slambovian-profile-footer h3,
+.editorial-episode-player h3 {
+  margin: 8px 0 10px;
+  color: #fbf6ee;
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.slambovian-story-card p,
+.slambovian-profile-footer p,
+.editorial-episode-player p {
+  margin: 0;
+  color: #d8cdbf;
+  font-size: 16px;
+  line-height: 1.68;
+}
+
+.slambovian-readiness {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(420px, 1.1fr);
+  gap: 28px;
+  padding: 30px;
+  background:
+    linear-gradient(115deg, rgba(166, 52, 42, 0.13), transparent 38%),
+    #2d251d;
+  border-top: 2px solid rgba(166, 52, 42, 0.7);
+  border-radius: 8px;
+}
+
+.slambovian-readiness h2 {
+  margin: 7px 0 12px;
+  color: #fbf6ee;
+  font-family: var(--font-display);
+  font-size: clamp(30px, 3.4vw, 48px);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.slambovian-readiness p {
+  margin: 0;
+  color: #d8cdbf;
+  line-height: 1.68;
+}
+
+.slambovian-readiness ol {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.slambovian-readiness li {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  color: #d8cdbf;
+  background: rgba(244, 239, 230, 0.045);
+  border: 1px solid rgba(216, 203, 185, 0.1);
+  border-radius: 6px;
+  line-height: 1.45;
+}
+
+.slambovian-readiness li:first-child svg {
+  color: #8ea79a;
+}
+
+.slambovian-readiness li:not(:first-child) svg {
+  color: #d2b77a;
+}
+
+.slambovian-profile-footer {
+  padding: 28px 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+  background: #2d251d;
+  border: 1px solid rgba(216, 203, 185, 0.12);
+  border-radius: 8px;
+}
+
+.editorial-episode-player {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 22px;
+  padding: 22px;
+  background: #2d251d;
+  border: 1px solid rgba(210, 183, 122, 0.18);
+  border-radius: 10px;
+}
+
+.editorial-episode-player > div {
+  align-self: center;
+  padding: 8px 10px;
+}
+
+.editorial-episode-player .outline-button {
+  margin-top: 18px;
+}
+
+@media (max-width: 1080px) {
+  .slambovian-hero-content {
+    width: min(760px, 76%);
+    padding: 40px;
+  }
+
+  .slambovian-story-card img,
+  .slambovian-story-card video {
+    height: 280px;
+  }
+
+  .editorial-episode-player {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .slambovian-artist-page {
+    gap: 16px;
+  }
+
+  .slambovian-artist-hero {
+    min-height: 720px;
+    background-position: 53% center;
+  }
+
+  .slambovian-hero-scrim {
+    background:
+      linear-gradient(0deg, rgba(15, 11, 8, 0.98), rgba(18, 13, 10, 0.9) 48%, rgba(18, 13, 10, 0.13) 82%),
+      linear-gradient(90deg, rgba(15, 11, 8, 0.34), transparent 76%);
+  }
+
+  .slambovian-hero-content {
+    width: 100%;
+    padding: 25px 21px;
+  }
+
+  .slambovian-hero-content h2 {
+    font-size: 49px;
+  }
+
+  .slambovian-profile-grid,
+  .slambovian-story-grid,
+  .slambovian-readiness {
+    grid-template-columns: 1fr;
+  }
+
+  .slambovian-profile-grid .panel,
+  .slambovian-feature-media,
+  .slambovian-readiness {
+    padding: 18px !important;
+  }
+
+  .slambovian-media-notes {
+    grid-template-columns: 1fr;
+  }
+
+  .slambovian-story-card img,
+  .slambovian-story-card video {
+    height: 235px;
+  }
+
+  .slambovian-profile-footer {
+    padding: 22px;
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .editorial-episode-player {
+    padding: 14px;
+  }
+}
