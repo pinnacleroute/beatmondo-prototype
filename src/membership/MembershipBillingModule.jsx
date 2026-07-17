@@ -27,8 +27,72 @@ import {
   formatMoney,
   membershipService,
 } from "./membershipService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 
 export const MEMBERSHIP_RETURN_KEY = "beatmondo-membership-return-view";
+
+function BillingSectionNav({ navigate, active }) {
+  const items = [
+    { view: "billing", label: "Overview" },
+    { view: "billing-payment-methods", label: "Payment methods" },
+    { view: "billing-invoices", label: "Invoices" },
+    { view: "billing-subscription", label: "Subscription" },
+    { view: "membership-plans", label: "Plans" },
+  ];
+  return (
+    <SectionSubnav
+      ariaLabel="Billing and membership"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "billing"
+          ? { view: "billing", label: "Back to billing" }
+          : null
+      }
+    />
+  );
+}
+
+const ENTITLEMENT_LABELS = {
+  "catalog.discovery": "Browse Discovery music",
+  "catalog.professional": "Browse Professional catalog",
+  "catalog.vip": "VIP private selections",
+  "previews.protected": "Protected previews",
+  "tracks.save": "Save tracks to projects",
+  "collections.basic": "Basic collections",
+  "verification.apply": "Apply for professional verification",
+  "profile.limited": "Profile and account tools",
+  "projects.draft_one": "Draft one project",
+  "projects.create": "Create projects",
+  "projects.limit_ten": "Up to 10 active projects",
+  "projects.unlimited": "Unlimited projects",
+  "licensing.request": "Submit licensing requests",
+  "quotes.view": "Review quotes",
+  "contracts.view": "Review contracts",
+  "payments.view": "Licence payment history",
+  "licences.view": "Issued licences",
+  "delivery.secure": "Approved secure delivery",
+  "delivery.masters": "WAV master delivery",
+  "delivery.stems": "Stem delivery",
+  "concierge.standard": "Standard licensing assistance",
+  "concierge.vip": "VIP concierge support",
+  "terms.preapproved": "Pre-approved terms where granted",
+  "priority.review": "Priority and fast-track review",
+  "workspace.premium": "Premium project workspace",
+  "team.members": "Team member seats",
+  "analytics.buyer": "Organization analytics",
+};
+
+export function formatEntitlementLabel(code) {
+  if (!code) return "";
+  if (ENTITLEMENT_LABELS[code]) return ENTITLEMENT_LABELS[code];
+  return code
+    .split(".")
+    .map((part) => part.replaceAll("_", " "))
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" · ");
+}
 
 export const MEMBERSHIP_VIEWS = new Set([
   "membership",
@@ -1384,6 +1448,7 @@ export function BillingDashboard({ navigate, showToast }) {
   ].includes(membership.status);
   return (
     <section className="membership-page billing-dashboard">
+      <BillingSectionNav navigate={navigate} active="billing" />
       <header className="billing-page-header">
         <div>
           <span className="eyebrow">Membership and billing</span>
@@ -1573,7 +1638,7 @@ function CurrentPlan({ membership, access, verification, method, navigate }) {
         {access.entitlements.slice(0, 9).map((item) => (
           <span key={item}>
             <CheckCircle />
-            {item.replaceAll(".", " · ")}
+            {formatEntitlementLabel(item)}
           </span>
         ))}
       </div>
@@ -1658,6 +1723,10 @@ export function PaymentMethodsPage({ navigate, showToast }) {
   };
   return (
     <section className="membership-page">
+      <BillingSectionNav
+        navigate={navigate}
+        active="billing-payment-methods"
+      />
       <header className="billing-page-header">
         <div>
           <span className="eyebrow">Billing security</span>
@@ -1733,9 +1802,6 @@ export function PaymentMethodsPage({ navigate, showToast }) {
           </article>
         ))}
       </div>
-      <button className="plain-button" onClick={() => navigate("billing")}>
-        ← Back to billing
-      </button>
       {adding && (
         <div
           className="billing-modal-backdrop"
@@ -1785,6 +1851,7 @@ export function InvoicesPage({ navigate }) {
   };
   return (
     <section className="membership-page">
+      <BillingSectionNav navigate={navigate} active="billing-invoices" />
       <header className="billing-page-header">
         <div>
           <span className="eyebrow">Billing history</span>
@@ -2029,6 +2096,7 @@ export function SubscriptionManager({ navigate, showToast }) {
   };
   return (
     <section className="membership-page">
+      <BillingSectionNav navigate={navigate} active="billing-subscription" />
       <header className="billing-page-header">
         <div>
           <span className="eyebrow">Subscription management</span>
@@ -2107,7 +2175,7 @@ export function SubscriptionManager({ navigate, showToast }) {
           {plan.entitlements.slice(0, 12).map((item) => (
             <span key={item}>
               <CheckCircle />
-              {item}
+              {formatEntitlementLabel(item)}
             </span>
           ))}
         </div>
@@ -2175,6 +2243,7 @@ export function CancellationFlow({ navigate, showToast }) {
   };
   return (
     <section className="membership-page cancellation-flow">
+      <BillingSectionNav navigate={navigate} active="billing-subscription" />
       <header>
         <span className="eyebrow">Cancellation · Step {step + 1} of 4</span>
         <h2>
@@ -2713,7 +2782,7 @@ export function AdminMembershipDetail({ navigate, showToast }) {
                 key={item}
               >
                 <CheckCircle />
-                {item}
+                {formatEntitlementLabel(item)}
                 <small>
                   {access.entitlements.includes(item)
                     ? "Effective"

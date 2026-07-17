@@ -23,6 +23,7 @@ import {
   licenceService,
 } from "./licenceService.js";
 import { expiringAccessService } from "../expiring-access/expiringAccessService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./licences.css";
 
 export const LICENCE_VIEWS = new Set([
@@ -39,6 +40,30 @@ export const LICENCE_VIEWS = new Set([
 ]);
 const can = (user, permission) =>
   user?.permissions?.includes("*") || user?.permissions?.includes(permission);
+
+function LicencesAdminNav({ navigate, active }) {
+  const items = [
+    { view: "admin-licences", label: "Licences" },
+    { view: "admin-licence-new", label: "Generate" },
+    { view: "admin-licence-expiring", label: "Expiring" },
+    { view: "admin-licence-amendments", label: "Amendments" },
+    { view: "admin-licence-renewals", label: "Renewals" },
+    { view: "admin-licence-analytics", label: "Analytics" },
+  ];
+  return (
+    <SectionSubnav
+      ariaLabel="Licence generation sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-licences"
+          ? { view: "admin-licences", label: "Back to licence dashboard" }
+          : null
+      }
+    />
+  );
+}
 const date = (value) =>
   value
     ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
@@ -129,6 +154,7 @@ function AdminDashboard({ navigate }) {
   );
   return (
     <section className="lc-page">
+      <LicencesAdminNav navigate={navigate} active="admin-licences" />
       <Header
         eyebrow="Commercial operations"
         title="Licence generation"
@@ -144,20 +170,6 @@ function AdminDashboard({ navigate }) {
       />
       <Notice />
       <Metrics analytics={licenceService.analytics()} />
-      <div className="lc-quick">
-        <button onClick={() => navigate("admin-licence-expiring")}>
-          Expiring licences <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-licence-amendments")}>
-          Amendment queue <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-licence-renewals")}>
-          Renewal queue <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-licence-analytics")}>
-          Analytics <ArrowRight />
-        </button>
-      </div>
       <div className="lc-toolbar">
         <label>
           <Funnel />{" "}
@@ -819,6 +831,12 @@ function BuyerDashboard({ navigate }) {
 
 function QueuePage({ navigate, type }) {
   const state = licenceService.getState();
+  const active =
+    type === "expiring"
+      ? "admin-licence-expiring"
+      : type === "amendments"
+        ? "admin-licence-amendments"
+        : "admin-licence-renewals";
   const config =
     type === "expiring"
       ? {
@@ -844,18 +862,11 @@ function QueuePage({ navigate, type }) {
           };
   return (
     <section className="lc-page">
+      <LicencesAdminNav navigate={navigate} active={active} />
       <Header
         eyebrow={config.eyebrow}
         title={config.title}
         text="Every change is evaluated against current rights, buyer eligibility, commercial terms, payment, and document versioning."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-licences")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="lc-queue">
@@ -894,18 +905,11 @@ function Analytics({ navigate }) {
   const data = licenceService.analytics();
   return (
     <section className="lc-page">
+      <LicencesAdminNav navigate={navigate} active="admin-licence-analytics" />
       <Header
         eyebrow="Commercial intelligence"
         title="Licence analytics"
         text="Operational prototype metrics across generation, issuance, lifecycle, and issued commercial value."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-licences")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <Metrics analytics={data} />

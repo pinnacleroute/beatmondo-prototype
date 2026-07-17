@@ -36,6 +36,7 @@ import {
   formatPaymentMoney,
   paymentService,
 } from "../payments/paymentService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./contracts.css";
 
 export const CONTRACT_VIEWS = new Set([
@@ -55,6 +56,38 @@ export const CONTRACT_VIEWS = new Set([
 ]);
 const can = (u, p) =>
   u?.permissions?.includes("*") || u?.permissions?.includes(p);
+
+function ContractsAdminNav({ navigate, active, user }) {
+  const items = [
+    { view: "admin-contracts", label: "Contracts" },
+    can(user, "contracts.create") && {
+      view: "admin-contract-new",
+      label: "Generate",
+    },
+    can(user, "contracts.manage_templates") && {
+      view: "admin-contract-templates",
+      label: "Templates",
+    },
+    can(user, "contracts.manage_clauses") && {
+      view: "admin-contract-clauses",
+      label: "Clauses",
+    },
+    { view: "admin-contract-analytics", label: "Analytics" },
+  ].filter(Boolean);
+  return (
+    <SectionSubnav
+      ariaLabel="Contracts and e-signature sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-contracts"
+          ? { view: "admin-contracts", label: "Back to contract dashboard" }
+          : null
+      }
+    />
+  );
+}
 const date = (v) =>
   v
     ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
@@ -109,33 +142,23 @@ function AdminDashboard({ navigate }) {
   );
   return (
     <section className="ct-page">
+      <ContractsAdminNav
+        navigate={navigate}
+        active="admin-contracts"
+        user={user}
+      />
       <Header
         eyebrow="Commercial agreements"
         title="Contracts & E-Signature"
         text="Generate, review, approve, negotiate, sign, and track music-licensing agreements without conflating contracts, payment, licences, or delivery."
         actions={
-          <>
-            <button onClick={() => navigate("admin-contract-analytics")}>
-              <TrendUp /> Analytics
-            </button>
-            {can(user, "contracts.manage_templates") && (
-              <button onClick={() => navigate("admin-contract-templates")}>
-                <FileText /> Templates
-              </button>
-            )}
-            {can(user, "contracts.manage_clauses") && (
-              <button onClick={() => navigate("admin-contract-clauses")}>
-                <NotePencil /> Clauses
-              </button>
-            )}
-            <button
-              className="ct-primary"
-              onClick={() => navigate("admin-contract-new")}
-              disabled={!can(user, "contracts.create")}
-            >
-              <Plus /> Generate contract
-            </button>
-          </>
+          <button
+            className="ct-primary"
+            onClick={() => navigate("admin-contract-new")}
+            disabled={!can(user, "contracts.create")}
+          >
+            <Plus /> Generate contract
+          </button>
         }
       />
       <Notice />
@@ -1126,9 +1149,11 @@ function TemplateLibrary({ navigate, showToast }) {
   const state = contractService.getState();
   return (
     <section className="ct-page">
-      <button className="ct-back" onClick={() => navigate("admin-contracts")}>
-        <ArrowLeft /> Contract dashboard
-      </button>
+      <ContractsAdminNav
+        navigate={navigate}
+        active="admin-contract-templates"
+        user={user}
+      />
       <Header
         eyebrow="Versioned legal foundations"
         title="Contract Templates"
@@ -1204,9 +1229,11 @@ function ClauseLibrary({ navigate, showToast }) {
   );
   return (
     <section className="ct-page">
-      <button className="ct-back" onClick={() => navigate("admin-contracts")}>
-        <ArrowLeft /> Contract dashboard
-      </button>
+      <ContractsAdminNav
+        navigate={navigate}
+        active="admin-contract-clauses"
+        user={user}
+      />
       <Header
         eyebrow="Reusable versioned language"
         title="Clause Library"
@@ -1268,12 +1295,15 @@ function ClauseLibrary({ navigate, showToast }) {
   );
 }
 function Analytics({ navigate }) {
+  const { user } = useAuth();
   const a = contractService.analytics();
   return (
     <section className="ct-page">
-      <button className="ct-back" onClick={() => navigate("admin-contracts")}>
-        <ArrowLeft /> Contract dashboard
-      </button>
+      <ContractsAdminNav
+        navigate={navigate}
+        active="admin-contract-analytics"
+        user={user}
+      />
       <Header
         eyebrow="Agreement intelligence"
         title="Contract Analytics"

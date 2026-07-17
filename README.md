@@ -108,6 +108,25 @@ npm run preview
 
 The production build output is written to `docs/` because `vite.config.mjs` sets `build.outDir` to `docs`.
 
+### Site password gate
+
+The preview gate password defaults in code for local demos. Override it without editing source:
+
+```bash
+# .env.local
+VITE_SITE_PASSWORD=your-private-preview-password
+```
+
+See `.env.example`.
+
+### Demo accounts (simulated auth)
+
+Use the in-app login surface. Seeded accounts live in `src/auth/mockAuthData.js` (for example VIP buyer **Olivia Bennett**, artist **Marcus Hale**, admin **Preston Repenning**). Buyer-facing forms and dashboards use the **signed-in user** as the identity source of truth.
+
+### Prototype boundaries
+
+Authentication, permissions, payments, e-sign, secure delivery, and audit immutability are **browser simulations**. Production systems must enforce authorization before any private catalog, rights, or master-audio response reaches the client.
+
 ## Application Architecture
 
 The app is a hash-routed single-page prototype. It does not use React Router. Navigation is controlled by the `view` state in `App.jsx`, and the current view is mirrored into the URL hash.
@@ -116,10 +135,14 @@ Examples:
 
 - `/` or no hash: Home
 - `/#catalog`: Explore Music
+- `/#search`: Music Search (same discovery engine as Explore Music)
 - `/#track`: Track Detail
+- `/#track/15`: Track Detail for a specific track id (deep link)
 - `/#artist`: Artist Profile
 - `/#legacy`: Gary Burke Legacy
 - `/#licensing`: Licensing / Access
+- `/#licensing/request`: License-a-track path
+- `/#licensing/access`: Account access request path
 - `/#buyer`: Buyer Dashboard
 - `/#project`: Project Detail
 - `/#admin`: Admin

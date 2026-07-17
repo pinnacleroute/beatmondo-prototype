@@ -1173,13 +1173,23 @@ function ReportLibrary({ navigate, showToast }) {
           <Plus /> Build report
         </button>
       </header>
-      <nav className="an-report-nav">
-        <button onClick={() => navigate("admin/analytics")}>Dashboards</button>
-        <button className="active">Library</button>
-        <button onClick={() => navigate("admin/reports/scheduled")}>
+      <nav className="an-report-nav" aria-label="Reporting workspace">
+        <button type="button" onClick={() => navigate("admin/analytics")}>
+          Dashboards
+        </button>
+        <button type="button" className="active">
+          Library
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports/builder")}>
+          Builder
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("admin/reports/scheduled")}
+        >
           Scheduled
         </button>
-        <button onClick={() => navigate("admin/reports/exports")}>
+        <button type="button" onClick={() => navigate("admin/reports/exports")}>
           Exports & governance
         </button>
       </nav>
@@ -1378,6 +1388,26 @@ function ReportBuilder({ navigate, showToast }) {
         </div>
         <button onClick={() => navigate("admin/reports")}>Cancel</button>
       </header>
+      <nav className="an-report-nav" aria-label="Reporting workspace">
+        <button type="button" onClick={() => navigate("admin/analytics")}>
+          Dashboards
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports")}>
+          Library
+        </button>
+        <button type="button" className="active">
+          Builder
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("admin/reports/scheduled")}
+        >
+          Scheduled
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports/exports")}>
+          Exports & governance
+        </button>
+      </nav>
       <div className="an-builder">
         <section>
           <span>1 · Definition</span>
@@ -1580,10 +1610,20 @@ function ScheduledReports({ navigate, showToast }) {
           <Clock /> Run scheduled reports now
         </button>
       </header>
-      <nav className="an-report-nav">
-        <button onClick={() => navigate("admin/reports")}>Library</button>
-        <button className="active">Scheduled</button>
-        <button onClick={() => navigate("admin/reports/exports")}>
+      <nav className="an-report-nav" aria-label="Reporting workspace">
+        <button type="button" onClick={() => navigate("admin/analytics")}>
+          Dashboards
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports")}>
+          Library
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports/builder")}>
+          Builder
+        </button>
+        <button type="button" className="active">
+          Scheduled
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports/exports")}>
           Exports
         </button>
       </nav>
@@ -1758,12 +1798,25 @@ function ExportsGovernance({ navigate, showToast }) {
           <GearSix /> Rebuild cache
         </button>
       </header>
-      <nav className="an-report-nav">
-        <button onClick={() => navigate("admin/reports")}>Library</button>
-        <button onClick={() => navigate("admin/reports/scheduled")}>
+      <nav className="an-report-nav" aria-label="Reporting workspace">
+        <button type="button" onClick={() => navigate("admin/analytics")}>
+          Dashboards
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports")}>
+          Library
+        </button>
+        <button type="button" onClick={() => navigate("admin/reports/builder")}>
+          Builder
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("admin/reports/scheduled")}
+        >
           Scheduled
         </button>
-        <button className="active">Exports & governance</button>
+        <button type="button" className="active">
+          Exports & governance
+        </button>
       </nav>
       <div className="an-action-row">
         {canSnapshot && (

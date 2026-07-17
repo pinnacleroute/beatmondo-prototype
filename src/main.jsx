@@ -4,6 +4,7 @@ import { App } from "./App.jsx";
 import { AuthProvider } from "./auth/AuthContext.jsx";
 import "./styles.css";
 import "./premium-skin.css";
+import "./ui/section-subnav.css";
 import "./auth/auth.css";
 import "./verification/verification.css";
 import "./membership/membership.css";
@@ -13,7 +14,9 @@ import "./ingestion/ingestion.css";
 import "./storage/storage.css";
 import "./previews/previews.css";
 
-const SITE_PASSWORD = "surfaceboy";
+/** Override with VITE_SITE_PASSWORD in .env for private deploys. */
+const SITE_PASSWORD =
+  import.meta.env.VITE_SITE_PASSWORD || "surfaceboy";
 const ACCESS_KEY = "beatmondo-site-access";
 const isDemoMode =
   new URLSearchParams(window.location.search).get("demo") === "investor";

@@ -25,6 +25,7 @@ import {
   EMAIL_STATUSES,
 } from "./emailData.js";
 import { emailService } from "./emailService.js";
+import { AccountSettingsNav } from "../ui/AccountSettingsNav.jsx";
 import "./email.css";
 
 export const EMAIL_VIEWS = new Set([
@@ -285,6 +286,12 @@ function Preferences({ navigate, admin = false, showToast }) {
   if (!pref) return null;
   return (
     <section className="em-page">
+      {!admin && (
+        <AccountSettingsNav
+          navigate={navigate}
+          active="settings/notifications"
+        />
+      )}
       <Header
         eyebrow="Communication controls"
         title={admin ? "Email preferences" : "Notification preferences"}

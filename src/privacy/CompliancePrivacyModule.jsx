@@ -21,6 +21,7 @@ import {
   canPerform,
 } from "../permissions/authorizationService.js";
 import { privacyService } from "./privacyService.js";
+import { AccountSettingsNav } from "../ui/AccountSettingsNav.jsx";
 import "./privacy.css";
 
 export const PRIVACY_VIEWS = new Set([
@@ -165,6 +166,7 @@ function PrivacySettings({ navigate, showToast }) {
   };
   return (
     <section className="pr-page">
+      <AccountSettingsNav navigate={navigate} active="settings/privacy" />
       <PrivacyHeader
         kicker="Your privacy controls"
         title="Privacy & personal data"

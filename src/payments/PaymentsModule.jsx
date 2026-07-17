@@ -33,6 +33,7 @@ import {
 } from "./paymentService.js";
 import { contractService } from "../contracts/contractService.js";
 import { expiringAccessService } from "../expiring-access/expiringAccessService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./payments.css";
 
 export const PAYMENT_VIEWS = new Set([
@@ -53,6 +54,41 @@ export const PAYMENT_VIEWS = new Set([
 ]);
 const can = (u, p) =>
   u?.permissions?.includes("*") || u?.permissions?.includes(p);
+
+function PaymentsAdminNav({ navigate, active, user }) {
+  const items = [
+    { view: "admin-payments", label: "Overview" },
+    can(user, "payments.reconcile") && {
+      view: "admin-payment-reconciliation",
+      label: "Reconciliation",
+    },
+    can(user, "payments.request_refund") && {
+      view: "admin-refunds",
+      label: "Refunds",
+    },
+    can(user, "payments.manage_credits") && {
+      view: "admin-credits",
+      label: "Credits",
+    },
+    can(user, "payments.view_analytics") && {
+      view: "admin-payment-analytics",
+      label: "Analytics",
+    },
+  ].filter(Boolean);
+  return (
+    <SectionSubnav
+      ariaLabel="Licensing payments sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-payments"
+          ? { view: "admin-payments", label: "Back to payments dashboard" }
+          : null
+      }
+    />
+  );
+}
 const date = (v) =>
   v
     ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
@@ -1214,34 +1250,15 @@ function AdminDashboard({ navigate }) {
     );
   return (
     <section className="pm-page">
+      <PaymentsAdminNav
+        navigate={navigate}
+        active="admin-payments"
+        user={user}
+      />
       <Header
         eyebrow="Finance operations"
         title="Licensing Payments"
         text="Monitor contract obligations, payment attempts, bank reconciliation, refunds, credits, and downstream readiness without mixing membership revenue."
-        actions={
-          <>
-            {can(user, "payments.reconcile") && (
-              <button onClick={() => navigate("admin-payment-reconciliation")}>
-                <Bank /> Reconciliation
-              </button>
-            )}
-            {can(user, "payments.request_refund") && (
-              <button onClick={() => navigate("admin-refunds")}>
-                <Repeat /> Refunds
-              </button>
-            )}
-            {can(user, "payments.manage_credits") && (
-              <button onClick={() => navigate("admin-credits")}>
-                <Money /> Credits
-              </button>
-            )}
-            {can(user, "payments.view_analytics") && (
-              <button onClick={() => navigate("admin-payment-analytics")}>
-                <TrendUp /> Analytics
-              </button>
-            )}
-          </>
-        }
       />
       <Notice />
       <Separation />
@@ -1492,9 +1509,11 @@ function Reconciliation({ navigate, showToast }) {
   };
   return (
     <section className="pm-page">
-      <button className="pm-back" onClick={() => navigate("admin-payments")}>
-        <ArrowLeft /> Payments dashboard
-      </button>
+      <PaymentsAdminNav
+        navigate={navigate}
+        active="admin-payment-reconciliation"
+        user={user}
+      />
       <Header
         eyebrow="Finance-controlled matching"
         title="Payment Reconciliation"
@@ -1695,12 +1714,11 @@ function Reconciliation({ navigate, showToast }) {
   );
 }
 function Refunds({ navigate }) {
+  const { user } = useAuth();
   const state = paymentService.getState();
   return (
     <section className="pm-page">
-      <button className="pm-back" onClick={() => navigate("admin-payments")}>
-        <ArrowLeft /> Payments dashboard
-      </button>
+      <PaymentsAdminNav navigate={navigate} active="admin-refunds" user={user} />
       <Header
         eyebrow="Controlled financial adjustments"
         title="Refunds"
@@ -1751,12 +1769,11 @@ function Refunds({ navigate }) {
   );
 }
 function Credits({ navigate }) {
+  const { user } = useAuth();
   const state = paymentService.getState();
   return (
     <section className="pm-page">
-      <button className="pm-back" onClick={() => navigate("admin-payments")}>
-        <ArrowLeft /> Payments dashboard
-      </button>
+      <PaymentsAdminNav navigate={navigate} active="admin-credits" user={user} />
       <Header
         eyebrow="Organization-scoped ledger"
         title="Account Credits"
@@ -1785,12 +1802,15 @@ function Credits({ navigate }) {
   );
 }
 function Analytics({ navigate }) {
+  const { user } = useAuth();
   const a = paymentService.analytics();
   return (
     <section className="pm-page">
-      <button className="pm-back" onClick={() => navigate("admin-payments")}>
-        <ArrowLeft /> Payments dashboard
-      </button>
+      <PaymentsAdminNav
+        navigate={navigate}
+        active="admin-payment-analytics"
+        user={user}
+      />
       <Header
         eyebrow="Licensing-finance intelligence"
         title="Payment Analytics"

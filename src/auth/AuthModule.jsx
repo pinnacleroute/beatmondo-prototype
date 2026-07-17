@@ -24,6 +24,7 @@ import {
   ROLE_PERMISSIONS,
   defaultDestinationFor,
 } from "./mockAuthData.js";
+import { AccountSettingsNav } from "../ui/AccountSettingsNav.jsx";
 
 const logo = "/assets/beatmondo-logo.png";
 const VERIFY_USER_KEY = "beatmondo-auth-verify-user";
@@ -73,6 +74,8 @@ export function AuthLayout({
   description,
   children,
   compact = false,
+  hideAuthActions = false,
+  signedInUser = null,
 }) {
   return (
     <section className={`auth-module-page ${compact ? "is-compact" : ""}`}>
@@ -88,9 +91,19 @@ export function AuthLayout({
           <button type="button" onClick={() => navigate("contact")}>
             Help
           </button>
-          <button type="button" onClick={() => navigate("login")}>
-            Sign In
-          </button>
+          {hideAuthActions && signedInUser ? (
+            <button
+              type="button"
+              className="auth-header-user"
+              onClick={() => navigate(defaultDestinationFor(signedInUser))}
+            >
+              {signedInUser.avatar} {signedInUser.name}
+            </button>
+          ) : (
+            <button type="button" onClick={() => navigate("login")}>
+              Sign In
+            </button>
+          )}
         </div>
       </header>
       <div className="auth-module-shell">
@@ -1126,17 +1139,27 @@ export function AuthStatusPage({ view, navigate, reason }) {
     reason || "This private workspace is not currently available.",
   ];
   const { user, authService, refresh } = useAuth();
+  const workspace = defaultDestinationFor(user);
   return (
     <AuthLayout
       navigate={navigate}
       compact
       title={content[0]}
       description={content[1]}
+      hideAuthActions={Boolean(user) && view === "access-denied"}
+      signedInUser={user}
     >
       <WarningCircle size={42} className="auth-feature-icon warning" />
       <span className="eyebrow">Protected workspace</span>
       <h2>{content[0]}</h2>
       <p>{content[1]}</p>
+      {user && view === "access-denied" && (
+        <p className="auth-session-note">
+          Signed in as <strong>{user.name}</strong>
+          {user.organization ? ` · ${user.organization}` : ""}. Your session is
+          still active.
+        </p>
+      )}
       {view === "account-locked" && (
         <button
           className="auth-secondary"
@@ -1152,17 +1175,33 @@ export function AuthStatusPage({ view, navigate, reason }) {
           Unlock demo account
         </button>
       )}
-      <button
-        className="auth-primary"
-        onClick={() =>
-          navigate(view === "account-suspended" ? "contact" : "login")
-        }
-      >
-        {view === "account-suspended" ? "Contact support" : "Sign In"}
-      </button>
-      <button className="auth-text-link" onClick={() => navigate("home")}>
-        Return to homepage
-      </button>
+      {user && view === "access-denied" ? (
+        <>
+          <button
+            className="auth-primary"
+            onClick={() => navigate(workspace || "home")}
+          >
+            Back to my workspace
+          </button>
+          <button className="auth-text-link" onClick={() => navigate("home")}>
+            Return to homepage
+          </button>
+        </>
+      ) : (
+        <>
+          <button
+            className="auth-primary"
+            onClick={() =>
+              navigate(view === "account-suspended" ? "contact" : "login")
+            }
+          >
+            {view === "account-suspended" ? "Contact support" : "Sign In"}
+          </button>
+          <button className="auth-text-link" onClick={() => navigate("home")}>
+            Return to homepage
+          </button>
+        </>
+      )}
     </AuthLayout>
   );
 }
@@ -1193,6 +1232,7 @@ export function ProfilePage({ navigate, showToast }) {
   };
   return (
     <section className="account-page">
+      <AccountSettingsNav navigate={navigate} active="profile" />
       <div className="account-page-heading">
         <div>
           <span className="eyebrow">Account profile</span>
@@ -1360,6 +1400,7 @@ export function SecurityPage({ navigate, showToast }) {
   };
   return (
     <section className="account-page security-page">
+      <AccountSettingsNav navigate={navigate} active="security" />
       <div className="account-page-heading">
         <div>
           <span className="eyebrow">Account security</span>
@@ -1549,13 +1590,22 @@ export function NotificationsPage({ navigate }) {
   );
   return (
     <section className="account-page">
+      <AccountSettingsNav navigate={navigate} active="settings/notifications" />
       <div className="account-page-heading">
         <div>
           <span className="eyebrow">Demo messages</span>
           <h2>Notification Centre</h2>
           <p>
             Authentication emails and security events are simulated here for
-            demonstrations.
+            demonstrations. Prefer{" "}
+            <button
+              type="button"
+              className="text-action"
+              onClick={() => navigate("settings/notifications")}
+            >
+              notification preferences
+            </button>{" "}
+            for channel settings.
           </p>
         </div>
         <Bell size={32} />
@@ -1915,9 +1965,21 @@ export function UserMenu({ navigate, compact = false }) {
   const [open, setOpen] = useState(false);
   if (!user)
     return (
-      <div className="logged-out-actions">
-        <button onClick={() => navigate("login")}>Sign In</button>
-        <button onClick={() => navigate("register")}>Request Access</button>
+      <div className={`logged-out-actions ${compact ? "compact" : ""}`}>
+        <button
+          type="button"
+          className="ghost-button"
+          onClick={() => navigate("login")}
+        >
+          Sign In
+        </button>
+        <button
+          type="button"
+          className="gold-button topbar-request-access"
+          onClick={() => navigate("register")}
+        >
+          Request Access
+        </button>
       </div>
     );
   const dashboard = defaultDestinationFor(user);
@@ -1929,8 +1991,10 @@ export function UserMenu({ navigate, compact = false }) {
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        <span>{user.avatar}</span>
-        <span>
+        <span className="user-menu-avatar-chip" aria-hidden="true">
+          {user.avatar}
+        </span>
+        <span className="user-menu-copy">
           <strong>{user.name}</strong>
           <small>{user.membershipTier || user.roleLabel}</small>
         </span>
@@ -1971,6 +2035,24 @@ export function UserMenu({ navigate, compact = false }) {
             }}
           >
             <ShieldCheck /> Security
+          </button>
+          <button
+            role="menuitem"
+            onClick={() => {
+              navigate("settings/notifications");
+              setOpen(false);
+            }}
+          >
+            <Bell /> Notifications
+          </button>
+          <button
+            role="menuitem"
+            onClick={() => {
+              navigate("settings/privacy");
+              setOpen(false);
+            }}
+          >
+            <LockKey /> Privacy
           </button>
           {user.userType === "buyer" && (
             <button

@@ -116,6 +116,7 @@ import {
   FileAudio,
   FileText,
   FilmSlate,
+  Fingerprint,
   GearSix,
   Heart,
   HardDrives,
@@ -241,11 +242,13 @@ const buyerTiers = [
   },
 ];
 
+/* Fallback when logged out — keep in sync with DEFAULT_USERS vip buyer (Olivia Bennett). */
 const currentBuyer = {
-  name: "Maya Hart",
+  name: "Olivia Bennett",
   company: "Northstar Pictures",
-  role: "Music Supervisor",
+  role: "Senior Music Supervisor",
   accessTier: "VIP Sync Access",
+  email: "olivia@northstarpictures.com",
   verified: true,
   membershipStatus: "Active",
   preApprovedTerms: true,
@@ -1092,18 +1095,27 @@ const artists = [
     credit: "Independent composer, film textures, modern piano",
     tracks: 18,
     image: img.portrait,
+    stage: "Metadata Review",
+    openItems: 6,
+    priority: "Medium",
   },
   {
     name: "Arco North",
     credit: "Guitar-led indie catalog with sync-friendly hooks",
     tracks: 24,
     image: img.concert,
+    stage: "Rights Documentation Review",
+    openItems: 9,
+    priority: "High",
   },
   {
     name: "Vespera",
     credit: "Soul archive with rare vocal performances",
     tracks: 11,
     image: img.vinyl,
+    stage: "Preston Approval",
+    openItems: 4,
+    priority: "High",
   },
   {
     name: "The SMYRK",
@@ -1115,8 +1127,14 @@ const artists = [
     portraitImage: img.smyrkPortrait,
     liveImage: img.smyrkLive,
     featureTrackId: 15,
+    stage: "Metadata Review",
+    openItems: 1,
+    priority: "Low",
   },
 ];
+
+const ADMIN_TAB_STORAGE_KEY = "beatmondo-admin-tab";
+const ADMIN_TAB_EVENT = "beatmondo-admin-tab";
 
 const navItems = [
   ["home", "Home", House],
@@ -1321,62 +1339,290 @@ const navItems = [
 ];
 
 const navItemMap = new Map(navItems.map((item) => [item[0], item]));
+const BUYER_SIDEBAR_CORE = [
+  "home",
+  "catalog",
+  "usecases",
+  "buyer",
+  "project",
+  "buyer-verification",
+  "membership",
+  "billing",
+  "licensing",
+];
+const BUYER_SIDEBAR_COMMERCIAL = [
+  "buyer-quotes",
+  "buyer-contracts",
+  "buyer-payments",
+  "buyer-licences",
+  "buyer-deliveries",
+  "buyer-media-access",
+  "buyer-private-previews",
+  "buyer/analytics",
+  "settings/privacy",
+];
+const ARTIST_SIDEBAR = [
+  "home",
+  "catalog",
+  "artist-dashboard",
+  "artist-submissions",
+  "artist-files",
+  "artist-rights",
+  "artist-previews",
+  "artist/analytics",
+  "settings/privacy",
+];
+const OPS_SIDEBAR = [
+  "admin",
+  "admin-verifications",
+  "admin-memberships",
+  "admin-rights",
+  "admin-search",
+  "admin-ingestion",
+  "admin-storage",
+  "admin-previews",
+  "admin-quotes",
+  "admin-contracts",
+  "admin-payments",
+  "admin-licences",
+  "admin-deliveries",
+  "admin-expiring-access",
+  "admin-audit",
+  "admin/email",
+  "admin/access",
+  "admin/analytics",
+  "admin/privacy",
+];
+const EDITORIAL_SIDEBAR = ["legacy", "content", "stories", "media", "contact"];
+const PROTOTYPE_SIDEBAR = ["investor", "system"];
+
+/** Parent nav highlight map for nested commercial / ops / account routes. */
+const NAV_PARENT_BY_VIEW = {
+  // Search library family → Explore Music
+  search: "catalog",
+  "search-saved": "catalog",
+  "search-recent": "catalog",
+  "search-collections": "catalog",
+  "admin-search": "catalog",
+  "admin-search-index": "catalog",
+  // Buyer commercial detail
+  "buyer-quote": "buyer-quotes",
+  "quote-print": "buyer-quotes",
+  "buyer-contract": "buyer-contracts",
+  signature: "buyer-contracts",
+  "signature-complete": "buyer-contracts",
+  "signature-declined": "buyer-contracts",
+  "signature-expired": "buyer-contracts",
+  "contract-print": "buyer-contracts",
+  "buyer-payment": "buyer-payments",
+  "buyer-pay": "buyer-payments",
+  "buyer-payment-success": "buyer-payments",
+  "buyer-payment-failed": "buyer-payments",
+  "buyer-payment-authentication": "buyer-payments",
+  "buyer-payment-methods": "buyer-payments",
+  "payment-receipt": "buyer-payments",
+  "buyer-licence": "buyer-licences",
+  "licence-print": "buyer-licences",
+  "buyer-delivery": "buyer-deliveries",
+  "buyer-delivery-room": "buyer-deliveries",
+  // Membership / billing
+  "membership-plans": "membership",
+  "membership-checkout": "membership",
+  "membership-confirmation": "membership",
+  "billing-payment-methods": "billing",
+  "billing-invoices": "billing",
+  "billing-invoice": "billing",
+  "billing-subscription": "billing",
+  "billing-cancel": "billing",
+  "billing-reactivate": "billing",
+  "billing-payment-failed": "billing",
+  "admin-membership-detail": "admin-memberships",
+  // Artist
+  "artist-submission-new": "artist-submissions",
+  "artist-submission-detail": "artist-submissions",
+  // Rights
+  "admin-rights-track": "admin-rights",
+  "admin-rights-parties": "admin-rights",
+  "admin-rights-documents": "admin-rights",
+  "admin-rights-reviews": "admin-rights",
+  "admin-rights-disputes": "admin-rights",
+  "admin-rights-expiring": "admin-rights",
+  // Ingestion
+  "admin-ingestion-new": "admin-ingestion",
+  "admin-ingestion-detail": "admin-ingestion",
+  // Storage
+  "admin-storage-assets": "admin-storage",
+  "admin-storage-asset": "admin-storage",
+  "admin-storage-usage": "admin-storage",
+  "admin-storage-access": "admin-storage",
+  "admin-storage-processing": "admin-storage",
+  // Previews
+  "admin-previews-queue": "admin-previews",
+  "admin-previews-preview": "admin-previews",
+  "admin-previews-new": "admin-previews",
+  "admin-previews-policies": "admin-previews",
+  "admin-previews-generation": "admin-previews",
+  "admin-previews-access": "admin-previews",
+  // Quotes
+  "admin-quotes-new": "admin-quotes",
+  "admin-quote": "admin-quotes",
+  "admin-quotes-analytics": "admin-quotes",
+  "admin-pricing-rules": "admin-quotes",
+  // Contracts
+  "admin-contract-new": "admin-contracts",
+  "admin-contract-detail": "admin-contracts",
+  "admin-contract-templates": "admin-contracts",
+  "admin-contract-clauses": "admin-contracts",
+  "admin-contract-analytics": "admin-contracts",
+  // Payments
+  "admin-payment-detail": "admin-payments",
+  "admin-payment-reconciliation": "admin-payments",
+  "admin-refunds": "admin-payments",
+  "admin-credits": "admin-payments",
+  "admin-payment-analytics": "admin-payments",
+  // Licences
+  "admin-licence-new": "admin-licences",
+  "admin-licence-detail": "admin-licences",
+  "admin-licence-expiring": "admin-licences",
+  "admin-licence-amendments": "admin-licences",
+  "admin-licence-renewals": "admin-licences",
+  "admin-licence-analytics": "admin-licences",
+  // Delivery
+  "admin-deliveries-new": "admin-deliveries",
+  "admin-delivery-detail": "admin-deliveries",
+  "admin-delivery-access": "admin-deliveries",
+  "admin-delivery-replacements": "admin-deliveries",
+  "admin-delivery-analytics": "admin-deliveries",
+  // Expiring access
+  "admin-expiring-access-detail": "admin-expiring-access",
+  "admin-expiring-access-policies": "admin-expiring-access",
+  "admin-expiring-access-security": "admin-expiring-access",
+  "admin-expiring-access-analytics": "admin-expiring-access",
+  // Audit
+  "admin-audit-event": "admin-audit",
+  "admin-audit-security": "admin-audit",
+  "admin-audit-exports": "admin-audit",
+  "admin-audit-settings": "admin-audit",
+  "admin-audit-analytics": "admin-audit",
+  // Email
+  "admin/email/queue": "admin/email",
+  "admin/email/messages": "admin/email",
+  "admin/email/message": "admin/email",
+  "admin/email/templates": "admin/email",
+  "admin/email/template": "admin/email",
+  "admin/email/triggers": "admin/email",
+  "admin/email/preferences": "admin/email",
+  "admin/email/failures": "admin/email",
+  "admin/email/analytics": "admin/email",
+  "email/message": "notifications",
+  "settings/notifications": "notifications",
+  // Permissions
+  "admin/access/users": "admin/access",
+  "admin/access/user": "admin/access",
+  "admin/access/roles": "admin/access",
+  "admin/access/role": "admin/access",
+  "admin/access/permissions": "admin/access",
+  "admin/access/permission": "admin/access",
+  "admin/access/requests": "admin/access",
+  "admin/access/temporary": "admin/access",
+  "admin/access/delegations": "admin/access",
+  "admin/access/impersonation": "admin/access",
+  "admin/access/reviews": "admin/access",
+  "admin/access/conflicts": "admin/access",
+  // Analytics / reports
+  "admin/analytics/executive": "admin/analytics",
+  "admin/analytics/commercial": "admin/analytics",
+  "admin/analytics/catalog": "admin/analytics",
+  "admin/analytics/search": "admin/analytics",
+  "admin/analytics/buyers": "admin/analytics",
+  "admin/analytics/artists": "admin/analytics",
+  "admin/analytics/rights": "admin/analytics",
+  "admin/analytics/finance": "admin/analytics",
+  "admin/analytics/operations": "admin/analytics",
+  "admin/analytics/security": "admin/analytics",
+  "admin/analytics/email": "admin/analytics",
+  "admin/analytics/permissions": "admin/analytics",
+  "admin/reports": "admin/analytics",
+  "admin/reports/builder": "admin/analytics",
+  "admin/reports/scheduled": "admin/analytics",
+  "admin/reports/exports": "admin/analytics",
+  // Privacy
+  "privacy/request": "settings/privacy",
+  "privacy/request/detail": "settings/privacy",
+  "admin/privacy/requests": "admin/privacy",
+  "admin/privacy/request": "admin/privacy",
+  "admin/privacy/inventory": "admin/privacy",
+  "admin/privacy/purposes": "admin/privacy",
+  "admin/privacy/notices": "admin/privacy",
+  "admin/privacy/consents": "admin/privacy",
+  "admin/privacy/retention": "admin/privacy",
+  "admin/privacy/legal-holds": "admin/privacy",
+  "admin/privacy/vendors": "admin/privacy",
+  "admin/privacy/incidents": "admin/privacy",
+  "admin/privacy/assessments": "admin/privacy",
+  "admin/privacy/exports": "admin/privacy",
+  // Verification
+  "admin-verification-detail": "admin-verifications",
+  // Account settings family (profile is the account hub)
+  security: "profile",
+  "settings/privacy": "profile",
+};
+
+function buildSidebarSections(user) {
+  const editorial = ["Editorial", EDITORIAL_SIDEBAR];
+  if (!user) {
+    return [
+      ["Discover", ["home", "catalog", "usecases", "licensing", "membership-plans"]],
+      editorial,
+    ];
+  }
+  if (user.userType === "artist" || user.role === "artist") {
+    return [["Artist workspace", ARTIST_SIDEBAR], editorial];
+  }
+  const isBuyer = ["discovery_buyer", "professional_buyer", "vip_buyer"].includes(
+    user.role,
+  );
+  const isInternal =
+    user.permissions?.includes("*") ||
+    [
+      "licensing_manager",
+      "catalog_manager",
+      "media_operations",
+      "finance_manager",
+      "legal_reviewer",
+      "security_administrator",
+      "privacy_administrator",
+      "support_administrator",
+      "senior_approver",
+      "administrator",
+      "super_administrator",
+    ].includes(user.role);
+
+  const sections = [];
+  if (isBuyer) {
+    sections.push([
+      "Buyer workspace",
+      [...BUYER_SIDEBAR_CORE, ...BUYER_SIDEBAR_COMMERCIAL],
+    ]);
+  } else if (isInternal) {
+    sections.push([
+      "Discover",
+      ["home", "catalog", "usecases", "licensing"],
+    ]);
+    sections.push(["Operations", OPS_SIDEBAR]);
+    if (user.role === "super_administrator" || user.permissions?.includes("*")) {
+      sections.push(["Prototype", PROTOTYPE_SIDEBAR]);
+    }
+  }
+  sections.push(editorial);
+  return sections;
+}
+
 const sidebarSections = [
-  [
-    "Buyer workspace",
-    [
-      "home",
-      "catalog",
-      "usecases",
-      "buyer",
-      "project",
-      "buyer-verification",
-      "membership",
-      "billing",
-      "buyer-media-access",
-      "buyer-private-previews",
-      "buyer-quotes",
-      "buyer-contracts",
-      "buyer-payments",
-      "buyer-licences",
-      "buyer-deliveries",
-      "buyer/analytics",
-      "settings/privacy",
-      "licensing",
-    ],
-  ],
-  ["Editorial", ["legacy", "content", "stories", "media", "contact"]],
-  [
-    "Operations",
-    [
-      "admin",
-      "admin-verifications",
-      "admin-memberships",
-      "admin-rights",
-      "admin-search",
-      "admin-ingestion",
-      "admin-storage",
-      "admin-previews",
-      "admin-quotes",
-      "admin-contracts",
-      "admin-payments",
-      "admin-licences",
-      "admin-deliveries",
-      "admin-expiring-access",
-      "admin-audit",
-      "admin/email",
-      "admin/access",
-      "admin/analytics",
-      "admin/privacy",
-      "artist-dashboard",
-      "artist-rights",
-      "artist-submissions",
-      "artist-files",
-      "artist-previews",
-      "artist/analytics",
-    ],
-  ],
-  ["Prototype", ["investor"]],
+  ["Buyer workspace", [...BUYER_SIDEBAR_CORE, ...BUYER_SIDEBAR_COMMERCIAL]],
+  ["Editorial", EDITORIAL_SIDEBAR],
+  ["Operations", OPS_SIDEBAR],
+  ["Prototype", PROTOTYPE_SIDEBAR],
 ];
 
 const standaloneViews = new Set([
@@ -1556,17 +1802,20 @@ function App() {
     };
   }, []);
 
-  const setRoute = (nextView) => {
+  const setRoute = (nextView, entityId = null) => {
     if (!validViews.has(nextView)) return;
     setView(nextView);
     setModalTrack(null);
     setShowNotifications(false);
     setMobileNav(false);
-    window.history.replaceState(
-      null,
-      "",
-      nextView === "home" ? window.location.pathname : `#${nextView}`,
-    );
+    let hash = "";
+    if (nextView !== "home") {
+      hash =
+        entityId != null && entityId !== ""
+          ? `#${nextView}/${entityId}`
+          : `#${nextView}`;
+    }
+    window.history.replaceState(null, "", hash || window.location.pathname);
   };
 
   const navigate = (nextView) => {
@@ -1593,19 +1842,54 @@ function App() {
 
   useEffect(() => {
     const syncFromHash = () => {
-      const id = window.location.hash.replace("#", "");
-      if (!id || id === "home") {
+      const raw = window.location.hash.replace("#", "");
+      if (!raw || raw === "home") {
         setView("home");
         setModalTrack(null);
         setShowNotifications(false);
         return;
       }
-      if (validViews.has(id)) {
-        setView(id);
+      if (raw.startsWith("access/")) {
+        setView("access");
         setModalTrack(null);
         setShowNotifications(false);
-      } else if (id.startsWith("access/")) {
-        setView("access");
+        return;
+      }
+      // Prefer full multi-segment routes (settings/privacy, admin/email, …)
+      // before treating the first segment as a deep-link base (track/15).
+      if (validViews.has(raw)) {
+        setView(raw);
+        setModalTrack(null);
+        setShowNotifications(false);
+        return;
+      }
+      const [base, entity] = raw.split("/");
+      if (base === "track" && entity) {
+        const found = tracks.find((t) => String(t.id) === entity);
+        if (found) setSelectedTrack(found);
+        if (validViews.has("track")) {
+          setView("track");
+          setModalTrack(null);
+          setShowNotifications(false);
+        }
+        return;
+      }
+      if (base === "licensing" && entity === "access") {
+        window.sessionStorage.setItem("beatmondo-licensing-mode", "access");
+        setView("licensing");
+        setModalTrack(null);
+        setShowNotifications(false);
+        return;
+      }
+      if (base === "licensing" && entity === "request") {
+        window.sessionStorage.setItem("beatmondo-licensing-mode", "license");
+        setView("licensing");
+        setModalTrack(null);
+        setShowNotifications(false);
+        return;
+      }
+      if (validViews.has(base)) {
+        setView(base);
         setModalTrack(null);
         setShowNotifications(false);
       }
@@ -1630,9 +1914,17 @@ function App() {
 
   useEffect(() => {
     if (!toast) return undefined;
-    const timer = window.setTimeout(() => setToast(""), 3200);
+    const timer = window.setTimeout(() => setToast(""), 4200);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    const onExternalToast = (event) => {
+      if (typeof event.detail === "string" && event.detail) setToast(event.detail);
+    };
+    window.addEventListener("beatmondo-toast", onExternalToast);
+    return () => window.removeEventListener("beatmondo-toast", onExternalToast);
+  }, []);
 
   useEffect(() => {
     const openGlobalSearch = (event) => {
@@ -1912,7 +2204,19 @@ function App() {
   }, [streamSessionId]);
   const openTrack = (track) => {
     setSelectedTrack(track);
-    navigate("track");
+    if (!validViews.has("track")) return;
+    const decision = getRouteDecision("track", auth.user, auth.ready);
+    if (!decision.allowed) {
+      auth.setIntendedView("track");
+      setAccessReason(
+        decision.reason ||
+          "This private workspace is not available to the current account.",
+      );
+      setRoute(auth.sessionExpired ? "session-expired" : decision.redirect);
+      return;
+    }
+    setAccessReason("");
+    setRoute("track", track.id);
   };
   const requestLicense = (track) => {
     const rights = rightsService.getBuyerSummary(track.id, {
@@ -2287,7 +2591,12 @@ function App() {
         />
       )}
       {toast && (
-        <div className="toast-banner" role="status">
+        <div
+          className="toast-banner"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {toast}
         </div>
       )}
@@ -2295,9 +2604,36 @@ function App() {
   );
 }
 
+function SidebarNavButton({ id, view, activeNavId, setView, setMobileNav }) {
+  const item = navItemMap.get(id);
+  if (!item) return null;
+  const [, label, Icon] = item;
+  const isActive = activeNavId === id || view === id;
+  return (
+    <button
+      key={id}
+      className={isActive ? "active" : ""}
+      aria-current={isActive ? "page" : undefined}
+      onClick={() => {
+        setView(id);
+        setMobileNav(false);
+      }}
+    >
+      <Icon size={20} weight={isActive ? "fill" : "regular"} />
+      <span>{label}</span>
+    </button>
+  );
+}
+
 function Sidebar({ view, setView, mobileNav, setMobileNav }) {
   const { user } = useAuth();
-  const visibleSections = sidebarSections
+  const activeNavId = NAV_PARENT_BY_VIEW[view] || view;
+  const commercialOpenDefault = BUYER_SIDEBAR_COMMERCIAL.includes(activeNavId);
+  const [commercialOpen, setCommercialOpen] = useState(commercialOpenDefault);
+  useEffect(() => {
+    if (commercialOpenDefault) setCommercialOpen(true);
+  }, [commercialOpenDefault]);
+  const visibleSections = buildSidebarSections(user)
     .map(([section, ids]) => {
       const visibleIds = ids.filter(
         (id) => getRouteDecision(id, user, true).allowed,
@@ -2326,28 +2662,56 @@ function Sidebar({ view, setView, mobileNav, setMobileNav }) {
       >
         <img className="brand-logo" src={logo} alt="beatmondo" />
       </button>
-      <nav>
-        {visibleSections.map(([section, ids]) => (
-          <div className="sidebar-section" key={section}>
-            <span>{section}</span>
-            {ids.map((id) => {
-              const [, label, Icon] = navItemMap.get(id);
-              return (
-                <button
+      <nav aria-label="Primary">
+        {visibleSections.map(([section, ids]) => {
+          const isBuyer = section === "Buyer workspace";
+          const coreIds = isBuyer
+            ? ids.filter((id) => !BUYER_SIDEBAR_COMMERCIAL.includes(id))
+            : ids;
+          const commercialIds = isBuyer
+            ? ids.filter((id) => BUYER_SIDEBAR_COMMERCIAL.includes(id))
+            : [];
+          return (
+            <div className="sidebar-section" key={section}>
+              <span>{section}</span>
+              {coreIds.map((id) => (
+                <SidebarNavButton
                   key={id}
-                  className={view === id ? "active" : ""}
-                  onClick={() => {
-                    setView(id);
-                    setMobileNav(false);
-                  }}
-                >
-                  <Icon size={20} weight={view === id ? "fill" : "regular"} />
-                  <span>{label}</span>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+                  id={id}
+                  view={view}
+                  activeNavId={activeNavId}
+                  setView={setView}
+                  setMobileNav={setMobileNav}
+                />
+              ))}
+              {commercialIds.length > 0 && (
+                <div className="sidebar-subgroup">
+                  <button
+                    type="button"
+                    className={`sidebar-subgroup-toggle ${commercialOpen || commercialOpenDefault ? "is-open" : ""}`}
+                    aria-expanded={commercialOpen || commercialOpenDefault}
+                    onClick={() => setCommercialOpen((open) => !open)}
+                  >
+                    <Certificate size={18} />
+                    <span>Commercial</span>
+                    <CaretDown size={14} aria-hidden="true" />
+                  </button>
+                  {(commercialOpen || commercialOpenDefault) &&
+                    commercialIds.map((id) => (
+                      <SidebarNavButton
+                        key={id}
+                        id={id}
+                        view={view}
+                        activeNavId={activeNavId}
+                        setView={setView}
+                        setMobileNav={setMobileNav}
+                      />
+                    ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </nav>
     </aside>
   );
@@ -2362,16 +2726,67 @@ function Topbar({
   onProfile,
 }) {
   const { user } = useAuth();
+  const [adminTabLabel, setAdminTabLabel] = useState(() => {
+    try {
+      return sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || "Overview";
+    } catch {
+      return "Overview";
+    }
+  });
+  useEffect(() => {
+    const sync = (event) => {
+      const tab = event?.detail?.tab;
+      if (tab) setAdminTabLabel(tab);
+      else {
+        try {
+          setAdminTabLabel(
+            sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || "Overview",
+          );
+        } catch {
+          /* ignore */
+        }
+      }
+    };
+    window.addEventListener(ADMIN_TAB_EVENT, sync);
+    if (view === "admin") sync();
+    return () => window.removeEventListener(ADMIN_TAB_EVENT, sync);
+  }, [view]);
+  const basePageLabel =
+    navItems.find(([id]) => id === view)?.[1] ||
+    navItems.find(([id]) => id === (NAV_PARENT_BY_VIEW[view] || view))?.[1] ||
+    "Workspace";
+  const pageLabel =
+    view === "admin" ? `Admin · ${adminTabLabel}` : basePageLabel;
+  const verification = user
+    ? buyerVerificationService.getByUser(user.id)
+    : null;
+  const membership = user
+    ? membershipService.getCurrentMembership(user.id)
+    : null;
+  const effective = user
+    ? calculateEffectiveAccess(user, verification, membership)
+    : null;
+  const tierLabel =
+    user?.userType === "internal"
+      ? user.roleLabel || "Internal"
+      : user?.role === "artist"
+        ? user.membershipTier || user.roleLabel
+        : effective?.effectivePlan ||
+          user?.membershipTier ||
+          user?.roleLabel ||
+          "";
   return (
     <header className="topbar">
       <button className="mobile-menu" onClick={() => setMobileNav(true)}>
         <FadersHorizontal size={20} /> Menu
       </button>
-      <div>
+      <div className="topbar-context">
         <span className="eyebrow">
           <span className="brand-name">beatmondo</span> private sync workspace
         </span>
-        <h1>{navItems.find(([id]) => id === view)?.[1]}</h1>
+        <p className="topbar-page-label" aria-live="polite">
+          {pageLabel}
+        </p>
       </div>
       <div className="top-actions">
         <button
@@ -2382,17 +2797,12 @@ function Topbar({
         >
           <MagnifyingGlass size={20} />
         </button>
-        {user && (
+        {user && tierLabel && (
           <span
-            className={`tier-badge ${user.role === "vip_buyer" ? "vip" : ""}`}
+            className={`tier-badge ${tierLabel.includes("VIP") ? "vip" : ""}`}
           >
-            {user.membershipTier || user.roleLabel}
+            {tierLabel}
           </span>
-        )}
-        {!user && (
-          <button onClick={() => setView("register")} className="ghost-button">
-            <SignIn size={18} /> Request Access
-          </button>
         )}
         {user && (
           <button
@@ -2955,6 +3365,32 @@ function HeroMedia() {
 }
 
 function UseCasesPage({ setView }) {
+  const openUseCase = (title) => {
+    const usageHints = {
+      Film: "Film / TV",
+      Television: "Film / TV",
+      "OTT & Streaming": "Film / TV",
+      Advertising: "Advertising",
+      Trailers: "Trailer / Promo",
+      "Branded Content": "Advertising",
+      Documentaries: "Documentary",
+      Games: "Game",
+    };
+    const usage = usageHints[title] || title;
+    window.localStorage.setItem(
+      "beatmondo-search-project-context",
+      JSON.stringify({
+        name: title,
+        query: title,
+        filters: { usage: [usage] },
+      }),
+    );
+    window.sessionStorage.setItem(
+      "beatmondo-focus-global-search",
+      "true",
+    );
+    setView("search");
+  };
   return (
     <section className="use-cases-page">
       <div className="page-intro">
@@ -2972,7 +3408,7 @@ function UseCasesPage({ setView }) {
             title={title}
             text={text}
             image={image}
-            action={() => setView("catalog")}
+            action={() => openUseCase(title)}
           />
         ))}
       </div>
@@ -2981,7 +3417,16 @@ function UseCasesPage({ setView }) {
           <span className="eyebrow">Need a private selection?</span>
           <h3>Tell us about the brief and deadline.</h3>
         </div>
-        <button className="gold-button" onClick={() => setView("licensing")}>
+        <button
+          className="gold-button"
+          onClick={() => {
+            window.sessionStorage.setItem(
+              "beatmondo-licensing-mode",
+              "access",
+            );
+            setView("licensing");
+          }}
+        >
           Request Access
         </button>
       </div>
@@ -3239,441 +3684,7 @@ function AuthPage({ mode, setView, showToast }) {
   );
 }
 
-function Catalog(props) {
-  const {
-    tracks: visibleTracks,
-    query,
-    setQuery,
-    filters,
-    setFilters,
-    layout,
-    setLayout,
-    sortBy,
-    setSortBy,
-    selectedTrack,
-    setSelectedTrack,
-    playingId,
-    togglePlay,
-    savedIds,
-    saveTrack,
-    openTrack,
-    requestLicense,
-    showToast,
-  } = props;
-
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
-  const defaultFilters = {
-    genre: "All Genres",
-    mood: "Any Mood",
-    theme: "Any Theme",
-    energy: "Any Energy",
-    tempo: "Any Tempo",
-    bpm: "Any BPM",
-    duration: "Any Duration",
-    vocal: "Any Vocal",
-    era: "Any Era",
-    instrumentation: "Any Instrument",
-    usage: "Any Usage",
-    rightsVerified: "Any Rights Status",
-    availability: "All Availability",
-    vipCatalog: "All Access",
-    exclusivity: "Any Exclusivity",
-    stems: "Any Stem Status",
-  };
-  const resetFilters = () => setFilters(defaultFilters);
-  const removeFilter = (key) =>
-    setFilters((prev) => ({ ...prev, [key]: defaultFilters[key] }));
-  const chips = Object.entries(filters).filter(
-    ([key, value]) => value !== defaultFilters[key],
-  );
-
-  const filterControls = {
-    genre: (
-      <Select
-        label="Genre"
-        value={filters.genre}
-        options={[
-          "All Genres",
-          "Alternative",
-          "Cinematic",
-          "Indie Rock",
-          "Ambient",
-          "Soul",
-          "Acoustic",
-          "Pop",
-          "Electronic",
-          "Folk",
-          "World",
-          "R&B",
-          "Jazz",
-        ]}
-        onChange={(genre) => setFilters({ ...filters, genre })}
-      />
-    ),
-    mood: (
-      <Select
-        label="Mood"
-        value={filters.mood}
-        options={[
-          "Any Mood",
-          "Reflective",
-          "Driven",
-          "Moody",
-          "Emotional",
-          "Inspiring",
-          "Feel Good",
-          "Tense",
-          "Nostalgic",
-          "Uplifting",
-          "Ethereal",
-          "Sensual",
-          "Intense",
-          "Sophisticated",
-          "Hopeful",
-        ]}
-        onChange={(mood) => setFilters({ ...filters, mood })}
-      />
-    ),
-    theme: (
-      <Select
-        label="Theme"
-        value={filters.theme}
-        options={[
-          "Any Theme",
-          "Warm",
-          "Uplifting",
-          "Reflective",
-          "Hopeful",
-          "Driven",
-          "Youthful",
-          "Atmospheric",
-          "Emotional",
-          "Cinematic",
-          "Global",
-          "Dark",
-          "Spacious",
-          "Smooth",
-          "Anthem",
-        ]}
-        onChange={(theme) => setFilters({ ...filters, theme })}
-      />
-    ),
-    energy: (
-      <Select
-        label="Energy"
-        value={filters.energy}
-        options={["Any Energy", "Low", "Medium", "High"]}
-        onChange={(energy) => setFilters({ ...filters, energy })}
-      />
-    ),
-    tempo: (
-      <Select
-        label="Tempo"
-        value={filters.tempo}
-        options={["Any Tempo", "Slow", "Midtempo", "Upbeat"]}
-        onChange={(tempo) => setFilters({ ...filters, tempo })}
-      />
-    ),
-    bpm: (
-      <Select
-        label="BPM"
-        value={filters.bpm}
-        options={["Any BPM", "Under 80 BPM", "80 - 120 BPM", "120+ BPM"]}
-        onChange={(bpm) => setFilters({ ...filters, bpm })}
-      />
-    ),
-    duration: (
-      <Select
-        label="Duration"
-        value={filters.duration}
-        options={["Any Duration", "Under 3:00", "3:00+"]}
-        onChange={(duration) => setFilters({ ...filters, duration })}
-      />
-    ),
-    vocal: (
-      <Select
-        label="Vocal"
-        value={filters.vocal}
-        options={["Any Vocal", "Instrumental", "Vocal"]}
-        onChange={(vocal) => setFilters({ ...filters, vocal })}
-      />
-    ),
-    era: (
-      <Select
-        label="Era"
-        value={filters.era}
-        options={["Any Era", "Modern", "2000s", "1990s", "1970s", "1960s"]}
-        onChange={(era) => setFilters({ ...filters, era })}
-      />
-    ),
-    instrumentation: (
-      <Select
-        label="Instrument"
-        value={filters.instrumentation}
-        options={[
-          "Any Instrument",
-          "Piano",
-          "Guitar",
-          "Strings",
-          "Synth",
-          "Drums",
-          "Brass",
-          "Vocal",
-        ]}
-        onChange={(instrumentation) =>
-          setFilters({ ...filters, instrumentation })
-        }
-      />
-    ),
-    usage: (
-      <Select
-        label="Usage"
-        value={filters.usage}
-        options={[
-          "Any Usage",
-          "Film / TV",
-          "Advertising",
-          "Documentary",
-          "Trailer",
-          "Brand Film",
-          "Streaming",
-          "Hospitality",
-        ]}
-        onChange={(usage) => setFilters({ ...filters, usage })}
-      />
-    ),
-    rightsVerified: (
-      <Select
-        label="Rights"
-        value={filters.rightsVerified}
-        options={[
-          "Any Rights Status",
-          "Rights Verified",
-          "Licensing Available",
-          "Manual Clearance Required",
-          "Rights Review Needed",
-        ]}
-        onChange={(rightsVerified) =>
-          setFilters({ ...filters, rightsVerified })
-        }
-      />
-    ),
-    availability: (
-      <Select
-        label="Availability"
-        value={filters.availability}
-        options={[
-          "All Availability",
-          "Available Now",
-          "Exclusive Option",
-          "Quote Required",
-        ]}
-        onChange={(availability) => setFilters({ ...filters, availability })}
-      />
-    ),
-    vipCatalog: (
-      <Select
-        label="Access"
-        value={filters.vipCatalog}
-        options={["All Access", "Standard Access", "VIP Picks"]}
-        onChange={(vipCatalog) => setFilters({ ...filters, vipCatalog })}
-      />
-    ),
-    exclusivity: (
-      <Select
-        label="Exclusivity"
-        value={filters.exclusivity}
-        options={[
-          "Any Exclusivity",
-          "Exclusivity Available",
-          "Non-Exclusive Only",
-        ]}
-        onChange={(exclusivity) => setFilters({ ...filters, exclusivity })}
-      />
-    ),
-    stems: (
-      <Select
-        label="Stems"
-        value={filters.stems}
-        options={["Any Stem Status", "Stems Available", "Stems Not Ready"]}
-        onChange={(stems) => setFilters({ ...filters, stems })}
-      />
-    ),
-  };
-
-  return (
-    <section className="catalog-layout">
-      <div className="catalog-main">
-        <div className="catalog-header">
-          <div>
-            <span className="tier-badge vip">
-              <LockKey size={14} /> {currentBuyer.accessTier}
-            </span>
-            <h2>Explore Music</h2>
-            <p>
-              Search by mood, use case, artist, era, tempo, stems, rights
-              verification, VIP access, and delivery readiness.
-            </p>
-          </div>
-        </div>
-        <div className="search-row">
-          <label className="search-box">
-            <MagnifyingGlass size={20} />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search track, artist, mood, instrument, usage, or keyword..."
-            />
-          </label>
-          <div className="catalog-actions">
-            <button
-              className="outline-button"
-              onClick={() => showToast("Search saved to Buyer workspace.")}
-            >
-              <BookmarkSimple size={18} /> Save Search
-            </button>
-            <button
-              className="outline-button"
-              onClick={() => requestLicense(selectedTrack)}
-            >
-              <Sparkle size={18} /> Need Something Specific?
-            </button>
-          </div>
-        </div>
-        <div className="filter-panel">
-          <div className="filters wide primary-filters">
-            {filterControls.genre}
-            {filterControls.usage}
-            {filterControls.availability}
-            {filterControls.vipCatalog}
-            {filterControls.mood}
-            {filterControls.theme}
-          </div>
-          <button
-            className="filter-toggle"
-            type="button"
-            aria-expanded={showAdvancedFilters}
-            onClick={() => setShowAdvancedFilters((open) => !open)}
-          >
-            <Sliders size={18} />{" "}
-            {showAdvancedFilters
-              ? "Hide advanced filters"
-              : "Show advanced filters"}
-          </button>
-          {showAdvancedFilters && (
-            <div className="filters wide advanced-filters">
-              {filterControls.tempo}
-              {filterControls.bpm}
-              {filterControls.energy}
-              {filterControls.exclusivity}
-              {filterControls.era}
-              {filterControls.vocal}
-              {filterControls.duration}
-              {filterControls.instrumentation}
-              {filterControls.stems}
-              {filterControls.rightsVerified}
-            </div>
-          )}
-        </div>
-        <div className="chip-row">
-          {chips.map(([key, value]) => (
-            <span key={key} className="filter-chip">
-              <span>
-                {key}: {value}
-              </span>
-              <button type="button" onClick={() => removeFilter(key)}>
-                <X size={12} />
-              </button>
-            </span>
-          ))}
-          {chips.length > 0 && (
-            <button className="clear-all-filters" onClick={resetFilters}>
-              Clear All
-            </button>
-          )}
-        </div>
-        <div className="results-meta">
-          <span>{visibleTracks.length} tracks found</span>
-          <div className="results-tools">
-            <label className="select-label compact-sort">
-              <span>Sort by</span>
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-              >
-                <option value="relevance">Supervisor relevance</option>
-                <option value="title">Title</option>
-                <option value="artist">Artist</option>
-                <option value="duration">Duration</option>
-              </select>
-              <CaretDown size={14} />
-            </label>
-            <div className="segmented">
-              <button
-                className={layout === "list" ? "active" : ""}
-                onClick={() => setLayout("list")}
-              >
-                List
-              </button>
-              <button
-                className={layout === "cards" ? "active" : ""}
-                onClick={() => setLayout("cards")}
-              >
-                Cards
-              </button>
-            </div>
-          </div>
-        </div>
-        {visibleTracks.length === 0 ? (
-          <EmptyState
-            title="No tracks match your filters"
-            text="Try clearing filters or broadening your search terms."
-            actionLabel="Clear filters"
-            onAction={resetFilters}
-          />
-        ) : (
-          <div
-            className={layout === "cards" ? "track-card-grid" : "track-list"}
-          >
-            {visibleTracks.map((track) =>
-              layout === "cards" ? (
-                <TrackCard
-                  key={track.id}
-                  track={track}
-                  isPlaying={playingId === track.id}
-                  saved={savedIds.includes(track.id)}
-                  onPlay={() => togglePlay(track.id)}
-                  onSave={() => saveTrack(track.id)}
-                  onOpen={() => openTrack(track)}
-                  onRequest={() => requestLicense(track)}
-                />
-              ) : (
-                <TrackRow
-                  key={track.id}
-                  track={track}
-                  isSelected={selectedTrack.id === track.id}
-                  isPlaying={playingId === track.id}
-                  saved={savedIds.includes(track.id)}
-                  onPlay={() => togglePlay(track.id)}
-                  onSave={() => saveTrack(track.id)}
-                  onOpen={() => openTrack(track)}
-                  onRequest={() => requestLicense(track)}
-                  onSelect={() => setSelectedTrack(track)}
-                />
-              ),
-            )}
-          </div>
-        )}
-      </div>
-      <TrackSidePanel
-        track={selectedTrack}
-        requestLicense={requestLicense}
-        playingId={playingId}
-        onTogglePlay={() => togglePlay(selectedTrack.id)}
-      />
-    </section>
-  );
-}
+/* Legacy Catalog UI removed — Explore Music uses SearchExperience via #catalog. */
 
 function TrackRow({
   track,
@@ -4025,19 +4036,80 @@ function TrackDetail({
               <Heart size={18} weight={saved ? "fill" : "regular"} />{" "}
               {saved ? "Saved to Project" : "Save to Project"}
             </button>
-            <button
-              className="gold-button license-action-button"
-              aria-disabled={rightsBlocked || undefined}
-              onClick={() => requestLicense(track)}
-            >
-              <LockKey size={18} />{" "}
-              {rightsBlocked
-                ? "Rights Review Required"
-                : track.vipOnly
-                  ? "Fast-Track License"
-                  : "Request License"}
-            </button>
+            {rightsBlocked ? (
+              <div className="rights-blocked-actions">
+                <button
+                  className="gold-button license-action-button"
+                  type="button"
+                  disabled
+                  aria-disabled="true"
+                >
+                  <LockKey size={18} /> Rights Review Required
+                </button>
+                <button
+                  className="outline-button"
+                  type="button"
+                  onClick={() => {
+                    window.sessionStorage.setItem(
+                      "beatmondo-contact-intent",
+                      "concierge-clearance",
+                    );
+                    window.location.hash = "contact";
+                  }}
+                >
+                  Talk to concierge
+                </button>
+                <div className="rights-blocked-secondary">
+                  <button
+                    className="text-action"
+                    type="button"
+                    onClick={() => openArtist()}
+                  >
+                    View artist & rights context
+                  </button>
+                  <button
+                    className="text-action"
+                    type="button"
+                    onClick={() => {
+                      try {
+                        const key = "beatmondo-clearance-watchlist";
+                        const prev = JSON.parse(
+                          window.localStorage.getItem(key) || "[]",
+                        );
+                        const next = prev.includes(track.id)
+                          ? prev
+                          : [...prev, track.id];
+                        window.localStorage.setItem(key, JSON.stringify(next));
+                      } catch {
+                        /* ignore */
+                      }
+                      window.dispatchEvent(
+                        new CustomEvent("beatmondo-toast", {
+                          detail:
+                            "Saved interest. Licensing will follow up when this track becomes clearable.",
+                        }),
+                      );
+                    }}
+                  >
+                    Notify when clearable
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                className="gold-button license-action-button"
+                onClick={() => requestLicense(track)}
+              >
+                <LockKey size={18} />{" "}
+                {track.vipOnly ? "Fast-Track License" : "Request License"}
+              </button>
+            )}
           </div>
+          {rightsBlocked && rightsSummary?.wording && (
+            <p className="rights-blocked-note" role="status">
+              {rightsSummary.wording}
+            </p>
+          )}
           <WatermarkNotice trackId={track.id} />
         </div>
         <div
@@ -4048,15 +4120,37 @@ function TrackDetail({
         />
       </div>
 
-      <div className="large-player">
+      <div
+        className="large-player compact-preview-band"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(17,15,12,.92), rgba(17,15,12,.55)), url(${track.image})`,
+        }}
+      >
         <div className="player-top">
-          <strong>Preview Only</strong>
+          <strong>Protected preview</strong>
           <span>
-            Protected master audio · WAV available after approval · Secure
-            delivery
+            {getPlayableDuration(track)} preview · Full track {track.duration} ·
+            WAV after approval
           </span>
         </div>
-        <div className="waveform big" />
+        <div className="compact-preview-actions">
+          <button
+            className="gold-button sound-ring-button"
+            type="button"
+            onClick={() => togglePlay(track.id)}
+          >
+            {playingId === track.id ? (
+              <Pause size={18} weight="fill" />
+            ) : (
+              <Play size={18} weight="fill" />
+            )}{" "}
+            {playingId === track.id ? "Pause" : "Play preview"}
+          </button>
+          <span className="preview-band-note">
+            Master audio stays locked until clearance and delivery terms are
+            complete.
+          </span>
+        </div>
       </div>
 
       <div className="detail-grid-three">
@@ -4681,7 +4775,12 @@ function LicensingAccess({
   setRequestSent,
   setView,
 }) {
-  const [mode, setMode] = useState("license");
+  const initialMode =
+    typeof window !== "undefined" &&
+    window.sessionStorage.getItem("beatmondo-licensing-mode") === "access"
+      ? "access"
+      : "license";
+  const [mode, setMode] = useState(initialMode);
   const [accessSent, setAccessSent] = useState(false);
   const [selectedTier, setSelectedTier] = useState(
     authUser?.membershipTier?.includes("Buyer") ||
@@ -4689,36 +4788,57 @@ function LicensingAccess({
       ? authUser.membershipTier
       : "Discovery Access",
   );
+  const switchMode = (next) => {
+    setMode(next);
+    window.sessionStorage.setItem("beatmondo-licensing-mode", next);
+    window.history.replaceState(
+      null,
+      "",
+      next === "access" ? "#licensing/access" : "#licensing/request",
+    );
+  };
   return (
     <section className="form-page wide-page licensing-page">
       <div className="licensing-header">
         <div className="form-intro">
           <span className="eyebrow">Licensing and access</span>
           <h2>
-            Gated access first. Secure delivery after approval or VIP terms.
+            {mode === "license"
+              ? "License a track with rights-aware clearance."
+              : "Request workspace access for your team."}
           </h2>
           <p>
-            Request a license for a track or apply for Discovery, Professional,
-            or VIP Sync Access. beatmondo keeps access selective,
-            rights-controlled, and audit-ready.
+            {mode === "license"
+              ? "Submit usage, territory, term, and delivery needs for the selected track. Account access tiers are managed separately."
+              : "Apply for Discovery, Professional, or VIP Sync Access. beatmondo keeps entry selective and audit-ready."}
           </p>
         </div>
-        <div className="segmented stacked licensing-mode">
-          <span className="eyebrow">Request type</span>
+        <div
+          className="segmented stacked licensing-mode"
+          role="tablist"
+          aria-label="Licensing or access"
+        >
+          <span className="eyebrow">Choose a path</span>
           <p>
             {mode === "license"
-              ? "Submit usage parameters for a selected track."
-              : "Apply for buyer, contributor, or partner workspace access."}
+              ? "Track licensing path — usage parameters for a selected work."
+              : "Account access path — buyer, contributor, or partner workspace."}
           </p>
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "license"}
             className={mode === "license" ? "active" : ""}
-            onClick={() => setMode("license")}
+            onClick={() => switchMode("license")}
           >
             Request License
           </button>
           <button
+            type="button"
+            role="tab"
+            aria-selected={mode === "access"}
             className={mode === "access" ? "active" : ""}
-            onClick={() => setMode("access")}
+            onClick={() => switchMode("access")}
           >
             Request Access
           </button>
@@ -4739,6 +4859,10 @@ function LicensingAccess({
           </button>
         ))}
       </div>
+      <p className="simulation-banner" role="note">
+        Licensing, quotes, payments, and delivery outcomes in this prototype are
+        simulated for demonstration — not live legal or financial transactions.
+      </p>
       <div className="licensing-workspace">
         <div>
           {mode === "license" ? (
@@ -4785,7 +4909,9 @@ function FieldGroup({ title, note, children }) {
 }
 
 function LicensingSummary({ track, selectedTier, mode }) {
+  const { user } = useAuth();
   const isVip = selectedTier === "VIP Sync Access";
+  const verified = user?.verificationStatus === "approved";
   const steps = isVip
     ? [
         "Confirm usage parameters",
@@ -4811,12 +4937,20 @@ function LicensingSummary({ track, selectedTier, mode }) {
           {track.title}
         </span>
         <span>
+          <strong>Buyer</strong>
+          {user?.name || "Sign in to attach your profile"}
+        </span>
+        <span>
           <strong>Buyer tier</strong>
           {selectedTier}
         </span>
         <span>
           <strong>Verification</strong>
-          {currentBuyer.verified ? "Verified buyer" : "Review needed"}
+          {user
+            ? verified
+              ? "Verified buyer"
+              : "Review needed"
+            : "Sign in required"}
         </span>
         <span>
           <strong>Rights status</strong>
@@ -4930,26 +5064,53 @@ function InquiryForm({
   compact,
   selectedTier = currentBuyer.accessTier,
 }) {
+  const { user } = useAuth();
+  const sessionBuyer = user
+    ? {
+        name: user.name || "",
+        email: user.email || "",
+        company: user.organization || "",
+        role: user.jobTitle || "",
+        tier: user.membershipTier || selectedTier,
+      }
+    : {
+        name: "",
+        email: "",
+        company: "",
+        role: "",
+        tier: selectedTier,
+      };
+  const projectContext = (() => {
+    try {
+      return JSON.parse(
+        window.localStorage.getItem("beatmondo-search-project-context") ||
+          "null",
+      );
+    } catch {
+      return null;
+    }
+  })();
   const [form, setForm] = useState({
-    name: "Alex Davenport",
-    email: "alex@northstar.com",
-    company: "Northstar Pictures",
-    role: "Music Supervisor",
-    buyerLevel: selectedTier,
-    projectName: "Luxury Auto Campaign - Fall 2026",
+    name: sessionBuyer.name,
+    email: sessionBuyer.email,
+    company: sessionBuyer.company,
+    role: sessionBuyer.role,
+    buyerLevel: sessionBuyer.tier,
+    projectName: projectContext?.name || (user ? "Luxury Auto Campaign - Fall 2026" : ""),
     projectType: "Advertising",
-    brand: "Aster Automotive",
-    productionCompany: "Northstar Pictures",
-    description: "High-end cinematic project targeting global brand platforms.",
-    deadline: "2026-09-18",
-    usage: "Advertising",
+    brand: user ? "Aster Automotive" : "",
+    productionCompany: sessionBuyer.company,
+    description: user
+      ? "High-end cinematic project targeting global brand platforms."
+      : "",
+    deadline: "",
+    usage: projectContext?.filters?.usage?.[0] || "Advertising",
     territory: "Global",
     term: "1 Year",
     rights: "Non-Exclusive",
     assets: ["WAV Master", "Stems", "Instrumental"],
-    budget: "$25k-$50k",
-    notes:
-      "Scene involves a night drive in a coastal setting. Music should build towards the reveal.",
+    budget: "",
+    notes: "",
   });
 
   const [attempted, setAttempted] = useState(false);
@@ -5408,20 +5569,31 @@ function InquiryForm({
       onSubmit={handleSubmit}
       noValidate
     >
-      {selectedTier === "VIP Sync Access" && step < 9 && (
+      {form.buyerLevel === "VIP Sync Access" && step < 9 && (
         <p className="vip-form-note">
           VIP Concierge review is active. Your request will be prioritized for
           fast-track clearance.
         </p>
       )}
 
-      <div className="request-stepper-scrollable">
+      <div className="request-progress" aria-hidden="true">
+        <div
+          className="request-progress-bar"
+          style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+        />
+      </div>
+      <div
+        className="request-stepper-scrollable"
+        role="navigation"
+        aria-label="License request steps"
+      >
         <div className="request-stepper-10">
           {stepsList.map((name, index) => (
             <button
               type="button"
               key={name}
               className={`step-btn-10 ${index === step ? "active" : index < step ? "complete" : ""}`}
+              aria-current={index === step ? "step" : undefined}
               onClick={() => setStep(index)}
             >
               <em>{index + 1}</em>
@@ -5471,7 +5643,10 @@ function InquiryForm({
 }
 
 function AccessForm({ onSubmit, selectedTier = currentBuyer.accessTier }) {
-  const [role, setRole] = useState("Music Supervisor");
+  const { user } = useAuth();
+  const [role, setRole] = useState(
+    user?.jobTitle || "Music Supervisor",
+  );
   return (
     <form
       className="inquiry-form access-form"
@@ -5502,15 +5677,28 @@ function AccessForm({ onSubmit, selectedTier = currentBuyer.accessTier }) {
       </div>
       <label>
         Name
-        <input required placeholder="Jane Mitchell" />
+        <input
+          required
+          defaultValue={user?.name || ""}
+          placeholder="Jane Mitchell"
+        />
       </label>
       <label>
         Email
-        <input required placeholder="name@company.com" />
+        <input
+          required
+          type="email"
+          defaultValue={user?.email || ""}
+          placeholder="name@company.com"
+        />
       </label>
       <label>
         Company
-        <input required placeholder="Company or studio" />
+        <input
+          required
+          defaultValue={user?.organization || ""}
+          placeholder="Company or studio"
+        />
       </label>
       <label>
         Role
@@ -6100,10 +6288,10 @@ function BuyerDashboard({
             </div>
           </section>
 
-          <section className="next-steps">
+          <section className="next-steps buyer-priority-queue">
             <div>
-              <span className="eyebrow">Next steps</span>
-              <h2>Buyer workspace priorities</h2>
+              <span className="eyebrow">What needs me</span>
+              <h2>Action queue</h2>
             </div>
             <div className="next-step-list">
               {nextSteps.map(([title, project, action, handler]) => (
@@ -6341,15 +6529,10 @@ function ProjectDetail({
           <div className="project-meta-strip">
             <span>VIP Sync Access</span>
             <span>Global brand campaign</span>
-            <span>$25k-$50k</span>
             <span>Deadline Sep 18</span>
-            <span>Pre-approved terms</span>
             <span>3 WAV masters ready</span>
           </div>
-          <div className="button-row">
-            <button className="outline-button" onClick={searchForProject}>
-              <MagnifyingGlass size={18} /> Search for this project
-            </button>
+          <div className="button-row project-hero-actions">
             <button
               className="gold-button vip-access-button"
               onClick={requestLicense}
@@ -6359,21 +6542,28 @@ function ProjectDetail({
               </span>
               <span className="vip-acoustic-ripple" aria-hidden="true" />
             </button>
-            <button
-              className="outline-button"
-              onClick={() => showToast("Multi-track quote request opened.")}
-            >
-              <BookmarkSimple size={18} /> Request Multiple Tracks
+            <button className="outline-button" onClick={searchForProject}>
+              <MagnifyingGlass size={18} /> Search for this project
             </button>
-            <button
-              className="outline-button vip-wave-button"
-              onClick={() => showToast("VIP fast-track review requested.")}
-            >
-              <span className="motion-button-label">
-                <Sparkle size={18} /> Fast-Track Review
-              </span>
-              <span className="vip-acoustic-ripple" aria-hidden="true" />
-            </button>
+            <details className="project-more-actions">
+              <summary className="outline-button">More actions</summary>
+              <div className="project-more-menu" role="menu">
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => showToast("Multi-track quote request opened.")}
+                >
+                  <BookmarkSimple size={16} /> Request Multiple Tracks
+                </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => showToast("VIP fast-track review requested.")}
+                >
+                  <Sparkle size={16} /> Fast-Track Review
+                </button>
+              </div>
+            </details>
           </div>
         </div>
       </div>
@@ -6497,23 +6687,90 @@ function AdminDashboard({
   playingId,
   setView,
 }) {
-  const [adminTab, setAdminTab] = useState("Overview");
-  const can = hasPermission || (() => true);
+  const ADMIN_HUB_TABS = [
+    "Overview",
+    "Tracks",
+    "Artists",
+    "Inquiries",
+    "Buyers",
+    "Media",
+    "Settings",
+  ];
+  const [adminTab, setAdminTab] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(ADMIN_TAB_STORAGE_KEY) || "Overview";
+      return ADMIN_HUB_TABS.includes(saved) ? saved : "Overview";
+    } catch {
+      return "Overview";
+    }
+  });
+  const can = (permission) => {
+    if (typeof hasPermission === "function") return hasPermission(permission);
+    return true;
+  };
   const rightsAnalytics = rightsService.getAnalytics();
-  const tabs = [
+  const attention = {
+    rights: 14,
+    quotes: 9,
+    vip: 7,
+    delivery: 5,
+  };
+  attention.total =
+    attention.rights + attention.quotes + attention.vip + attention.delivery;
+
+  /** In-hub tabs stay here; external tabs open full modules (sidebar-aligned). */
+  const hubTabs = [
     ["Overview", true],
-    ["Tracks", can("catalog.view")],
-    ["Artists", can("rights.view") || can("catalog.manage")],
-    ["Inquiries", can("quotes.view")],
-    ["Buyers", can("buyers.view")],
-    ["Secure Delivery", can("delivery.manage")],
-    ["Media", can("content.manage")],
-    ["Analytics", can("analytics.view")],
-    ["Audit Logs", can("audit.view")],
-    ["Settings", can("settings.manage")],
+    ["Tracks", can("catalog.view") || can("*")],
+    ["Artists", can("rights.view") || can("catalog.manage") || can("*")],
+    ["Inquiries", can("quotes.view") || can("*")],
+    ["Buyers", can("buyers.view") || can("*")],
+    ["Media", can("content.manage") || can("*")],
+    ["Settings", can("settings.manage") || can("users.manage") || can("*")],
   ]
     .filter(([, allowed]) => allowed)
     .map(([tab]) => tab);
+
+  useEffect(() => {
+    if (hubTabs.length && !hubTabs.includes(adminTab)) {
+      setAdminTab(hubTabs[0] || "Overview");
+    }
+  }, [hubTabs.join("|"), adminTab]);
+
+  const moduleShortcuts = [
+    (can("delivery.manage") || can("*")) && {
+      label: "Secure Delivery",
+      view: "admin-deliveries",
+      hint: "Full delivery workspace",
+    },
+    (can("analytics.view") || can("*")) && {
+      label: "Analytics",
+      view: "admin/analytics",
+      hint: "Full analytics & reports",
+    },
+    (can("audit.view") || can("*")) && {
+      label: "Audit Logs",
+      view: "admin-audit",
+      hint: "Evidence ledger",
+    },
+    (can("rights.view") || can("*")) && {
+      label: "Rights Database",
+      view: "admin-rights",
+      hint: "Clearance queue",
+    },
+  ].filter(Boolean);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(ADMIN_TAB_STORAGE_KEY, adminTab);
+    } catch {
+      /* ignore */
+    }
+    window.dispatchEvent(
+      new CustomEvent(ADMIN_TAB_EVENT, { detail: { tab: adminTab } }),
+    );
+  }, [adminTab]);
+
   const metricGroups = [
     [
       "Catalog Operations",
@@ -6564,238 +6821,355 @@ function AdminDashboard({
     ],
   ];
   const pipelineItems = [
-    ["New", 37, "neutral"],
-    ["In Review", 21, "neutral"],
-    ["Rights Check Needed", 14, "attention"],
-    ["Quote Needed", 9, "attention"],
-    ["Quote Sent", 11, "neutral"],
-    ["VIP Priority", 7, "priority"],
-    ["Delivery Ready", 5, "ready"],
+    ["New", 37, "neutral", "Inquiries"],
+    ["In Review", 21, "neutral", "Inquiries"],
+    ["Rights Check Needed", 14, "attention", "Tracks"],
+    ["Quote Needed", 9, "attention", "Inquiries"],
+    ["Quote Sent", 11, "neutral", "Inquiries"],
+    ["VIP Priority", 7, "priority", "Buyers"],
+    ["Delivery Ready", 5, "ready", null],
   ];
   const activityItems = [
-    ["License delivered to VisionTech", "Delivery", "2m ago"],
-    ["New inquiry from National Geographic", "New", "10m ago"],
-    ["Quote approved for Peak Performance", "Quote", "18m ago"],
-    ["Track uploaded: Midnight Conversations", "Asset", "26m ago"],
-    ["Permissions updated", "Audit", "34m ago"],
-  ];
-  const priorityItems = [
+    ["License delivered to VisionTech", "Delivery", "2m ago", "admin-deliveries"],
     [
-      "Rights checks",
-      "14 blocked",
-      "Review ownership proof, PRO data, and Preston approvals before tracks become licensing eligible.",
-      "Tracks",
-    ],
-    [
-      "Quotes needed",
-      "9 open",
-      "Move high-intent buyer requests from review into quote-ready status.",
+      "New inquiry from National Geographic",
+      "New",
+      "10m ago",
       "Inquiries",
     ],
+    ["Quote approved for Peak Performance", "Quote", "18m ago", "admin-quotes"],
     [
-      "VIP priority",
-      "7 active",
-      "Fast-track concierge review, pre-approved terms, and secure delivery for top-tier buyers.",
-      "Buyers",
+      "Track uploaded: Midnight Conversations",
+      "Asset",
+      "26m ago",
+      "admin-ingestion",
     ],
-    [
-      "Delivery ready",
-      "5 waiting",
-      "Confirm payment or VIP terms before protected master audio is released.",
-      "Secure Delivery",
-    ],
+    ["Permissions updated", "Audit", "34m ago", "admin-audit"],
+  ];
+  const priorityItems = [
+    {
+      title: "Rights checks",
+      count: `${attention.rights} blocked`,
+      note: "Ownership proof, PRO data, and Preston approvals before licensing eligibility.",
+      onClick: () => setAdminTab("Tracks"),
+    },
+    {
+      title: "Quotes needed",
+      count: `${attention.quotes} open`,
+      note: "Move high-intent buyer requests into quote-ready status.",
+      onClick: () => setAdminTab("Inquiries"),
+    },
+    {
+      title: "VIP priority",
+      count: `${attention.vip} active`,
+      note: "Concierge review, pre-approved terms, and secure delivery for top-tier buyers.",
+      onClick: () => setAdminTab("Buyers"),
+    },
+    {
+      title: "Delivery ready",
+      count: `${attention.delivery} waiting`,
+      note: "Confirm payment or VIP terms before protected master audio is released.",
+      onClick: () => setView("admin-deliveries"),
+    },
   ];
 
+  const panelMeta = {
+    Overview: "Summary hub · open full modules from shortcuts",
+    Tracks: "Catalog track operations",
+    Artists: "Contributor stewardship queue",
+    Inquiries: "Licensing inquiry pipeline",
+    Buyers: "Buyer accounts & tiers",
+    Media: "Editorial media controls",
+    Settings: "Workspace & notification settings",
+  };
+
   const renderAdminPanel = () => {
-    if (adminTab === "Artists") return <ArtistAdmin showToast={showToast} />;
-    if (adminTab === "Inquiries") return <InquiryAdmin />;
-    if (adminTab === "Media") return <MediaAdmin showToast={showToast} />;
-    if (adminTab === "Audit Logs") return <AuditAdmin />;
-    if (adminTab === "Secure Delivery")
-      return <SecureDeliveryAdmin showToast={showToast} />;
-    if (adminTab === "Buyers") return <BuyerAdmin showToast={showToast} />;
-    if (adminTab === "Overview") return <OverviewAdmin showToast={showToast} />;
-    if (adminTab === "Analytics") return <AnalyticsAdmin />;
-    if (adminTab === "Settings") return <SettingsAdmin showToast={showToast} />;
+    if (adminTab === "Artists")
+      return <ArtistAdmin showToast={showToast} setView={setView} />;
+    if (adminTab === "Inquiries")
+      return <InquiryAdmin setView={setView} showToast={showToast} />;
+    if (adminTab === "Media")
+      return <MediaAdmin showToast={showToast} setView={setView} />;
+    if (adminTab === "Buyers")
+      return <BuyerAdmin showToast={showToast} setView={setView} />;
+    if (adminTab === "Overview")
+      return (
+        <OverviewAdmin
+          showToast={showToast}
+          setView={setView}
+          setAdminTab={setAdminTab}
+        />
+      );
+    if (adminTab === "Settings") return <SettingsAdmin showToast={showToast} setView={setView} />;
     return (
       <TrackAdmin
         showToast={showToast}
         togglePlay={togglePlay}
         playingId={playingId}
+        setView={setView}
       />
     );
   };
 
+  const jumpKpi = (key) => {
+    if (key === "rights") setAdminTab("Tracks");
+    else if (key === "quotes") setAdminTab("Inquiries");
+    else if (key === "vip") setAdminTab("Buyers");
+    else if (key === "delivery") setView("admin-deliveries");
+  };
+
   return (
-    <section className="admin-page">
-      <div className="admin-auth-summary">
-        <div className="profile-avatar-large">{authUser?.avatar || "BM"}</div>
-        <div>
-          <span className="eyebrow">Authenticated administrator</span>
-          <strong>{authUser?.name || "beatmondo team member"}</strong>
-          <small>
-            {authUser?.roleLabel || "Internal role"} ·{" "}
-            {authUser?.mfaEnabled ? "MFA Enabled" : "MFA Optional"}
-          </small>
-        </div>
-        <span className="security-state">
-          <ShieldCheck size={16} /> Permission-scoped workspace
-        </span>
-      </div>
-      {adminTab === "Overview" && (
-        <div className="admin-overview-summary">
-          <div>
-            <span className="eyebrow">Today in the workspace</span>
-            <strong>
-              23 items need admin attention before buyers receive quotes or
-              protected master audio.
-            </strong>
-          </div>
-          <div>
-            <span>Rights checks</span>
-            <strong>14</strong>
-          </div>
-          <div>
-            <span>Quotes needed</span>
-            <strong>9</strong>
-          </div>
-          <div>
-            <span>VIP priority</span>
-            <strong>7</strong>
-          </div>
-        </div>
-      )}
-      <div className="admin-priority-strip" aria-label="Priority admin queues">
-        {priorityItems.map(([title, count, note, target]) => (
-          <button key={title} type="button" onClick={() => setAdminTab(target)}>
-            <span>{title}</span>
-            <strong>{count}</strong>
-            <small>{note}</small>
-          </button>
-        ))}
-      </div>
-      <div className="admin-tabs">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            className={adminTab === tab ? "active" : ""}
-            onClick={() => setAdminTab(tab)}
-          >
-            {tab}
-          </button>
-        ))}
-      </div>
-      <div className="admin-metric-groups">
-        {metricGroups.map(([group, metrics]) => (
-          <section key={group}>
-            <h3>{group}</h3>
-            <div>
-              {metrics.map(([Icon, label, value, note]) => (
-                <Metric
-                  key={label}
-                  icon={Icon}
-                  label={label}
-                  value={value}
-                  note={note}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
-      </div>
-      {can("rights.view") && (
-        <button
-          className="outline-button"
-          onClick={() => setView("admin-rights")}
-        >
-          Open Rights Database
+    <section className="admin-page admin-page-compact">
+      <nav className="admin-breadcrumb" aria-label="Admin location">
+        <button type="button" onClick={() => setAdminTab("Overview")}>
+          Admin
         </button>
+        <span aria-hidden="true">›</span>
+        <strong>{adminTab}</strong>
+      </nav>
+
+      <div className="admin-command-bar admin-command-bar-slim">
+        <p className="admin-signed-in">
+          <span className="eyebrow">Operations hub</span>
+          <strong>
+            {authUser?.name || "beatmondo team"} ·{" "}
+            {authUser?.roleLabel || "Internal"}
+          </strong>
+          <small>
+            {authUser?.mfaEnabled ? "MFA on" : "MFA optional"} · demo
+            permissions are client-side only
+          </small>
+        </p>
+        <div
+          className="admin-overview-summary admin-kpi-strip"
+          aria-label="Org-wide attention summary"
+        >
+          <button
+            type="button"
+            className="admin-kpi-chip"
+            onClick={() => setAdminTab("Overview")}
+          >
+            <span>Org-wide total</span>
+            <strong>{attention.total}</strong>
+          </button>
+          <button
+            type="button"
+            className="admin-kpi-chip"
+            onClick={() => jumpKpi("rights")}
+          >
+            <span>Rights queue</span>
+            <strong>{attention.rights}</strong>
+          </button>
+          <button
+            type="button"
+            className="admin-kpi-chip"
+            onClick={() => jumpKpi("quotes")}
+          >
+            <span>Quotes open</span>
+            <strong>{attention.quotes}</strong>
+          </button>
+          <button
+            type="button"
+            className="admin-kpi-chip"
+            onClick={() => jumpKpi("vip")}
+          >
+            <span>VIP active</span>
+            <strong>{attention.vip}</strong>
+          </button>
+          <button
+            type="button"
+            className="admin-kpi-chip"
+            onClick={() => jumpKpi("delivery")}
+          >
+            <span>Delivery wait</span>
+            <strong>{attention.delivery}</strong>
+          </button>
+        </div>
+      </div>
+
+      {adminTab === "Overview" && (
+        <div
+          className="admin-priority-strip compact"
+          aria-label="Priority admin queues"
+        >
+          {priorityItems.map((item) => (
+            <button key={item.title} type="button" onClick={item.onClick}>
+              <span>{item.title}</span>
+              <strong>{item.count}</strong>
+              <small>{item.note}</small>
+            </button>
+          ))}
+        </div>
       )}
-      <div
-        className={`admin-grid ${adminTab === "Tracks" ? "tracks-admin-grid" : ""}`}
-      >
-        <section className="pipeline-panel">
-          <h3>Licensing inquiry pipeline</h3>
-          <div className="pipeline">
-            {pipelineItems.map(([status, count, tone]) => (
+
+      <div className="admin-tabs-row">
+        <div className="admin-tabs" role="tablist" aria-label="Admin hub sections">
+          {hubTabs.map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={adminTab === tab}
+              className={adminTab === tab ? "active" : ""}
+              onClick={() => setAdminTab(tab)}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+        {moduleShortcuts.length > 0 && (
+          <div className="admin-module-shortcuts" aria-label="Full operation modules">
+            <span className="admin-module-shortcuts-label">Full modules</span>
+            {moduleShortcuts.map((item) => (
               <button
-                key={status}
-                className={`pipeline-${tone}`}
-                onClick={() => showToast(`Filtered pipeline by ${status}.`)}
+                key={item.view}
+                type="button"
+                className="admin-module-chip"
+                title={item.hint}
+                onClick={() => setView(item.view)}
               >
-                <span>{status}</span>
-                <strong>{count}</strong>
+                {item.label}
               </button>
             ))}
           </div>
-        </section>
+        )}
+      </div>
+
+      {adminTab === "Overview" && (
+        <>
+          <div className="admin-metric-groups admin-metric-groups-overview">
+            {metricGroups.map(([group, metrics]) => (
+              <section key={group}>
+                <h3>{group}</h3>
+                <div>
+                  {metrics.map(([Icon, label, value, note]) => (
+                    <Metric
+                      key={label}
+                      icon={Icon}
+                      label={label}
+                      value={value}
+                      note={note}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </>
+      )}
+      <div
+        className={`admin-grid ${adminTab === "Tracks" ? "tracks-admin-grid" : ""} ${adminTab !== "Overview" ? "admin-grid-workspace" : ""}`}
+      >
+        {adminTab === "Overview" && (
+          <section className="pipeline-panel">
+            <h3>Licensing inquiry pipeline</h3>
+            <div className="pipeline">
+              {pipelineItems.map(([status, count, tone, target]) => (
+                <button
+                  key={status}
+                  type="button"
+                  className={`pipeline-${tone}`}
+                  onClick={() => {
+                    if (target === null) setView("admin-deliveries");
+                    else if (target) setAdminTab(target);
+                    else showToast(`Filtered pipeline by ${status}.`);
+                  }}
+                >
+                  <span>{status}</span>
+                  <strong>{count}</strong>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         <Panel
           title={
             adminTab === "Overview"
               ? "Music operations"
               : `${adminTab} management`
           }
-          action="Operational view"
+          action={panelMeta[adminTab] || "Hub section"}
         >
           {renderAdminPanel()}
         </Panel>
-        <Panel title="Activity feed" action="Audit ready">
-          <div className="activity-list activity-list-actionable">
-            {activityItems.map(([text, tag, time]) => (
-              <p key={text}>
-                <CheckCircle size={18} />{" "}
-                <span className="activity-copy">
-                  {text}
-                  <small>{tag}</small>
-                </span>{" "}
-                <span>{time}</span>
-              </p>
-            ))}
-          </div>
-          <p className="admin-audit-note">
-            Audit trail synced across licensing, delivery, and permissions
-            events.
-          </p>
-        </Panel>
+        {adminTab === "Overview" && (
+          <Panel title="Activity feed" action="Jump to related module">
+            <div className="activity-list activity-list-actionable">
+              {activityItems.map(([text, tag, time, target]) => (
+                <button
+                  key={text}
+                  type="button"
+                  className="activity-row-button"
+                  onClick={() => {
+                    if (hubTabs.includes(target)) setAdminTab(target);
+                    else if (target) setView(target);
+                  }}
+                >
+                  <CheckCircle size={18} />{" "}
+                  <span className="activity-copy">
+                    {text}
+                    <small>{tag}</small>
+                  </span>{" "}
+                  <span>{time}</span>
+                </button>
+              ))}
+            </div>
+            <p className="admin-audit-note">
+              Audit trail is simulated in-browser. Use{" "}
+              <button
+                type="button"
+                className="text-action"
+                onClick={() => setView("admin-audit")}
+              >
+                Audit Logs
+              </button>{" "}
+              for the full evidence ledger.
+            </p>
+          </Panel>
+        )}
       </div>
     </section>
   );
 }
 
-function OverviewAdmin({ showToast }) {
+function OverviewAdmin({ showToast, setView, setAdminTab }) {
   const cards = [
     [
       Sparkle,
       "Catalog health",
       "94% complete",
       "Published tracks with rights notes, preview audio, and delivery readiness.",
-      "Open report",
+      "Open tracks",
+      () => setAdminTab("Tracks"),
     ],
     [
       ShieldCheck,
       "Licensing queue",
       "37 new",
       "New inquiries, quote requests, and approvals awaiting payment confirmation.",
-      "Review queue",
+      "Review inquiries",
+      () => setAdminTab("Inquiries"),
     ],
     [
       Eye,
       "Private catalog intelligence",
       "42% lift",
       "VIP buyers are saving cinematic instrumentals more often this week.",
-      "Open insights",
+      "Open analytics",
+      () => setView("admin/analytics"),
     ],
     [
       LockKey,
       "Rights verification backlog",
       "19 blocked",
       "Ownership proof, PRO registry confirmation, contract review, or Preston approval needed.",
-      "Review rights",
+      "Open rights database",
+      () => setView("admin-rights"),
     ],
   ];
   return (
     <div className="cards-admin overview-action-grid">
-      {cards.map(([Icon, title, stat, copy, action]) => (
+      {cards.map(([Icon, title, stat, copy, action, onAction]) => (
         <article key={title}>
           <div className="overview-card-head">
             <Icon size={24} />
@@ -6803,7 +7177,13 @@ function OverviewAdmin({ showToast }) {
           </div>
           <h3>{title}</h3>
           <p>{copy}</p>
-          <button onClick={() => showToast(`${title} opened.`)}>
+          <button
+            type="button"
+            onClick={() => {
+              onAction?.();
+              showToast(`${title} opened.`);
+            }}
+          >
             {action}
           </button>
         </article>
@@ -6812,162 +7192,202 @@ function OverviewAdmin({ showToast }) {
   );
 }
 
-function AnalyticsAdmin() {
-  const analyticsCards = [
-    [
-      Eye,
-      "Most Requested Tracks",
-      "Golden Hours (14 requests) · Chasing the Light (11) · Paper Planes (9) · Better Than Before (8)",
-    ],
-    [
-      Heart,
-      "Most Saved Tracks",
-      "Golden Hours (42 saves) · Midnight Transit (38) · Chasing the Light (31) · All That Remains (27)",
-    ],
-    [
-      ShieldCheck,
-      "Highest Conversion Tracks",
-      "Paper Planes (47% save→request) · Better Than Before (41%) · Golden Hours (33%)",
-    ],
-    [
-      UsersThree,
-      "Buyer Activity",
-      "18 active buyers this week · 7 VIP buyers · 4 new Professional accounts · 3 upgrade candidates",
-    ],
-    [
-      FilmSlate,
-      "Top Use Cases",
-      "Advertising (31%) · Film/TV (24%) · OTT/Streaming (18%) · Branded Content (12%) · Documentary (9%)",
-    ],
-    [
-      MusicNote,
-      "Top Genres",
-      "Cinematic (28%) · Indie Rock (22%) · Soul (16%) · Ambient (14%) · Acoustic (12%) · Pop (8%)",
-    ],
-    [
-      Sparkle,
-      "Top Moods",
-      "Reflective (24%) · Driven (19%) · Emotional (17%) · Inspiring (15%) · Moody (14%) · Feel Good (11%)",
-    ],
-    [
-      UserCircle,
-      "VIP Activity",
-      "VIP buyers engaging 42% more with cinematic instrumentals · 3 exclusive requests pending · 2 fast-track deliveries in progress",
-    ],
-    [
-      LockKey,
-      "Rights Bottlenecks",
-      "4 high-intent requests delayed by rights verification · 2 tracks awaiting ownership documentation · 1 legal review pending",
-    ],
-    [
-      FileAudio,
-      "Asset Demand",
-      "WAV masters requested on 89% of approved licenses · Instrumentals requested on 64% · Custom edits requested on 23%",
-    ],
-    [
-      CloudArrowUp,
-      "Stem Demand",
-      "Stem requests increased 31% this quarter · Drum stems most requested (45%) · Guitar stems (28%) · Vocal isolations (18%)",
-    ],
-    [
-      CalendarBlank,
-      "Licensing Trends",
-      "Average quote value up 18% this quarter · VIP deal size 2.4x standard · Perpetual licensing requests growing 12% month-over-month",
-    ],
-  ];
-  const aiInsights = [
-    "Instrumental versions show increased demand in advertising projects.",
-    "VIP buyers are engaging most with cinematic and emotionally driven tracks.",
-    "Three catalog assets are showing accelerated licensing activity.",
-    "Rights verification is delaying four high-intent requests.",
-  ];
-  return (
-    <div className="analytics-admin-expanded">
-      <div className="cards-admin analytics-card-grid">
-        {analyticsCards.map(([Icon, title, text]) => (
-          <article key={title}>
-            <Icon size={24} />
-            <h3>{title}</h3>
-            <p>{text}</p>
-          </article>
-        ))}
-      </div>
-      <div className="ai-insights-panel">
-        <div className="ai-insights-header">
-          <Sparkle size={22} />
-          <div>
-            <h3>AI Catalog Insights</h3>
-            <span className="eyebrow">
-              Prototype Insight · Demonstration Data
-            </span>
-          </div>
-        </div>
-        <div className="ai-insights-grid">
-          {aiInsights.map((insight) => (
-            <article key={insight} className="ai-insight-card">
-              <span className="prototype-badge">Prototype Insight</span>
-              <p>{insight}</p>
-            </article>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
 
-function SettingsAdmin({ showToast }) {
+function SettingsAdmin({ showToast, setView }) {
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("Priority");
+  const priorityRank = { High: 0, Medium: 1, Low: 2 };
+  const filtered = adminSettingsItems
+    .filter((item) => {
+      const hay =
+        `${item.title} ${item.summary} ${item.status} ${item.chips.join(" ")}`.toLowerCase();
+      return !query || hay.includes(query.toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sort === "Name") return a.title.localeCompare(b.title);
+      return (
+        (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9) ||
+        a.title.localeCompare(b.title)
+      );
+    });
+
+  const runReset = () => {
+    if (
+      !window.confirm(
+        "Reset all beatmondo demo data? This restores seeded databases and reloads the app.",
+      )
+    ) {
+      return;
+    }
+    if (window.resetAllBeatmondoDemoData) {
+      window.resetAllBeatmondoDemoData();
+      showToast("All beatmondo demo data has been successfully reset.");
+      window.location.reload();
+    } else {
+      showToast("Reset function is not registered.");
+    }
+  };
+
+  const go = (target, label) => {
+    if (!target) return;
+    if (target.action === "reset") {
+      runReset();
+      return;
+    }
+    showToast(`${label || target.label} opened.`);
+    setView?.(target.view);
+  };
+
   return (
-    <div className="cards-admin">
-      <article>
-        <GearSix size={28} />
-        <h3>Workspace settings</h3>
-        <p>
-          Role permissions, delivery rules, quote templates, and notification
-          defaults.
-        </p>
-        <button onClick={() => showToast("Workspace settings panel opened.")}>
-          Edit settings
-        </button>
-      </article>
-      <article>
-        <LockKey size={28} />
-        <h3>Security controls</h3>
-        <p>
-          Master delivery encryption, download limits, and audit retention
-          policies.
-        </p>
-        <button onClick={() => showToast("Security controls opened.")}>
-          Manage security
-        </button>
-      </article>
-      <article className="destructive-panel">
-        <Repeat size={28} style={{ color: "var(--beatmondo-red)" }} />
-        <h3>Reset all demo data</h3>
-        <p>
-          Restores all mock databases (quotes, contracts, payments, licences, files, permissions, etc.) to default seeded state.
-        </p>
+    <div className="settings-admin-workspace">
+      <div className="inquiry-list-summary" aria-label="Settings hub summary">
+        <span>
+          <strong>{adminSettingsItems.length}</strong> settings areas
+        </span>
+        <span>Access · Account · Security · Email · Privacy · Demo reset</span>
+        <small>
+          Each card opens a full module or account page. Org-wide KPI chips
+          above remain commercial pipeline metrics.
+        </small>
+      </div>
+      <div className="artist-admin-toolbar">
+        <label>
+          Search settings
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Permissions, privacy, email, reset…"
+          />
+        </label>
+        <label>
+          Sort
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+          >
+            <option>Priority</option>
+            <option>Name</option>
+          </select>
+        </label>
         <button
-          className="danger-button"
-          onClick={() => {
-            if (window.confirm("Are you sure you want to reset all beatmondo demo data? This will restore all databases to their default seeded states.")) {
-              if (window.resetAllBeatmondoDemoData) {
-                window.resetAllBeatmondoDemoData();
-                showToast("All beatmondo demo data has been successfully reset.");
-                window.location.reload();
-              } else {
-                showToast("Reset function is not registered.");
-              }
-            }
-          }}
+          type="button"
+          className="outline-button"
+          onClick={() => setView?.("admin/access")}
         >
-          Reset demo data
+          Permissions
         </button>
-      </article>
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("profile")}
+        >
+          Profile
+        </button>
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("admin/email")}
+        >
+          Email admin
+        </button>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="admin-empty-state">
+          <GearSix size={28} />
+          <h4>No settings match</h4>
+          <p>Clear search to see access, security, privacy, and demo tools.</p>
+          <button type="button" onClick={() => setQuery("")}>
+            Reset search
+          </button>
+        </div>
+      ) : (
+        <div className="cards-admin settings-admin-grid">
+          {filtered.map((item) => {
+            const Icon = item.Icon;
+            return (
+              <article
+                key={item.id}
+                className={`settings-admin-card ${item.destructive ? "destructive-panel" : ""}`}
+              >
+                <div className="buyer-admin-card-head">
+                  <Icon
+                    size={26}
+                    style={
+                      item.destructive
+                        ? { color: "var(--beatmondo-red)" }
+                        : undefined
+                    }
+                  />
+                  <span
+                    className={`artist-priority-pill priority-${String(item.priority).toLowerCase()}`}
+                  >
+                    {item.priority} priority
+                  </span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.summary}</p>
+                <div className="request-meta-chips">
+                  <span
+                    className={
+                      item.destructive ? "meta-attention" : "meta-neutral"
+                    }
+                  >
+                    {item.status}
+                  </span>
+                  {item.chips.map((chip) => (
+                    <span key={chip}>{chip}</span>
+                  ))}
+                </div>
+                <div className="artist-admin-actions">
+                  <button
+                    type="button"
+                    className={
+                      item.destructive ? "danger-button" : "gold-button"
+                    }
+                    onClick={() => go(item.primary, item.primary.label)}
+                  >
+                    {item.primary.label}
+                  </button>
+                  {item.secondary && (
+                    <button
+                      type="button"
+                      className="outline-button"
+                      onClick={() => go(item.secondary, item.secondary.label)}
+                    >
+                      {item.secondary.label}
+                    </button>
+                  )}
+                  {item.tertiary && (
+                    <button
+                      type="button"
+                      className="plain-button"
+                      onClick={() => go(item.tertiary, item.tertiary.label)}
+                    >
+                      {item.tertiary.label}
+                    </button>
+                  )}
+                  {item.quaternary && (
+                    <button
+                      type="button"
+                      className="plain-button"
+                      onClick={() =>
+                        go(item.quaternary, item.quaternary.label)
+                      }
+                    >
+                      {item.quaternary.label}
+                    </button>
+                  )}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function TrackAdmin({ showToast, togglePlay, playingId }) {
+function TrackAdmin({ showToast, togglePlay, playingId, setView }) {
   const filters = [
     "All",
     "Rights Review Needed",
@@ -6977,33 +7397,96 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
     "Preston Pending",
     "Licensing Eligible",
   ];
+  const [query, setQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
   const reviewQueue = tracks.filter(
     (track) =>
       !track.rightsData.rightsVerified ||
       !track.rightsData.licensingEligible ||
       track.rightsData.prestonApproval !== "Approved",
   );
+  const matchesFilter = (track) => {
+    const r = track.rightsData || {};
+    const a = track.assets || {};
+    switch (activeFilter) {
+      case "Rights Review Needed":
+        return !r.rightsVerified || r.prestonApproval !== "Approved";
+      case "Verified":
+        return Boolean(r.rightsVerified);
+      case "Stems Ready":
+        return Boolean(a.stems);
+      case "WAV Pending":
+        return !a.wavMaster;
+      case "Preston Pending":
+        return r.prestonApproval !== "Approved";
+      case "Licensing Eligible":
+        return Boolean(r.licensingEligible);
+      default:
+        return true;
+    }
+  };
+  const filteredTracks = tracks.filter((track) => {
+    const hay =
+      `${track.title} ${track.artist} ${track.id} US-BMO-25-000${track.id}`.toLowerCase();
+    const matchesQuery = !query || hay.includes(query.toLowerCase());
+    return matchesQuery && matchesFilter(track);
+  });
   return (
     <div className="track-ops">
       <div className="track-admin-toolbar">
-        <input placeholder="Search tracks, artists, ISRC..." />
-        <button onClick={() => showToast("Track upload workflow opened.")}>
+        <input
+          aria-label="Search tracks"
+          placeholder="Search tracks, artists, ISRC..."
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            showToast("Opening internal track ingestion.");
+            setView?.("admin-ingestion");
+          }}
+        >
           <CloudArrowUp size={18} /> Add Track
         </button>
       </div>
-      <div className="track-filter-row">
+      <div className="track-filter-row" role="toolbar" aria-label="Track filters">
         {filters.map((filter) => (
           <button
             key={filter}
-            onClick={() => showToast(`Filtered tracks by ${filter}.`)}
+            type="button"
+            className={activeFilter === filter ? "active" : ""}
+            aria-pressed={activeFilter === filter}
+            onClick={() => setActiveFilter(filter)}
           >
             {filter}
           </button>
         ))}
       </div>
+      <p className="admin-inline-hint">
+        Showing {filteredTracks.length} of {tracks.length} catalog tracks
+        {activeFilter !== "All" ? ` · filter: ${activeFilter}` : ""}
+        {query ? ` · search: “${query}”` : ""}.
+      </p>
       <div className="track-ops-grid">
         <div className="track-operation-list">
-          {tracks.slice(0, 5).map((track) => (
+          {filteredTracks.length === 0 ? (
+            <div className="admin-empty-state">
+              <MusicNote size={28} />
+              <h4>No tracks match</h4>
+              <p>Clear search or choose another filter.</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setActiveFilter("All");
+                }}
+              >
+                Reset filters
+              </button>
+            </div>
+          ) : (
+            filteredTracks.map((track) => (
             <article
               className={`track-operation-row ${track.rightsData.licensingEligible ? "eligible" : "blocked"}`}
               key={track.id}
@@ -7094,30 +7577,38 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
               </div>
               <div className="track-op-actions">
                 <button
-                  onClick={() =>
-                    showToast(`Rights review opened for ${track.title}.`)
-                  }
+                  type="button"
+                  onClick={() => {
+                    showToast(`Rights review opened for ${track.title}.`);
+                    setView?.("admin-rights");
+                  }}
                 >
-                  Review
+                  Review rights
                 </button>
                 <button
-                  onClick={() =>
-                    showToast(`Asset manager opened for ${track.title}.`)
-                  }
+                  type="button"
+                  onClick={() => {
+                    showToast(`Asset manager opened for ${track.title}.`);
+                    setView?.("admin-storage");
+                  }}
                 >
                   Assets
                 </button>
-                <button onClick={() => togglePlay(track.id)}>
+                <button type="button" onClick={() => togglePlay(track.id)}>
                   {playingId === track.id ? "Pause" : "Preview"}
                 </button>
               </div>
             </article>
-          ))}
+            ))
+          )}
         </div>
         <aside className="rights-review-queue">
           <span className="eyebrow">Rights review queue</span>
           <h3>Blocked tracks need action</h3>
-          {reviewQueue.map((track) => (
+          {reviewQueue.length === 0 ? (
+            <p className="admin-inline-hint">No blocked tracks in the current catalog sample.</p>
+          ) : (
+            reviewQueue.map((track) => (
             <article key={track.id}>
               <strong>{track.title}</strong>
               <span>
@@ -7125,18 +7616,27 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
                 {track.rightsData.prestonApproval}
               </span>
               <button
-                onClick={() =>
-                  showToast(`Priority review opened for ${track.title}.`)
-                }
+                type="button"
+                onClick={() => {
+                  showToast(`Priority review opened for ${track.title}.`);
+                  setView?.("admin-rights");
+                }}
               >
-                Open review
+                Open rights review
               </button>
             </article>
-          ))}
+            ))
+          )}
         </aside>
       </div>
       <div className="file-separation upload-control-grid">
-        <button onClick={() => showToast("Preview audio upload opened.")}>
+        <button
+          type="button"
+          onClick={() => {
+            showToast("Opening preview asset workflow via storage.");
+            setView?.("admin-storage");
+          }}
+        >
           <FileAudio size={24} />
           <strong>Preview Audio</strong>
           <p>
@@ -7144,7 +7644,11 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
           </p>
         </button>
         <button
-          onClick={() => showToast("Protected WAV master upload opened.")}
+          type="button"
+          onClick={() => {
+            showToast("Opening protected master workflow via storage.");
+            setView?.("admin-storage");
+          }}
         >
           <LockKey size={24} />
           <strong>WAV Master</strong>
@@ -7153,9 +7657,11 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
           </p>
         </button>
         <button
-          onClick={() =>
-            showToast("Stems and alternate mixes workflow opened.")
-          }
+          type="button"
+          onClick={() => {
+            showToast("Opening stems workflow via storage.");
+            setView?.("admin-storage");
+          }}
         >
           <CloudArrowUp size={24} />
           <strong>Stems / Alternate Mixes</strong>
@@ -7169,181 +7675,770 @@ function TrackAdmin({ showToast, togglePlay, playingId }) {
   );
 }
 
-function ArtistAdmin({ showToast }) {
+function ArtistAdmin({ showToast, setView }) {
+  const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState("All stages");
+  const [sort, setSort] = useState("Priority");
+  const stages = [
+    "All stages",
+    ...new Set(artists.map((artist) => artist.stage || "Unassigned")),
+  ];
+  const priorityRank = { High: 0, Medium: 1, Low: 2 };
+  const filtered = artists
+    .filter((artist) => {
+      const hay = `${artist.name} ${artist.credit} ${artist.stage}`.toLowerCase();
+      const matchesQuery = !query || hay.includes(query.toLowerCase());
+      const matchesStage =
+        stageFilter === "All stages" || artist.stage === stageFilter;
+      return matchesQuery && matchesStage;
+    })
+    .sort((a, b) => {
+      if (sort === "Name") return a.name.localeCompare(b.name);
+      if (sort === "Tracks") return (b.tracks || 0) - (a.tracks || 0);
+      return (
+        (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9) ||
+        a.name.localeCompare(b.name)
+      );
+    });
+
   return (
-    <div className="cards-admin">
-      {artists.map((artist, index) => (
-        <article key={artist.name}>
-          <div
-            className="portrait small"
-            style={{ backgroundImage: `url(${artist.image})` }}
+    <div className="artist-admin-workspace">
+      <div className="artist-admin-toolbar">
+        <label>
+          Search artists
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Name, stage, or description"
           />
-          <h3>{artist.name}</h3>
-          <p>{artist.credit}</p>
-          <span>
-            {
-              [
-                "Metadata Review",
-                "Rights Documentation Review",
-                "Preston Approval",
-              ][index]
-            }{" "}
-            · {artist.tracks} submitted tracks
-          </span>
-          <button
-            onClick={() =>
-              showToast(
-                `Controlled contributor review opened for ${artist.name}.`,
-              )
-            }
+        </label>
+        <label>
+          Stage
+          <select
+            value={stageFilter}
+            onChange={(event) => setStageFilter(event.target.value)}
           >
-            Review submission
-          </button>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function InquiryAdmin() {
-  return (
-    <div className="request-list">
-      {inquiries.map((item) => (
-        <RequestRow key={item.id} item={item} detailed />
-      ))}
-    </div>
-  );
-}
-
-function BuyerAdmin({ showToast }) {
-  return (
-    <div className="cards-admin">
-      {[
-        ["Aster Studio", "VIP Sync Access", "Active", "Concierge assigned"],
-        [
-          "Northline Pictures",
-          "Professional Buyer",
-          "Verified",
-          "Standard support",
-        ],
-        [
-          "Cobalt Agency",
-          "Discovery Access",
-          "Entry approval",
-          "Upgrade candidate",
-        ],
-      ].map(([name, tier, status, note]) => (
-        <article key={name}>
-          <UsersThree size={28} />
-          <h3>{name}</h3>
-          <p>
-            Role-based access, saved projects, invoice contacts, request
-            history, and private buyer intelligence.
-          </p>
-          <span>
-            {tier} · {status} · {note}
-          </span>
-          <button
-            onClick={() => showToast(`Opened buyer account for ${name}.`)}
-          >
-            Open account
-          </button>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-function SecureDeliveryAdmin({ showToast }) {
-  return (
-    <div className="cards-admin">
-      <article>
-        <LockKey size={28} />
-        <h3>Delivery queue</h3>
-        <p>
-          5 approved licenses waiting on payment confirmation or VIP terms
-          before WAV/stems delivery.
-        </p>
-        <span>Buyer tier · payment status · rights cleared · expiry date</span>
-        <button onClick={() => showToast("Delivery queue opened.")}>
-          Review queue
-        </button>
-      </article>
-      <article>
-        <DownloadSimple size={28} />
-        <h3>Download controls</h3>
-        <p>
-          Expiring links, remaining download counts, terms accepted state,
-          revoke access, and reissue secure link actions.
-        </p>
+            {stages.map((stage) => (
+              <option key={stage}>{stage}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Sort
+          <select value={sort} onChange={(event) => setSort(event.target.value)}>
+            <option>Priority</option>
+            <option>Name</option>
+            <option>Tracks</option>
+          </select>
+        </label>
         <button
-          onClick={() => showToast("Secure link reissue controls opened.")}
+          type="button"
+          className="outline-button"
+          onClick={() => setView("admin-ingestion")}
         >
-          Manage links
+          Open ingestion queue
         </button>
-      </article>
-      <article>
-        <ShieldCheck size={28} />
-        <h3>Download history</h3>
-        <p>
-          Every master and stems download is timestamped and tied to buyer role,
-          project, license, and IP context.
-        </p>
-        <button onClick={() => showToast("Download history opened.")}>
-          View logs
-        </button>
-      </article>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="admin-empty-state">
+          <UsersThree size={28} />
+          <h4>No artists match these filters</h4>
+          <p>Clear search or choose another stage to continue stewardship review.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setStageFilter("All stages");
+            }}
+          >
+            Reset filters
+          </button>
+        </div>
+      ) : (
+        <div className="cards-admin artist-admin-grid">
+          {filtered.map((artist) => {
+            const openItems = artist.openItems ?? artist.tracks ?? 0;
+            const primaryLabel =
+              openItems === 1 ? "Review track" : `Review queue (${openItems})`;
+            return (
+              <article key={artist.name} className="artist-admin-card">
+                <div
+                  className="portrait small"
+                  style={{ backgroundImage: `url(${artist.image})` }}
+                  role="img"
+                  aria-label={artist.name}
+                />
+                <div className="artist-admin-card-head">
+                  <h3>{artist.name}</h3>
+                  <span
+                    className={`artist-priority-pill priority-${String(artist.priority || "Medium").toLowerCase()}`}
+                  >
+                    {artist.priority || "Medium"} priority
+                  </span>
+                </div>
+                <p>{artist.credit}</p>
+                <div className="artist-admin-meta">
+                  <span className="artist-stage-pill">
+                    {artist.stage || "Unassigned"}
+                  </span>
+                  <span>
+                    {artist.tracks} submitted track
+                    {artist.tracks === 1 ? "" : "s"}
+                  </span>
+                  <span>
+                    {openItems} open review item{openItems === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="artist-admin-actions">
+                  <button
+                    type="button"
+                    className="gold-button"
+                    onClick={() => {
+                      showToast(
+                        `${primaryLabel} opened for ${artist.name}. Admin hub stays available from the sidebar.`,
+                      );
+                      setView("admin-ingestion");
+                    }}
+                  >
+                    {primaryLabel}
+                  </button>
+                  <button
+                    type="button"
+                    className="outline-button"
+                    onClick={() => {
+                      showToast(`Artist profile preview for ${artist.name}.`);
+                      setView("artist");
+                    }}
+                  >
+                    Profile
+                  </button>
+                  <button
+                    type="button"
+                    className="plain-button"
+                    onClick={() => {
+                      showToast(`Rights context for ${artist.name}.`);
+                      setView("admin-rights");
+                    }}
+                  >
+                    Rights
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
 
-function MediaAdmin({ showToast }) {
+function inquiryPrimaryAction(item) {
+  switch (item.status) {
+    case "Quote Needed":
+      return {
+        label: "Create quote",
+        view: "admin-quotes-new",
+        toast: `Quote draft workspace opened for ${item.company}.`,
+      };
+    case "Quote Sent":
+      return {
+        label: "Open quote",
+        view: "admin-quotes",
+        toast: `Quote follow-up for ${item.company}.`,
+      };
+    case "Rights Check Needed":
+      return {
+        label: "Review rights",
+        view: "admin-rights",
+        toast: `Rights review for ${item.track} · ${item.company}.`,
+      };
+    case "Approved":
+      return {
+        label: "Prepare delivery",
+        view: "admin-deliveries",
+        toast: `Delivery prep for ${item.company}.`,
+      };
+    default:
+      return {
+        label: "Open quotes",
+        view: "admin-quotes",
+        toast: `Commercial workspace for ${item.company}.`,
+      };
+  }
+}
+
+function InquiryAdmin({ setView, showToast }) {
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const [sort, setSort] = useState("Deadline");
+  const statuses = [
+    "All statuses",
+    ...new Set(inquiries.map((item) => item.status)),
+  ];
+  const statusWeight = {
+    "Rights Check Needed": 0,
+    "Quote Needed": 1,
+    "Quote Sent": 2,
+    Approved: 3,
+  };
+  const filtered = inquiries
+    .filter((item) => {
+      const hay =
+        `${item.company} ${item.track} ${item.type} ${item.id} ${item.buyerTier} ${item.status}`.toLowerCase();
+      const matchesQuery = !query || hay.includes(query.toLowerCase());
+      const matchesStatus =
+        statusFilter === "All statuses" || item.status === statusFilter;
+      return matchesQuery && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sort === "Company") return a.company.localeCompare(b.company);
+      if (sort === "Status")
+        return (
+          (statusWeight[a.status] ?? 9) - (statusWeight[b.status] ?? 9) ||
+          a.company.localeCompare(b.company)
+        );
+      const day = (value) => {
+        const match = String(value || "").match(/(\d{1,2})/);
+        return match ? Number(match[1]) : 99;
+      };
+      return day(a.deadline) - day(b.deadline);
+    });
+  const listStats = {
+    total: inquiries.length,
+    quoteNeeded: inquiries.filter((i) => i.status === "Quote Needed").length,
+    rights: inquiries.filter((i) => i.status === "Rights Check Needed").length,
+    quoteSent: inquiries.filter((i) => i.status === "Quote Sent").length,
+    approved: inquiries.filter((i) => i.status === "Approved").length,
+  };
+
   return (
-    <div className="cards-admin">
-      <article>
-        <Article size={28} />
-        <h3>Stories editor</h3>
-        <p>
-          Featured story, categories, tags, draft status, rights-sensitive
-          language, and publish controls.
-        </p>
-        <button onClick={() => showToast("Stories editor opened.")}>
-          Edit stories
+    <div className="inquiry-admin-workspace">
+      <div className="inquiry-list-summary" aria-label="This hub list">
+        <span>
+          <strong>{listStats.total}</strong> in this hub list
+        </span>
+        <span>{listStats.rights} rights blocked</span>
+        <span>{listStats.quoteNeeded} quote needed</span>
+        <span>{listStats.quoteSent} quote sent</span>
+        <span>{listStats.approved} approved</span>
+        <small>Top KPI chips are org-wide pipeline, not this list alone.</small>
+      </div>
+      <div className="artist-admin-toolbar">
+        <label>
+          Search inquiries
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Company, track, ID, tier…"
+          />
+        </label>
+        <label>
+          Status
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            {statuses.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Sort
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+          >
+            <option>Deadline</option>
+            <option>Status</option>
+            <option>Company</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="outline-button"
+          onClick={() => setView?.("admin-quotes")}
+        >
+          Open quote calculation
         </button>
-      </article>
-      <article>
-        <FilmSlate size={28} />
-        <h3>Media episodes</h3>
-        <p>
-          Short sync clips, artist stories, studio sessions, catalog highlights,
-          VIP picks, legacy clips, and guest references.
-        </p>
-        <button onClick={() => showToast("Media episodes manager opened.")}>
-          Manage episodes
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("admin-quotes-new")}
+        >
+          New quote
         </button>
-      </article>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="admin-empty-state">
+          <FileText size={28} />
+          <h4>No inquiries match these filters</h4>
+          <p>Clear search or choose another status to continue the pipeline.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setStatusFilter("All statuses");
+            }}
+          >
+            Reset filters
+          </button>
+        </div>
+      ) : (
+        <div className="request-list inquiry-request-list">
+          {filtered.map((item) => (
+            <RequestRow
+              key={item.id}
+              item={item}
+              detailed
+              actionable
+              setView={setView}
+              showToast={showToast}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
 
-function AuditAdmin() {
+const adminBuyers = [
+  {
+    id: "buyer-aster",
+    name: "Aster Studio",
+    tier: "VIP Sync Access",
+    status: "Active",
+    support: "Concierge assigned",
+    contact: "Morgan Ellis",
+    openProjects: 6,
+    openQuotes: 2,
+    verification: "Verified",
+    focus: "VIP concierge + pre-approved terms",
+    priority: "High",
+  },
+  {
+    id: "buyer-northline",
+    name: "Northline Pictures",
+    tier: "Professional Buyer",
+    status: "Verified",
+    support: "Standard support",
+    contact: "Priya Shah",
+    openProjects: 3,
+    openQuotes: 1,
+    verification: "Verified",
+    focus: "Active licensing pipeline",
+    priority: "Medium",
+  },
+  {
+    id: "buyer-cobalt",
+    name: "Cobalt Agency",
+    tier: "Discovery Access",
+    status: "Entry approval",
+    support: "Upgrade candidate",
+    contact: "Jordan Blake",
+    openProjects: 1,
+    openQuotes: 0,
+    verification: "In review",
+    focus: "Awaiting professional verification",
+    priority: "High",
+  },
+];
+
+function buyerPrimaryAction(buyer) {
+  if (
+    buyer.status === "Entry approval" ||
+    buyer.verification === "In review"
+  ) {
+    return {
+      label: "Review verification",
+      view: "admin-verifications",
+      toast: `Verification queue opened for ${buyer.name}.`,
+    };
+  }
+  if (buyer.tier === "VIP Sync Access") {
+    return {
+      label: "VIP workspace",
+      view: "admin-quotes",
+      toast: `VIP commercial workspace for ${buyer.name}.`,
+    };
+  }
+  if (buyer.openQuotes > 0) {
+    return {
+      label: `Open quotes (${buyer.openQuotes})`,
+      view: "admin-quotes",
+      toast: `Quotes for ${buyer.name}.`,
+    };
+  }
+  return {
+    label: "Open commercial tools",
+    view: "admin-quotes",
+    toast: `Commercial tools for ${buyer.name}.`,
+  };
+}
+
+function BuyerAdmin({ showToast, setView }) {
+  const [query, setQuery] = useState("");
+  const [tierFilter, setTierFilter] = useState("All tiers");
+  const [statusFilter, setStatusFilter] = useState("All statuses");
+  const [sort, setSort] = useState("Priority");
+  const tiers = ["All tiers", ...new Set(adminBuyers.map((b) => b.tier))];
+  const statuses = [
+    "All statuses",
+    ...new Set(adminBuyers.map((b) => b.status)),
+  ];
+  const priorityRank = { High: 0, Medium: 1, Low: 2 };
+  const filtered = adminBuyers
+    .filter((buyer) => {
+      const hay =
+        `${buyer.name} ${buyer.tier} ${buyer.status} ${buyer.contact} ${buyer.support}`.toLowerCase();
+      const matchesQuery = !query || hay.includes(query.toLowerCase());
+      const matchesTier =
+        tierFilter === "All tiers" || buyer.tier === tierFilter;
+      const matchesStatus =
+        statusFilter === "All statuses" || buyer.status === statusFilter;
+      return matchesQuery && matchesTier && matchesStatus;
+    })
+    .sort((a, b) => {
+      if (sort === "Name") return a.name.localeCompare(b.name);
+      if (sort === "Tier") return a.tier.localeCompare(b.tier);
+      return (
+        (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9) ||
+        a.name.localeCompare(b.name)
+      );
+    });
+  const listStats = {
+    total: adminBuyers.length,
+    vip: adminBuyers.filter((b) => b.tier.includes("VIP")).length,
+    professional: adminBuyers.filter((b) =>
+      b.tier.includes("Professional"),
+    ).length,
+    discovery: adminBuyers.filter((b) => b.tier.includes("Discovery")).length,
+    verification: adminBuyers.filter(
+      (b) =>
+        b.verification === "In review" || b.status === "Entry approval",
+    ).length,
+  };
+
   return (
-    <div className="activity-list">
-      {[
-        "Role changed: Content Manager",
-        "Master download approved",
-        "Track rights notes edited",
-        "Buyer access revoked",
-        "Quote status changed",
-      ].map((item) => (
-        <p key={item}>
-          <ShieldCheck size={18} /> {item}
-          <span>Immutable log</span>
-        </p>
-      ))}
+    <div className="buyer-admin-workspace">
+      <div className="inquiry-list-summary" aria-label="This hub buyer list">
+        <span>
+          <strong>{listStats.total}</strong> in this hub list
+        </span>
+        <span>{listStats.vip} VIP</span>
+        <span>{listStats.professional} professional</span>
+        <span>{listStats.discovery} discovery</span>
+        <span>{listStats.verification} need verification</span>
+        <small>
+          Top KPI “VIP active” is org-wide pipeline, not this short hub sample.
+        </small>
+      </div>
+      <div className="artist-admin-toolbar">
+        <label>
+          Search buyers
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Org, contact, tier, status…"
+          />
+        </label>
+        <label>
+          Tier
+          <select
+            value={tierFilter}
+            onChange={(event) => setTierFilter(event.target.value)}
+          >
+            {tiers.map((tier) => (
+              <option key={tier}>{tier}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Status
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            {statuses.map((status) => (
+              <option key={status}>{status}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Sort
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+          >
+            <option>Priority</option>
+            <option>Name</option>
+            <option>Tier</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="outline-button"
+          onClick={() => setView?.("admin-verifications")}
+        >
+          Verification queue
+        </button>
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("admin-memberships")}
+        >
+          Membership ops
+        </button>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="admin-empty-state">
+          <UsersThree size={28} />
+          <h4>No buyers match these filters</h4>
+          <p>Clear search or change tier/status to continue account review.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setQuery("");
+              setTierFilter("All tiers");
+              setStatusFilter("All statuses");
+            }}
+          >
+            Reset filters
+          </button>
+        </div>
+      ) : (
+        <div className="cards-admin buyer-admin-grid">
+          {filtered.map((buyer) => {
+            const primary = buyerPrimaryAction(buyer);
+            return (
+              <article key={buyer.id} className="buyer-admin-card">
+                <div className="buyer-admin-card-head">
+                  <UsersThree size={26} />
+                  <span
+                    className={`artist-priority-pill priority-${String(buyer.priority).toLowerCase()}`}
+                  >
+                    {buyer.priority} priority
+                  </span>
+                </div>
+                <h3>{buyer.name}</h3>
+                <p>{buyer.focus}</p>
+                <div className="request-meta-chips" aria-label="Buyer details">
+                  <span>{buyer.tier}</span>
+                  <span
+                    className={
+                      buyer.status === "Entry approval"
+                        ? "meta-attention"
+                        : "meta-good"
+                    }
+                  >
+                    {buyer.status}
+                  </span>
+                  <span
+                    className={
+                      buyer.verification === "Verified"
+                        ? "meta-good"
+                        : "meta-attention"
+                    }
+                  >
+                    {buyer.verification}
+                  </span>
+                  <span>{buyer.support}</span>
+                  <span>Contact: {buyer.contact}</span>
+                  <span>
+                    {buyer.openProjects} project
+                    {buyer.openProjects === 1 ? "" : "s"}
+                  </span>
+                  <span>
+                    {buyer.openQuotes} open quote
+                    {buyer.openQuotes === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <div className="artist-admin-actions">
+                  <button
+                    type="button"
+                    className="gold-button"
+                    onClick={() => {
+                      showToast(primary.toast);
+                      setView?.(primary.view);
+                    }}
+                  >
+                    {primary.label}
+                  </button>
+                  <button
+                    type="button"
+                    className="outline-button"
+                    onClick={() =>
+                      showToast(
+                        `Account summary for ${buyer.name} (prototype — no CRM).`,
+                      )
+                    }
+                  >
+                    Account note
+                  </button>
+                  <button
+                    type="button"
+                    className="plain-button"
+                    onClick={() => {
+                      showToast(`Payments context for ${buyer.name}.`);
+                      setView?.("admin-payments");
+                    }}
+                  >
+                    Payments
+                  </button>
+                  <button
+                    type="button"
+                    className="plain-button"
+                    onClick={() => {
+                      showToast(`Delivery packages for ${buyer.name}.`);
+                      setView?.("admin-deliveries");
+                    }}
+                  >
+                    Deliveries
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
+
+
+function MediaAdmin({ showToast, setView }) {
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("Priority");
+  const priorityRank = { High: 0, Medium: 1, Low: 2 };
+  const filtered = adminMediaItems
+    .filter((item) => {
+      const hay =
+        `${item.title} ${item.summary} ${item.status} ${item.chips.join(" ")}`.toLowerCase();
+      return !query || hay.includes(query.toLowerCase());
+    })
+    .sort((a, b) => {
+      if (sort === "Name") return a.title.localeCompare(b.title);
+      return (
+        (priorityRank[a.priority] ?? 9) - (priorityRank[b.priority] ?? 9) ||
+        a.title.localeCompare(b.title)
+      );
+    });
+
+  return (
+    <div className="media-admin-workspace">
+      <div className="inquiry-list-summary" aria-label="Editorial media summary">
+        <span>
+          <strong>{adminMediaItems.length}</strong> editorial surfaces
+        </span>
+        <span>Stories · Episodes · Hub · Legacy</span>
+        <small>
+          These open the live editorial pages. Org-wide KPI chips above are
+          commercial pipeline metrics, not editorial counts.
+        </small>
+      </div>
+      <div className="artist-admin-toolbar">
+        <label>
+          Search media surfaces
+          <input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Stories, episodes, legacy…"
+          />
+        </label>
+        <label>
+          Sort
+          <select
+            value={sort}
+            onChange={(event) => setSort(event.target.value)}
+          >
+            <option>Priority</option>
+            <option>Name</option>
+          </select>
+        </label>
+        <button
+          type="button"
+          className="outline-button"
+          onClick={() => setView?.("content")}
+        >
+          Editorial hub
+        </button>
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("stories")}
+        >
+          Stories
+        </button>
+        <button
+          type="button"
+          className="plain-button"
+          onClick={() => setView?.("media")}
+        >
+          Episodes
+        </button>
+      </div>
+      {filtered.length === 0 ? (
+        <div className="admin-empty-state">
+          <FilmSlate size={28} />
+          <h4>No media surfaces match</h4>
+          <p>Clear search to see stories, episodes, hub, and legacy.</p>
+          <button type="button" onClick={() => setQuery("")}>
+            Reset search
+          </button>
+        </div>
+      ) : (
+        <div className="cards-admin media-admin-grid">
+          {filtered.map((item) => {
+            const Icon = item.Icon;
+            return (
+              <article key={item.id} className="media-admin-card">
+                <div className="buyer-admin-card-head">
+                  <Icon size={26} />
+                  <span
+                    className={`artist-priority-pill priority-${String(item.priority).toLowerCase()}`}
+                  >
+                    {item.priority} priority
+                  </span>
+                </div>
+                <h3>{item.title}</h3>
+                <p>{item.summary}</p>
+                <div className="request-meta-chips">
+                  <span className="meta-neutral">{item.status}</span>
+                  {item.chips.map((chip) => (
+                    <span key={chip}>{chip}</span>
+                  ))}
+                </div>
+                <div className="artist-admin-actions">
+                  <button
+                    type="button"
+                    className="gold-button"
+                    onClick={() => {
+                      showToast(`${item.title} opened.`);
+                      setView?.(item.view);
+                    }}
+                  >
+                    {item.primary}
+                  </button>
+                  <button
+                    type="button"
+                    className="outline-button"
+                    onClick={() => {
+                      showToast(`${item.secondaryLabel} opened.`);
+                      setView?.(item.secondaryView);
+                    }}
+                  >
+                    {item.secondaryLabel}
+                  </button>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 function ContentPages({ setView, showToast }) {
   const hubCards = [
@@ -7474,28 +8569,35 @@ function StoriesPage({ setView, showToast }) {
       "2 min feature",
       "Provenance, collaborators, recording context, and why the work matters to buyers.",
       img.soulVocal,
+      [1, 3, 5],
     ],
     [
       "How rights-aware discovery protects the creative process",
       "45 sec",
       "A concise guide to usage, territory, term, exclusivity, and quote readiness.",
       img.supervisorSuite,
+      [2, 4, 6],
     ],
     [
       "Gary Burke and the catalog as a living archive",
       "2 min feature",
       "A respectful look at the original beatmondo spirit, studio memories, lowercase identity, and musician-led stewardship.",
       img.musicArchive,
+      [15, 1, 7],
     ],
     [
       "What supervisors save before they request a quote",
       "30 sec",
       "Signals from buyer shortlists: emotional fit, edit flexibility, vocal context, and clearance confidence.",
       img.privateStudio,
+      [1, 2, 8],
     ],
   ];
   const active =
     stories.find(([title]) => title === selectedStory) || stories[0];
+  const relatedTracks = (active[4] || [])
+    .map((id) => tracks.find((track) => track.id === id))
+    .filter(Boolean);
 
   return (
     <section className="content-page stories-page">
@@ -7512,7 +8614,7 @@ function StoriesPage({ setView, showToast }) {
           <span className="eyebrow">Stories</span>
           <h2>{active[0]}</h2>
           <p>{active[2]}</p>
-          <div className="button-row">
+          <div className="button-row story-hero-actions">
             <button
               className="gold-button"
               onClick={() =>
@@ -7521,11 +8623,37 @@ function StoriesPage({ setView, showToast }) {
             >
               <Article size={18} /> Open Story
             </button>
-            <button className="outline-button" onClick={() => setView("media")}>
-              <FilmSlate size={18} /> Related Media
+            <button className="text-action" onClick={() => setView("media")}>
+              Related Media
+            </button>
+            <button className="text-action" onClick={() => setView("catalog")}>
+              Explore Music
             </button>
           </div>
         </article>
+        <Panel title="Related tracks" action="From this story">
+          <div className="editorial-related-tracks">
+            {relatedTracks.map((track) => (
+              <button
+                key={track.id}
+                type="button"
+                className="editorial-related-track"
+                onClick={() => {
+                  window.location.hash = `track/${track.id}`;
+                }}
+              >
+                <strong>{track.title}</strong>
+                <span>
+                  {track.artist} · {track.mood}
+                </span>
+                <small>
+                  {track.availability}
+                  {track.id === FEATURED_TRACK_ID ? " · Rights review" : ""}
+                </small>
+              </button>
+            ))}
+          </div>
+        </Panel>
         <Panel title="Editorial library" action="Selectable">
           <div className="state-grid">
             {stories.map(([title, category]) => (
@@ -7640,18 +8768,18 @@ function MediaEpisodesPage({ setView, showToast }) {
           <span className="eyebrow">Media Episodes</span>
           <h2>{active[0]}</h2>
           <p>{active[1]}</p>
-          <div className="button-row">
+          <div className="button-row story-hero-actions">
             <button
               className="gold-button sound-ring-button"
               onClick={() => showToast(`Playing preview for ${active[0]}.`)}
             >
               <Play size={18} weight="fill" /> Play Episode
             </button>
-            <button
-              className="outline-button"
-              onClick={() => setView("stories")}
-            >
-              <Article size={18} /> Episode Notes
+            <button className="text-action" onClick={() => setView("stories")}>
+              Episode Notes
+            </button>
+            <button className="text-action" onClick={() => setView("catalog")}>
+              Explore related music
             </button>
           </div>
         </article>
@@ -7664,6 +8792,26 @@ function MediaEpisodesPage({ setView, showToast }) {
                 onClick={() => setSelectedEpisode(title)}
               >
                 {title} · {duration}
+              </button>
+            ))}
+          </div>
+        </Panel>
+        <Panel title="Featured listening" action="Commerce path">
+          <div className="editorial-related-tracks">
+            {tracks.slice(0, 3).map((track) => (
+              <button
+                key={track.id}
+                type="button"
+                className="editorial-related-track"
+                onClick={() => {
+                  window.location.hash = `track/${track.id}`;
+                }}
+              >
+                <strong>{track.title}</strong>
+                <span>
+                  {track.artist} · {getPlayableDuration(track)} preview
+                </span>
+                <small>{track.availability}</small>
               </button>
             ))}
           </div>
@@ -8090,7 +9238,7 @@ function ArtistDashboardPage({ authUser, showToast, setView }) {
       </div>
       <div className="artist-dash-grid">
         <Panel title="The SMYRK submissions" action="Own catalog only">
-          <div className="request-list">
+          <div className="request-list artist-submission-list">
             <article>
               <strong>The End of Jason Todd</strong>
               <span>
@@ -8495,7 +9643,11 @@ function MiniPlayer({
           </time>
           <strong>
             <LockKey size={12} weight="fill" aria-hidden="true" /> Protected
-            preview · Drag to seek
+            preview
+            {track.duration && track.duration !== getPlayableDuration(track)
+              ? ` · full ${track.duration}`
+              : ""}{" "}
+            · Drag to seek
           </strong>
           <time aria-label={`Preview duration ${formatTime(previewDuration)}`}>
             {formatTime(previewDuration)}
@@ -8573,6 +9725,8 @@ function ImageCard({ title, text, image, action }) {
     </article>
   );
 }
+
+/* Image cards use CSS background images; lazy loading applies to <img> assets elsewhere. */
 
 function CollectionCard({ title, text, count, tags, image, onView }) {
   return (
@@ -8710,22 +9864,110 @@ function MiniStory({ title, text, image, actionLabel = "Open", action }) {
   );
 }
 
-function RequestRow({ item, detailed }) {
+function RequestRow({
+  item,
+  detailed = false,
+  actionable = false,
+  setView,
+  showToast,
+}) {
+  const primary = actionable ? inquiryPrimaryAction(item) : null;
+  const statusClass = `status-${String(item.status || "")
+    .toLowerCase()
+    .replaceAll(" ", "-")}`;
+  const runPrimary = () => {
+    if (!primary) return;
+    showToast?.(primary.toast);
+    setView?.(primary.view);
+  };
   return (
-    <article className="request-row">
-      <div>
-        <strong>{item.company}</strong>
-        <span>
+    <article
+      className={`request-row ${actionable ? "request-row-actionable" : ""} ${statusClass}`}
+    >
+      <div className="request-row-main">
+        <div className="request-row-title">
+          <strong>{item.company}</strong>
+          <span className={`badge ${statusClass}`}>{item.status}</span>
+        </div>
+        <span className="request-row-track">
           {item.track} · {item.type}
         </span>
         {detailed && (
-          <small>
-            {item.id} · {item.budget} · Deadline {item.deadline} ·{" "}
-            {item.buyerTier} · {item.priority} · {item.rightsCheck}
-          </small>
+          <div className="request-meta-chips" aria-label="Inquiry details">
+            <span>{item.id}</span>
+            <span>{item.budget}</span>
+            <span>Deadline {item.deadline}</span>
+            <span>{item.buyerTier}</span>
+            <span>{item.priority}</span>
+            <span
+              className={
+                item.rightsCheck === "Verified"
+                  ? "meta-good"
+                  : "meta-attention"
+              }
+            >
+              Rights: {item.rightsCheck}
+            </span>
+            {item.deliveryReadiness && (
+              <span
+                className={
+                  item.deliveryReadiness === "Blocked"
+                    ? "meta-attention"
+                    : "meta-neutral"
+                }
+              >
+                {item.deliveryReadiness}
+              </span>
+            )}
+          </div>
+        )}
+        {actionable && (
+          <div className="request-row-actions">
+            <button type="button" className="gold-button" onClick={runPrimary}>
+              {primary.label}
+            </button>
+            {(item.status === "Quote Needed" ||
+              item.status === "Quote Sent" ||
+              item.status === "Approved") && (
+              <button
+                type="button"
+                className="outline-button"
+                onClick={() => {
+                  showToast?.(`Quotes workspace for ${item.company}.`);
+                  setView?.("admin-quotes");
+                }}
+              >
+                Quotes
+              </button>
+            )}
+            {item.status !== "Rights Check Needed" && (
+              <button
+                type="button"
+                className="plain-button"
+                onClick={() => {
+                  showToast?.(`Rights context for ${item.track}.`);
+                  setView?.("admin-rights");
+                }}
+              >
+                Rights
+              </button>
+            )}
+            {item.status === "Approved" && (
+              <button
+                type="button"
+                className="plain-button"
+                onClick={() => {
+                  showToast?.(`Buyer contracts for ${item.company}.`);
+                  setView?.("admin-contracts");
+                }}
+              >
+                Contracts
+              </button>
+            )}
+          </div>
         )}
       </div>
-      <span className="badge">{item.status}</span>
+      {!actionable && <span className="badge">{item.status}</span>}
     </article>
   );
 }

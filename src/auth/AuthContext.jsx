@@ -96,13 +96,33 @@ export function getRouteDecision(view, user, ready = true) {
       redirect: "verify-email",
       reason: "Verify your email before entering the workspace.",
     };
-  if (
+  // Buyer/artist privacy settings are account-scoped, not admin-only.
+  if (view === "settings/privacy" || view.startsWith("privacy/request")) {
+    if (
+      BUYER_ROLES.includes(user.role) ||
+      user.role === "artist" ||
+      roleHasPermission(user, "profile.manage") ||
+      roleHasPermission(user, "privacy.notices.view") ||
+      roleHasPermission(user, "privacy.requests.create") ||
+      user.permissions?.includes("*")
+    ) {
+      // allowed for authenticated account holders
+    } else {
+      const decision = canAccessRoute(view, buildAuthorizationContext(user.id));
+      if (!decision.allowed)
+        return {
+          allowed: false,
+          redirect: "access-denied",
+          reason:
+            decision.reason ||
+            "Privacy and data tools are not available for this account.",
+        };
+    }
+  } else if (
     view.startsWith("admin/access") ||
     view.startsWith("admin/analytics") ||
     view.startsWith("admin/reports") ||
     view.startsWith("admin/privacy") ||
-    view === "settings/privacy" ||
-    view.startsWith("privacy/request") ||
     view === "buyer/analytics" ||
     view === "artist/analytics"
   ) {
@@ -115,34 +135,40 @@ export function getRouteDecision(view, user, ready = true) {
           decision.reason || "Administrative access permission is required.",
       };
   }
+
+  const buyerCommercialViews = [
+    "buyer-quotes",
+    "buyer-quote",
+    "quote-print",
+    "buyer-contracts",
+    "buyer-contract",
+    "signature",
+    "signature-complete",
+    "signature-declined",
+    "signature-expired",
+    "contract-print",
+    "buyer-payments",
+    "buyer-payment",
+    "buyer-pay",
+    "buyer-payment-success",
+    "buyer-payment-failed",
+    "buyer-payment-authentication",
+    "buyer-payment-methods",
+    "payment-receipt",
+    "buyer-licences",
+    "buyer-licence",
+    "licence-print",
+    "buyer-deliveries",
+    "buyer-delivery",
+    "buyer-delivery-room",
+    "buyer-media-access",
+    "buyer-private-previews",
+  ];
+
   if (
     [
       "buyer",
-      "buyer-quotes",
-      "buyer-quote",
-      "quote-print",
-      "buyer-contracts",
-      "buyer-contract",
-      "signature",
-      "signature-complete",
-      "signature-declined",
-      "signature-expired",
-      "contract-print",
-      "buyer-payments",
-      "buyer-payment",
-      "buyer-pay",
-      "buyer-payment-success",
-      "buyer-payment-failed",
-      "buyer-payment-authentication",
-      "buyer-payment-methods",
-      "payment-receipt",
-      "buyer-licences",
-      "buyer-licence",
-      "licence-print",
-      "buyer-deliveries",
-      "buyer-delivery",
-      "buyer-delivery-room",
-      "buyer-media-access",
+      ...buyerCommercialViews,
       "project",
       "membership",
       "membership-checkout",
@@ -161,6 +187,44 @@ export function getRouteDecision(view, user, ready = true) {
       redirect: "access-denied",
       reason: "A buyer account is required for this workspace.",
     };
+
+  if (BUYER_ROLES.includes(user.role) && buyerCommercialViews.includes(view)) {
+    const verification = buyerVerificationService.getByUser(user.id);
+    const membership = membershipService.getCurrentMembership(user.id);
+    const access = user.permissions?.includes("*")
+      ? { has: () => true, effectivePlan: "VIP Sync Access", reasons: [] }
+      : calculateEffectiveAccess(user, verification, membership);
+    const needsDelivery = [
+      "buyer-deliveries",
+      "buyer-delivery",
+      "buyer-delivery-room",
+      "buyer-media-access",
+      "buyer-private-previews",
+    ].includes(view);
+    const commercialOk =
+      access.has("licensing.request") ||
+      access.has("quotes.view") ||
+      access.has("delivery.secure") ||
+      access.has("projects.create");
+    if (needsDelivery && !access.has("delivery.secure") && !access.has("delivery.masters")) {
+      return {
+        allowed: false,
+        redirect: "access-denied",
+        reason:
+          access.reasons?.[0] ||
+          "Secure delivery requires approved professional verification and an eligible membership.",
+      };
+    }
+    if (!needsDelivery && !commercialOk) {
+      return {
+        allowed: false,
+        redirect: "access-denied",
+        reason:
+          access.reasons?.[0] ||
+          "Quotes, contracts, payments, and licences unlock after Professional or VIP eligibility and approved verification.",
+      };
+    }
+  }
   if (
     [
       "admin-quotes",
@@ -444,7 +508,8 @@ export function getRouteDecision(view, user, ready = true) {
   if (
     view === "artist-dashboard" &&
     user.role !== "artist" &&
-    user.role !== "super_administrator"
+    user.role !== "super_administrator" &&
+    !user.permissions?.includes("*")
   )
     return {
       allowed: false,
@@ -456,6 +521,16 @@ export function getRouteDecision(view, user, ready = true) {
       allowed: false,
       redirect: "access-denied",
       reason: "An internal beatmondo role is required.",
+    };
+  if (
+    (view === "investor" || view === "system") &&
+    user.role !== "super_administrator" &&
+    !user.permissions?.includes("*")
+  )
+    return {
+      allowed: false,
+      redirect: "access-denied",
+      reason: "Prototype tools are limited to internal super-administrators.",
     };
   if (view === "admin-users" && !roleHasPermission(user, "users.manage"))
     return {
@@ -605,12 +680,14 @@ export function getRouteDecision(view, user, ready = true) {
       "admin-ingestion-new",
       "admin-ingestion-detail",
     ].includes(view) &&
-    !roleHasPermission(user, "ingestion.view")
+    (!INTERNAL_ROLES.includes(user.role) ||
+      !roleHasPermission(user, "ingestion.view"))
   )
     return {
       allowed: false,
       redirect: "access-denied",
-      reason: "Track Ingestion permission is required.",
+      reason:
+        "Internal Track Ingestion operations permission is required. Artists should use Track Submissions.",
     };
   if (
     [
@@ -635,15 +712,6 @@ export function getRouteDecision(view, user, ready = true) {
       allowed: false,
       redirect: "access-denied",
       reason: "Search Infrastructure administration permission is required.",
-    };
-  if (
-    ["investor", "system"].includes(view) &&
-    user.role !== "super_administrator"
-  )
-    return {
-      allowed: false,
-      redirect: "access-denied",
-      reason: "This internal prototype view is restricted.",
     };
   return { allowed: true };
 }

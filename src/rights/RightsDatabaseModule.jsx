@@ -8,6 +8,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { useAuth } from "../auth/AuthContext.jsx";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import {
   ELIGIBILITY_STATUSES,
   RIGHTS_CHECKLIST,
@@ -33,6 +34,30 @@ export const RIGHTS_VIEWS = new Set([
   "admin-rights-expiring",
   "artist-rights",
 ]);
+
+const RIGHTS_SECTION_ITEMS = [
+  { view: "admin-rights", label: "Queue" },
+  { view: "admin-rights-parties", label: "Parties" },
+  { view: "admin-rights-documents", label: "Documents" },
+  { view: "admin-rights-disputes", label: "Disputes" },
+  { view: "admin-rights-expiring", label: "Expiring" },
+];
+
+function RightsSectionNav({ navigate, active }) {
+  return (
+    <SectionSubnav
+      ariaLabel="Rights database sections"
+      navigate={navigate}
+      active={active}
+      items={RIGHTS_SECTION_ITEMS}
+      backTo={
+        active !== "admin-rights"
+          ? { view: "admin-rights", label: "Back to Rights Database" }
+          : null
+      }
+    />
+  );
+}
 const formatDate = (value) =>
   value
     ? new Date(value).toLocaleDateString(undefined, {
@@ -155,6 +180,7 @@ export function RightsDashboard({ navigate, showToast }) {
   };
   return (
     <section className="rights-page">
+      <RightsSectionNav navigate={navigate} active="admin-rights" />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Rights and clearance operations</span>
@@ -166,18 +192,6 @@ export function RightsDashboard({ navigate, showToast }) {
           </p>
         </div>
         <div className="rights-header-actions">
-          <button onClick={() => navigate("admin-rights-parties")}>
-            Rights Parties
-          </button>
-          <button onClick={() => navigate("admin-rights-documents")}>
-            Documents
-          </button>
-          <button onClick={() => navigate("admin-rights-disputes")}>
-            Disputes
-          </button>
-          <button onClick={() => navigate("admin-rights-expiring")}>
-            Expiring
-          </button>
           {user.role === "super_administrator" && (
             <button
               onClick={() => {
@@ -1782,6 +1796,7 @@ export function RightsPartiesPage({ navigate, showToast }) {
   };
   return (
     <section className="rights-page">
+      <RightsSectionNav navigate={navigate} active="admin-rights-parties" />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Reusable rights identities</span>
@@ -1828,9 +1843,6 @@ export function RightsPartiesPage({ navigate, showToast }) {
           </article>
         ))}
       </div>
-      <button className="plain-button" onClick={() => navigate("admin-rights")}>
-        ← Rights Database
-      </button>
       {adding && (
         <div
           className="rights-modal-backdrop"
@@ -1924,6 +1936,7 @@ export function RightsDocumentsPage({ navigate }) {
   const documents = rightsService.getDocuments({ status });
   return (
     <section className="rights-page">
+      <RightsSectionNav navigate={navigate} active="admin-rights-documents" />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Evidence and authority</span>
@@ -1988,9 +2001,6 @@ export function RightsDocumentsPage({ navigate }) {
           </tbody>
         </table>
       </div>
-      <button className="plain-button" onClick={() => navigate("admin-rights")}>
-        ← Rights Database
-      </button>
     </section>
   );
 }
@@ -2021,6 +2031,7 @@ export function RightsDisputesPage({ navigate, showToast }) {
   };
   return (
     <section className="rights-page">
+      <RightsSectionNav navigate={navigate} active="admin-rights-disputes" />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Legal-restricted workflow</span>
@@ -2073,9 +2084,6 @@ export function RightsDisputesPage({ navigate, showToast }) {
           )),
         )}
       </div>
-      <button className="plain-button" onClick={() => navigate("admin-rights")}>
-        ← Rights Database
-      </button>
     </section>
   );
 }
@@ -2090,6 +2098,7 @@ export function RightsExpiringPage({ navigate, showToast }) {
     );
   return (
     <section className="rights-page">
+      <RightsSectionNav navigate={navigate} active="admin-rights-expiring" />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Expiry and reverification</span>
@@ -2131,9 +2140,6 @@ export function RightsExpiringPage({ navigate, showToast }) {
           </article>
         ))}
       </div>
-      <button className="plain-button" onClick={() => navigate("admin-rights")}>
-        ← Rights Database
-      </button>
     </section>
   );
 }

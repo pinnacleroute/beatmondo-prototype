@@ -23,6 +23,7 @@ import {
   secureDeliveryService,
 } from "./secureDeliveryService.js";
 import { expiringAccessService } from "../expiring-access/expiringAccessService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./secureDelivery.css";
 
 export const SECURE_DELIVERY_VIEWS = new Set([
@@ -38,6 +39,29 @@ export const SECURE_DELIVERY_VIEWS = new Set([
 ]);
 const can = (user, permission) =>
   user?.permissions?.includes("*") || user?.permissions?.includes(permission);
+
+function DeliveryAdminNav({ navigate, active }) {
+  const items = [
+    { view: "admin-deliveries", label: "Packages" },
+    { view: "admin-deliveries-new", label: "Create" },
+    { view: "admin-delivery-access", label: "Access requests" },
+    { view: "admin-delivery-replacements", label: "Replacements" },
+    { view: "admin-delivery-analytics", label: "Analytics" },
+  ];
+  return (
+    <SectionSubnav
+      ariaLabel="Secure delivery sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-deliveries"
+          ? { view: "admin-deliveries", label: "Back to delivery dashboard" }
+          : null
+      }
+    />
+  );
+}
 const date = (value, withTime = false) =>
   value
     ? new Intl.DateTimeFormat("en-US", {
@@ -141,6 +165,7 @@ function AdminDashboard({ navigate }) {
   );
   return (
     <section className="sd-page">
+      <DeliveryAdminNav navigate={navigate} active="admin-deliveries" />
       <Header
         eyebrow="Protected asset operations"
         title="Secure delivery"
@@ -156,17 +181,6 @@ function AdminDashboard({ navigate }) {
       />
       <Notice />
       <Metrics data={secureDeliveryService.getDeliveryAnalytics()} />
-      <div className="sd-quick">
-        <button onClick={() => navigate("admin-delivery-access")}>
-          Access requests <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-delivery-replacements")}>
-          Replacements <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-delivery-analytics")}>
-          Delivery analytics <ArrowRight />
-        </button>
-      </div>
       <div className="sd-toolbar">
         <label>
           <Funnel />
@@ -348,18 +362,11 @@ function NewDelivery({ navigate, showToast }) {
   };
   return (
     <section className="sd-page">
+      <DeliveryAdminNav navigate={navigate} active="admin-deliveries-new" />
       <Header
         eyebrow="Controlled package creation"
         title="Create secure delivery"
         text="Start from a current delivery authorization and narrow access to exact users, assets, versions, limits, and expiry."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-deliveries")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="sd-stepper">
@@ -1427,18 +1434,11 @@ function AccessRequests({ navigate, showToast }) {
   };
   return (
     <section className="sd-page">
+      <DeliveryAdminNav navigate={navigate} active="admin-delivery-access" />
       <Header
         eyebrow="Access governance"
         title="Delivery access requests"
         text="Review time, download, user, replacement, and approved-asset requests without erasing prior events or silently expanding licence scope."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-deliveries")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="sd-request-list">
@@ -1495,18 +1495,14 @@ function Replacements({ navigate, showToast }) {
   const state = secureDeliveryService.getState();
   return (
     <section className="sd-page">
+      <DeliveryAdminNav
+        navigate={navigate}
+        active="admin-delivery-replacements"
+      />
       <Header
         eyebrow="Immutable package versioning"
         title="Replacement deliveries"
         text="Correct assets through a new locked package version while preserving original package, entitlement, session, and download history."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-deliveries")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="sd-request-list">
@@ -1590,18 +1586,11 @@ function Analytics({ navigate }) {
   ];
   return (
     <section className="sd-page">
+      <DeliveryAdminNav navigate={navigate} active="admin-delivery-analytics" />
       <Header
         eyebrow="Delivery intelligence"
         title="Secure-delivery analytics"
         text="Operational mock metrics across package creation, asset delivery, download outcomes, extensions, lifecycle, and replacements."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-deliveries")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <Metrics data={data} />

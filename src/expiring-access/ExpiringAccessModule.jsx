@@ -17,6 +17,7 @@ import {
 import { useAuth } from "../auth/AuthContext.jsx";
 import { ACCESS_STATUSES } from "./expiringAccessData.js";
 import { expiringAccessService } from "./expiringAccessService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./expiringAccess.css";
 
 export const EXPIRING_ACCESS_VIEWS = new Set([
@@ -29,6 +30,31 @@ export const EXPIRING_ACCESS_VIEWS = new Set([
 ]);
 const can = (user, permission) =>
   user?.permissions?.includes("*") || user?.permissions?.includes(permission);
+
+function ExpiringAccessAdminNav({ navigate, active }) {
+  const items = [
+    { view: "admin-expiring-access", label: "Records" },
+    { view: "admin-expiring-access-policies", label: "Policies" },
+    { view: "admin-expiring-access-security", label: "Security" },
+    { view: "admin-expiring-access-analytics", label: "Analytics" },
+  ];
+  return (
+    <SectionSubnav
+      ariaLabel="Expiring access sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-expiring-access"
+          ? {
+              view: "admin-expiring-access",
+              label: "Back to expiring access dashboard",
+            }
+          : null
+      }
+    />
+  );
+}
 const date = (value, time = true) =>
   value
     ? new Intl.DateTimeFormat("en-US", {
@@ -129,6 +155,10 @@ function Dashboard({ navigate }) {
   );
   return (
     <section className="ea-page">
+      <ExpiringAccessAdminNav
+        navigate={navigate}
+        active="admin-expiring-access"
+      />
       <Header
         eyebrow="Temporary resource authorization"
         title="Expiring access"
@@ -136,17 +166,6 @@ function Dashboard({ navigate }) {
       />
       <Notice />
       <Metrics data={expiringAccessService.getExpiringAccessAnalytics()} />
-      <div className="ea-quick">
-        <button onClick={() => navigate("admin-expiring-access-policies")}>
-          Policy manager <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-expiring-access-security")}>
-          Security review <ArrowRight />
-        </button>
-        <button onClick={() => navigate("admin-expiring-access-analytics")}>
-          Access analytics <ArrowRight />
-        </button>
-      </div>
       <div className="ea-toolbar">
         <label>
           <Funnel />
@@ -536,18 +555,14 @@ function Policies({ navigate, showToast }) {
   const policies = expiringAccessService.getAccessPolicies();
   return (
     <section className="ea-page">
+      <ExpiringAccessAdminNav
+        navigate={navigate}
+        active="admin-expiring-access-policies"
+      />
       <Header
         eyebrow="Versioned policy hierarchy"
         title="Temporary-access policies"
         text="Resource overrides resolve before delivery, licence, organization, access-tier, and resource-type defaults. Existing records retain their generation-time policy version."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-expiring-access")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="ea-policy-list">
@@ -621,18 +636,14 @@ function Security({ navigate, showToast }) {
   const open = state.securityReviews.filter((item) => item.status === "Open");
   return (
     <section className="ea-page">
+      <ExpiringAccessAdminNav
+        navigate={navigate}
+        active="admin-expiring-access-security"
+      />
       <Header
         eyebrow="Rate and anomaly controls"
         title="Access security review"
         text="Review repeated generation, mismatch, sharing, region, and high-value-resource indicators without claiming production fraud detection."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-expiring-access")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <div className="ea-security-grid">
@@ -759,18 +770,14 @@ function Analytics({ navigate }) {
   const data = expiringAccessService.getExpiringAccessAnalytics();
   return (
     <section className="ea-page">
+      <ExpiringAccessAdminNav
+        navigate={navigate}
+        active="admin-expiring-access-analytics"
+      />
       <Header
         eyebrow="Temporary-access intelligence"
         title="Expiring-access analytics"
         text="Mock operational metrics across generation, validation, denial, expiry, revocation, consumption, refresh, and resource type."
-        actions={
-          <button
-            className="outline"
-            onClick={() => navigate("admin-expiring-access")}
-          >
-            <ArrowLeft /> Dashboard
-          </button>
-        }
       />
       <Notice />
       <Metrics data={data} />

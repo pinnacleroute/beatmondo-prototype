@@ -23,6 +23,7 @@ import {
   SELECTED_QUOTE_KEY,
 } from "./quoteData.js";
 import { formatQuoteMoney, quoteService } from "./quoteService.js";
+import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./quotes.css";
 
 export const QUOTE_VIEWS = new Set([
@@ -37,6 +38,31 @@ export const QUOTE_VIEWS = new Set([
 ]);
 const can = (user, p) =>
   user?.permissions?.includes("*") || user?.permissions?.includes(p);
+
+function QuotesAdminNav({ navigate, active, user }) {
+  const items = [
+    { view: "admin-quotes", label: "Quotes" },
+    can(user, "quotes.create") && {
+      view: "admin-quotes-new",
+      label: "New quote",
+    },
+    { view: "admin-pricing-rules", label: "Pricing rules" },
+    { view: "admin-quotes-analytics", label: "Analytics" },
+  ].filter(Boolean);
+  return (
+    <SectionSubnav
+      ariaLabel="Quote calculation sections"
+      navigate={navigate}
+      active={active}
+      items={items}
+      backTo={
+        active !== "admin-quotes"
+          ? { view: "admin-quotes", label: "Back to quote dashboard" }
+          : null
+      }
+    />
+  );
+}
 const date = (v) =>
   v
     ? new Intl.DateTimeFormat("en-US", { dateStyle: "medium" }).format(
@@ -91,26 +117,19 @@ function Dashboard({ navigate }) {
   );
   return (
     <section className="qt-page">
+      <QuotesAdminNav navigate={navigate} active="admin-quotes" user={user} />
       <Header
         eyebrow="Licensing operations"
         title="Quote Calculation"
         text="Draft, review, approve, negotiate, and monitor rights-aware licensing quotes."
         actions={
-          <>
-            <button onClick={() => navigate("admin-quotes-analytics")}>
-              <TrendUp /> Analytics
-            </button>
-            <button onClick={() => navigate("admin-pricing-rules")}>
-              <Funnel /> Pricing rules
-            </button>
-            <button
-              className="qt-primary"
-              onClick={() => navigate("admin-quotes-new")}
-              disabled={!can(user, "quotes.create")}
-            >
-              <Plus /> New quote
-            </button>
-          </>
+          <button
+            className="qt-primary"
+            onClick={() => navigate("admin-quotes-new")}
+            disabled={!can(user, "quotes.create")}
+          >
+            <Plus /> New quote
+          </button>
         }
       />
       <Notice />
@@ -1025,12 +1044,15 @@ function BuyerQuote({ navigate, showToast }) {
 }
 
 function PricingRules({ navigate }) {
+  const { user } = useAuth();
   const state = quoteService.getState();
   return (
     <section className="qt-page">
-      <button className="qt-back" onClick={() => navigate("admin-quotes")}>
-        <ArrowLeft /> Quote dashboard
-      </button>
+      <QuotesAdminNav
+        navigate={navigate}
+        active="admin-pricing-rules"
+        user={user}
+      />
       <Header
         eyebrow="Versioned governance"
         title="Pricing Models & Rules"
@@ -1101,12 +1123,15 @@ function PricingRules({ navigate }) {
 }
 
 function Analytics({ navigate }) {
+  const { user } = useAuth();
   const a = quoteService.analytics();
   return (
     <section className="qt-page">
-      <button className="qt-back" onClick={() => navigate("admin-quotes")}>
-        <ArrowLeft /> Quote dashboard
-      </button>
+      <QuotesAdminNav
+        navigate={navigate}
+        active="admin-quotes-analytics"
+        user={user}
+      />
       <Header
         eyebrow="Commercial intelligence"
         title="Quote Analytics"
