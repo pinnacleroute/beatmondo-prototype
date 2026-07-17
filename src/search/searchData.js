@@ -51,12 +51,13 @@ export const TRACK_SEARCH_OVERLAYS = {
   12: { accessTier: "Discovery", usageTypes: ["Streaming Series", "Sports", "Trailer"], vocalType: "Male Vocal", language: "English", explicit: true, popularityScore: 87 },
   13: { accessTier: "VIP", usageTypes: ["Luxury", "Hospitality", "Fashion"], vocalType: "Instrumental", language: "None", explicit: false, popularityScore: 79 },
   14: { accessTier: "Public", usageTypes: ["Advertising", "Automotive", "Social Campaign"], vocalType: "Mixed Vocal", language: "English", explicit: false, preApprovedTerms: true, recentlyAdded: true, popularityScore: 90 },
-  15: { accessTier: "Discovery", usageTypes: ["Feature Film", "Television", "Trailer"], vocalType: "Male Vocal", language: "English", explicit: false, popularityScore: 73 },
+  15: { accessTier: "Public", usageTypes: ["Feature Film", "Television", "Trailer"], vocalType: "Male Vocal", language: "English", explicit: false, featured: true, popularityScore: 73 },
   16: { accessTier: "Discovery", usageTypes: ["Automotive", "Travel", "Advertising"], vocalType: "Instrumental", language: "None", explicit: false, recentlyAdded: true, popularityScore: 71 },
   17: { accessTier: "Professional", usageTypes: ["Trailer", "Sports", "Video Game"], vocalType: "Female Vocal", language: "English", explicit: false, recentlyAdded: true, popularityScore: 82 },
   18: { accessTier: "Public", usageTypes: ["Technology", "Corporate", "Podcast"], vocalType: "Instrumental", language: "None", explicit: false, popularityScore: 67 },
   19: { accessTier: "VIP", usageTypes: ["Luxury", "Fashion", "Advertising"], vocalType: "Female Vocal", language: "English", explicit: false, preApprovedTerms: true, recentlyAdded: true, popularityScore: 86 },
   20: { accessTier: "Professional", usageTypes: ["Feature Film", "Documentary", "Streaming Series"], vocalType: "Instrumental", language: "None", explicit: false, popularityScore: 75 },
+  21: { accessTier: "Public", usageTypes: ["Editorial Discovery", "Trailer", "Promotional Video"], vocalType: "Mixed Vocal", language: "English", explicit: false, featured: true, popularityScore: 72 },
 };
 
 export const DEFAULT_COLLECTIONS = [

@@ -17,6 +17,7 @@ const now = () => new Date().toISOString();
 const uid = (prefix) => `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 const internalRoles = new Set(["super_administrator", "administrator", "catalog_manager", "licensing_manager"]);
 const tierRank = { Public: 0, Discovery: 1, Professional: 2, VIP: 3, "Internal Only": 4 };
+const PINNED_EXPLORE_TRACK_IDS = [15, 21];
 
 export function normalizeSearchText(value = "") {
   return String(value)
@@ -381,6 +382,12 @@ function sortDocuments(documents, sort) {
   else if (sort === "licensing-readiness") result.sort((a, b) => Number(["Eligible", "Eligible with Restrictions"].includes(b.rightsEligibility)) - Number(["Eligible", "Eligible with Restrictions"].includes(a.rightsEligibility)) || b.score - a.score);
   else if (sort === "rights-completeness") by("rightsCompleteness", -1);
   else result.sort((a, b) => b.score - a.score);
+  result.sort((a, b) => {
+    const aRank = PINNED_EXPLORE_TRACK_IDS.indexOf(a.entityId);
+    const bRank = PINNED_EXPLORE_TRACK_IDS.indexOf(b.entityId);
+    return (aRank < 0 ? Number.MAX_SAFE_INTEGER : aRank) -
+      (bRank < 0 ? Number.MAX_SAFE_INTEGER : bRank);
+  });
   return result;
 }
 
@@ -389,7 +396,7 @@ export const searchService = {
   parseNaturalLanguageQuery,
   calculateRelevance,
   canViewSearchDocument,
-  search(tracks, { query = "", filters = DEFAULT_SEARCH_FILTERS, sort = query ? "relevance" : "recent", user = null, record = false, source = "Search" } = {}) {
+  search(tracks, { query = "", filters = DEFAULT_SEARCH_FILTERS, sort = query ? "relevance" : "recent", user = null, record = false, source = "Search", includePinnedResults = false } = {}) {
     const state = readSearchState();
     const context = buildSearchContext(user);
     if (
@@ -418,8 +425,20 @@ export const searchService = {
     const savedIds = state.savedTracks[user?.id || "anonymous"] || [];
     let documents = tracks.map((track, index) => buildTrackDocument(track, index, { ...state, actorRole: user?.role }));
     documents = documents.filter((document) => canViewSearchDocument(document, context).visible);
+    const pinnedDocuments = includePinnedResults && !filters.savedOnly
+      ? PINNED_EXPLORE_TRACK_IDS
+          .map((trackId) => documents.find((document) => document.entityId === trackId))
+          .filter(Boolean)
+      : [];
     documents = documents.filter((document) => !expanded || expanded.split(" ").some((token) => token.length > 1 && document.searchableText.includes(token)));
     documents = documents.filter((document) => matchFilters(document, filters, context, savedIds));
+    if (pinnedDocuments.length) {
+      const pinnedIds = new Set(pinnedDocuments.map((document) => document.entityId));
+      documents = [
+        ...pinnedDocuments,
+        ...documents.filter((document) => !pinnedIds.has(document.entityId)),
+      ];
+    }
     documents = documents.map((document) => ({ ...document, score: calculateRelevance(document, expanded, state.ranking, context) }));
     documents = sortDocuments(documents, sort);
     const facets = this.getFacets(documents);

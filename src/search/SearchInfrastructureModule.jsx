@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowRight,
   BookmarkSimple,
+  Briefcase,
   CaretDown,
   Check,
   Clock,
@@ -11,13 +12,17 @@ import {
   GearSix,
   ListBullets,
   MagnifyingGlass,
+  Microphone,
+  MusicNotes,
   Pause,
   Play,
   Plus,
   Rows,
   Sliders,
+  Smiley,
   Sparkle,
   SquaresFour,
+  ShieldCheck,
   Trash,
   WarningCircle,
   X,
@@ -59,27 +64,33 @@ function SearchStatus({ children }) {
   return <span className={statusClass(children)}><span />{children}</span>;
 }
 
-function FilterGroup({ label, values, selected = [], onToggle, hideEmpty = true, limit = 8 }) {
+function FilterGroup({ label, values, selected = [], onToggle, hideEmpty = true, limit = 8, compact = false }) {
+  const [expanded, setExpanded] = useState(false);
   const entries = values.filter(
     ([value, count]) => !hideEmpty || count > 0 || selected.includes(value),
   );
   if (!entries.length) return null;
+  const orderedEntries = [...entries].sort((a, b) => Number(selected.includes(b[0])) - Number(selected.includes(a[0])));
+  const visibleEntries = expanded ? orderedEntries : orderedEntries.slice(0, limit);
   return (
-    <fieldset className="search-filter-group">
+    <fieldset className={`search-filter-group ${compact ? "is-compact" : ""}`}>
       <legend>{label}</legend>
-      {entries.slice(0, limit).map(([value, count]) => (
-        <label key={value}>
-          <input type="checkbox" checked={selected.includes(value)} onChange={() => onToggle(value)} />
-          <span>{value}</span><small>{count}</small>
-        </label>
+      {visibleEntries.map(([value, count]) => (
+        <button
+          type="button"
+          key={value}
+          className={selected.includes(value) ? "is-selected" : ""}
+          aria-pressed={selected.includes(value)}
+          onClick={() => onToggle(value)}
+        >
+          <span>{value}</span><small>{count}</small>{selected.includes(value) && <Check weight="bold" />}
+        </button>
       ))}
+      {orderedEntries.length > limit && <button type="button" className="search-filter-view-all" onClick={() => setExpanded((current) => !current)}><span>{expanded ? "Show less" : "View all"}</span><CaretDown className={expanded ? "is-open" : ""} /></button>}
     </fieldset>
   );
 }
 
-const ESSENTIAL_FACET_KEYS = ["genre", "mood", "usage", "vocalType", "accessTier", "licensingEligibility"];
-const ADVANCED_FACET_KEYS = ["tempo", "language", "territory"];
-const INTERNAL_FACET_KEYS = ["rightsStatus", "indexStatus"];
 const ESSENTIAL_TOGGLES = ["stemsAvailable", "masterAvailable", "recentlyAdded", "featured", "savedOnly"];
 const ADVANCED_TOGGLES = ["instrumentalAvailable", "cleanVersionAvailable", "preApprovedTerms", "approvalRequired"];
 const TOGGLE_LABELS = {
@@ -94,148 +105,72 @@ const TOGGLE_LABELS = {
   savedOnly: "Saved tracks",
 };
 
-function SearchFilters({ filters, setFilters, facets, internal, onClose, showAdvanced, setShowAdvanced }) {
+const BPM_PRESETS = [
+  ["60–90", "60", "90"],
+  ["90–110", "90", "110"],
+  ["110–130", "110", "130"],
+  ["130–150", "130", "150"],
+  ["150+", "150", "240"],
+];
+
+const DURATION_PRESETS = ["Under 30 seconds", "30–60 seconds", "1–2 minutes", "2–3 minutes", "3–5 minutes", "Over 5 minutes"];
+
+function SearchFilterSection({ id, label, open, onToggle, children }) {
+  return (
+    <section className={`search-filter-section ${open ? "is-open" : ""}`}>
+      <button type="button" className="search-filter-section-heading" aria-expanded={open} onClick={onToggle}>
+        <span>{label}</span><CaretDown aria-hidden="true" />
+      </button>
+      {open && <div className="search-filter-section-body" id={`search-filter-section-${id}`}>{children}</div>}
+    </section>
+  );
+}
+
+function SearchFilters({ filters, setFilters, facets, internal, onClose, resultCount, initialSection = "creative" }) {
+  const [openSections, setOpenSections] = useState(() => ({ creative: initialSection === "creative" || initialSection === "all", sound: initialSection === "sound" || initialSection === "all", usage: initialSection === "usage" || initialSection === "all", rights: initialSection === "rights" || initialSection === "all" }));
   const toggle = (key, value) => setFilters((current) => ({
     ...current,
     [key]: current[key].includes(value) ? current[key].filter((item) => item !== value) : [...current[key], value],
   }));
   const facetEntries = (key) =>
     Object.entries(facets[key] || {}).sort((a, b) => b[1] - a[1]);
-  const essentialKeys = [...ESSENTIAL_FACET_KEYS];
-  const advancedKeys = [
-    ...ADVANCED_FACET_KEYS,
-    ...(internal ? INTERNAL_FACET_KEYS : []),
-  ];
+  const setBpmPreset = (min, max) => setFilters((current) => ({ ...current, bpmMin: min, bpmMax: max }));
+  const toggleSection = (id) => setOpenSections((current) => ({ ...current, [id]: !current[id] }));
+  const isBpmPresetSelected = (min, max) => String(filters.bpmMin) === min && String(filters.bpmMax) === max;
   return (
-    <aside className="search-filter-sidebar" aria-label="Search filters">
+    <aside className="search-filter-sidebar" aria-label="All music filters">
       <div className="search-filter-heading">
         <div>
-          <span>Refine</span>
-          <strong>Music filters</strong>
+          <span>Refine</span><strong>All filters</strong>
         </div>
-        {onClose && (
-          <button aria-label="Close filters" onClick={onClose}>
-            <X />
-          </button>
-        )}
+        <button aria-label="Close filters" onClick={onClose}><X /></button>
       </div>
-      <div className="search-range-grid">
-        <label>
-          BPM minimum
-          <input
-            aria-label="BPM minimum"
-            type="number"
-            min="0"
-            max="240"
-            value={filters.bpmMin}
-            onChange={(e) => setFilters({ ...filters, bpmMin: e.target.value })}
-          />
-        </label>
-        <label>
-          BPM maximum
-          <input
-            aria-label="BPM maximum"
-            type="number"
-            min="0"
-            max="240"
-            value={filters.bpmMax}
-            onChange={(e) => setFilters({ ...filters, bpmMax: e.target.value })}
-          />
-        </label>
+      <div className="search-filter-scroll">
+        <SearchFilterSection id="creative" label="Creative Direction" open={openSections.creative} onToggle={() => toggleSection("creative")}>
+          <FilterGroup label="Mood" values={facetEntries("mood")} selected={filters.mood} onToggle={(value) => toggle("mood", value)} limit={4} compact />
+        </SearchFilterSection>
+        <SearchFilterSection id="sound" label="Sound" open={openSections.sound} onToggle={() => toggleSection("sound")}>
+          <FilterGroup label="Genre" values={facetEntries("genre")} selected={filters.genre} onToggle={(value) => toggle("genre", value)} limit={4} compact />
+          <FilterGroup label="Vocal / Instrumental" values={facetEntries("vocalType")} selected={filters.vocalType} onToggle={(value) => toggle("vocalType", value)} limit={4} compact />
+          <div className="search-preset-group"><strong>BPM</strong><div className="search-preset-grid">{BPM_PRESETS.map(([label, min, max]) => <button type="button" key={label} className={isBpmPresetSelected(min, max) ? "is-selected" : ""} onClick={() => setBpmPreset(min, max)}>{label}</button>)}</div></div>
+          <div className="search-range-control"><input aria-label="Minimum BPM" type="range" min="0" max="240" value={filters.bpmMin || 0} onChange={(e) => setFilters((current) => ({ ...current, bpmMin: e.target.value }))} /><input aria-label="Maximum BPM" type="range" min="0" max="240" value={filters.bpmMax || 240} onChange={(e) => setFilters((current) => ({ ...current, bpmMax: e.target.value }))} /><div><span>{filters.bpmMin || 0}</span><span>{filters.bpmMax || 240}</span></div></div>
+          <FilterGroup label="Tempo character" values={facetEntries("tempo")} selected={filters.tempo} onToggle={(value) => toggle("tempo", value)} compact />
+          <div className="search-preset-group"><strong>Duration</strong><div className="search-preset-grid duration">{DURATION_PRESETS.map((value) => <button type="button" key={value} className={filters.duration === value ? "is-selected" : ""} onClick={() => setFilters((current) => ({ ...current, duration: current.duration === value ? "Any" : value }))}>{value.replace(" seconds", " sec").replace(" minutes", " min").replace(" minute", " min")}</button>)}</div></div>
+        </SearchFilterSection>
+        <SearchFilterSection id="usage" label="Usage" open={openSections.usage} onToggle={() => toggleSection("usage")}>
+          <FilterGroup label="Usage type" values={facetEntries("usage")} selected={filters.usage} onToggle={(value) => toggle("usage", value)} limit={4} compact />
+          <FilterGroup label="Language" values={facetEntries("language")} selected={filters.language} onToggle={(value) => toggle("language", value)} compact />
+          <label className="search-select-label">Explicit content<select value={filters.explicit} onChange={(e) => setFilters({ ...filters, explicit: e.target.value })}><option>Any</option><option>Clean only</option><option>Explicit only</option></select></label>
+        </SearchFilterSection>
+        <SearchFilterSection id="rights" label="Rights & Delivery" open={openSections.rights} onToggle={() => toggleSection("rights")}>
+          <FilterGroup label="Availability" values={facetEntries("accessTier")} selected={filters.accessTier} onToggle={(value) => toggle("accessTier", value)} compact />
+          <FilterGroup label="Licensing readiness" values={facetEntries("licensingEligibility")} selected={filters.licensingEligibility} onToggle={(value) => toggle("licensingEligibility", value)} compact />
+          <div className="search-toggle-grid">{[...ESSENTIAL_TOGGLES, ...ADVANCED_TOGGLES].map((key) => <button type="button" key={key} className={filters[key] ? "is-selected" : ""} aria-pressed={filters[key]} onClick={() => setFilters((current) => ({ ...current, [key]: !current[key] }))}><span>{TOGGLE_LABELS[key]}</span>{filters[key] && <Check weight="bold" />}</button>)}</div>
+          <FilterGroup label="Territory" values={facetEntries("territory")} selected={filters.territory} onToggle={(value) => toggle("territory", value)} compact />
+          {internal && <><FilterGroup label="Rights status" values={facetEntries("rightsStatus")} selected={filters.rightsStatus} onToggle={(value) => toggle("rightsStatus", value)} compact /><FilterGroup label="Index status" values={facetEntries("indexStatus")} selected={filters.indexStatus} onToggle={(value) => toggle("indexStatus", value)} compact /></>}
+        </SearchFilterSection>
       </div>
-      <label className="search-select-label">
-        Duration
-        <select
-          value={filters.duration}
-          onChange={(e) => setFilters({ ...filters, duration: e.target.value })}
-        >
-          <option>Any</option>
-          <option>Under 30 seconds</option>
-          <option>30–60 seconds</option>
-          <option>1–2 minutes</option>
-          <option>2–3 minutes</option>
-          <option>3–5 minutes</option>
-          <option>Over 5 minutes</option>
-        </select>
-      </label>
-      <div className="search-availability-filter">
-        {ESSENTIAL_TOGGLES.map((key) => (
-          <label key={key}>
-            <input
-              type="checkbox"
-              checked={filters[key]}
-              onChange={(e) => setFilters({ ...filters, [key]: e.target.checked })}
-            />
-            <span>{TOGGLE_LABELS[key]}</span>
-          </label>
-        ))}
-      </div>
-      {essentialKeys.map((key) => (
-        <FilterGroup
-          key={key}
-          label={facetLabels[key]}
-          values={facetEntries(key)}
-          selected={filters[key]}
-          onToggle={(value) => toggle(key, value)}
-        />
-      ))}
-      <button
-        type="button"
-        className="search-more-filters"
-        aria-expanded={showAdvanced}
-        onClick={() => setShowAdvanced((open) => !open)}
-      >
-        <FadersHorizontal />
-        {showAdvanced ? "Hide advanced filters" : "More filters"}
-        <CaretDown className={showAdvanced ? "is-open" : ""} />
-      </button>
-      {showAdvanced && (
-        <div className="search-advanced-filters">
-          <label className="search-select-label">
-            Explicit content
-            <select
-              value={filters.explicit}
-              onChange={(e) =>
-                setFilters({ ...filters, explicit: e.target.value })
-              }
-            >
-              <option>Any</option>
-              <option>Clean only</option>
-              <option>Explicit only</option>
-            </select>
-          </label>
-          <div className="search-availability-filter">
-            {ADVANCED_TOGGLES.map((key) => (
-              <label key={key}>
-                <input
-                  type="checkbox"
-                  checked={filters[key]}
-                  onChange={(e) =>
-                    setFilters({ ...filters, [key]: e.target.checked })
-                  }
-                />
-                <span>{TOGGLE_LABELS[key]}</span>
-              </label>
-            ))}
-          </div>
-          {advancedKeys.map((key) => (
-            <FilterGroup
-              key={key}
-              label={facetLabels[key]}
-              values={facetEntries(key)}
-              selected={filters[key]}
-              onToggle={(value) => toggle(key, value)}
-            />
-          ))}
-        </div>
-      )}
-      <button
-        type="button"
-        className="search-clear-filters"
-        onClick={() => setFilters(clone(DEFAULT_SEARCH_FILTERS))}
-      >
-        Clear all filters
-      </button>
+      <div className="search-filter-footer"><button type="button" className="search-clear-filters" onClick={() => setFilters(clone(DEFAULT_SEARCH_FILTERS))}>Clear</button><button type="button" className="search-apply-filters" onClick={onClose}>Show {resultCount} tracks</button></div>
     </aside>
   );
 }
@@ -406,17 +341,54 @@ function TrackSearchCard({
   );
 }
 
-function AppliedChips({ query, filters, parsed, setFilters, setQuery }) {
+function getActiveFilterCount(filters) {
+  const count = Object.entries(filters).reduce((total, [key, value]) => {
+    if (key === "bpmMin" || key === "bpmMax") return total;
+    if (Array.isArray(value)) return total + value.length;
+    if (typeof value === "boolean") return total + (value ? 1 : 0);
+    if (key === "duration" || key === "explicit") return total + (value && value !== "Any" ? 1 : 0);
+    return total + (value ? 1 : 0);
+  }, 0);
+  return count + (filters.bpmMin || filters.bpmMax ? 1 : 0);
+}
+
+function AppliedChips({ query, filters, parsed, setFilters, setQuery, onClearAll }) {
   const chips = [];
-  if (query) chips.push({ key: "query", label: query, clear: () => setQuery("") });
+  if (query) chips.push({ key: "query", label: `Search: ${query}`, clear: () => setQuery("") });
   Object.entries(filters).forEach(([key, value]) => {
-    if (Array.isArray(value)) value.forEach((item) => chips.push({ key: `${key}-${item}`, label: item, clear: () => setFilters((current) => ({ ...current, [key]: current[key].filter((entry) => entry !== item) })) }));
-    else if (value && value !== "Any") chips.push({ key, label: typeof value === "boolean" ? key.replace(/([A-Z])/g, " $1") : value, clear: () => setFilters((current) => ({ ...current, [key]: typeof value === "boolean" ? false : key.startsWith("bpm") ? "" : "Any" })) });
+    const prefix = facetLabels[key] || TOGGLE_LABELS[key] || ({ bpmMin: "BPM min", bpmMax: "BPM max", duration: "Duration", explicit: "Explicit" }[key]) || key.replace(/([A-Z])/g, " $1");
+    if (Array.isArray(value)) value.forEach((item) => chips.push({ key: `${key}-${item}`, label: `${prefix}: ${item}`, clear: () => setFilters((current) => ({ ...current, [key]: current[key].filter((entry) => entry !== item) })) }));
+    else if (value && value !== "Any") chips.push({ key, label: typeof value === "boolean" ? prefix : `${prefix}: ${value}`, clear: () => setFilters((current) => ({ ...current, [key]: typeof value === "boolean" ? false : key.startsWith("bpm") ? "" : "Any" })) });
   });
+  if (!chips.length) return null;
   return (
     <div className="search-chips" aria-label="Applied search terms and filters">
       {parsed.length > 0 && <span className="interpretation-label">Interpreted as</span>}
       {chips.map((chip) => <button key={chip.key} onClick={chip.clear}>{chip.label}<X /></button>)}
+      <button type="button" className="search-chips-clear" onClick={onClearAll}>Clear all</button>
+    </div>
+  );
+}
+
+function SearchFilterCommandBar({ filters, onOpen }) {
+  const activeCount = getActiveFilterCount(filters);
+  const controls = [
+    ["creative", "Mood", filters.mood, Smiley],
+    ["sound", "Genre", filters.genre, MusicNotes],
+    ["usage", "Usage", filters.usage, Briefcase],
+    ["sound", "Vocal / Instrumental", filters.vocalType, Microphone],
+    ["rights", "Availability", filters.accessTier, ShieldCheck],
+  ];
+  return (
+    <div className="search-filter-command-bar" aria-label="Quick music filters">
+      {controls.map(([section, label, values, Icon]) => (
+        <button type="button" key={label} className={values.length ? "is-active" : ""} onClick={() => onOpen(section)}>
+          <Icon aria-hidden="true" /><span><small>{label}</small>{values.length ? values.slice(0, 2).join(", ") : "Any"}</span><CaretDown aria-hidden="true" />
+        </button>
+      ))}
+      <button type="button" className={`search-all-filters ${activeCount ? "is-active" : ""}`} onClick={() => onOpen("all")}>
+        <FadersHorizontal aria-hidden="true" /><span><small>All filters</small>Refine</span>{activeCount > 0 && <b>{activeCount}</b>}
+      </button>
     </div>
   );
 }
@@ -688,15 +660,21 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
   const [submitted, setSubmitted] = useState(query);
   const [visibleCount, setVisibleCount] = useState(12);
   const [showFilters, setShowFilters] = useState(false);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+  const [filterSection, setFilterSection] = useState("creative");
   const [saveOpen, setSaveOpen] = useState(false);
   const [saveName, setSaveName] = useState("");
   const [compareIds, setCompareIds] = useState([]);
   const [comparisonOpen, setComparisonOpen] = useState(false);
   const [collectionIds, setCollectionIds] = useState(null);
+  useEffect(() => {
+    if (!showFilters) return undefined;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [showFilters]);
   const search = useMemo(() => {
     const merged = { ...filters };
-    const parsed = searchService.search(tracks, { query: submitted, filters: merged, sort, user });
+    const parsed = searchService.search(tracks, { query: submitted, filters: merged, sort, user, includePinnedResults: true });
     if (collectionIds) parsed.documents = parsed.documents.filter((doc) => collectionIds.includes(doc.entityId));
     parsed.total = parsed.documents.length;
     return parsed;
@@ -740,7 +718,7 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
     const nl = searchService.search(tracks, { query, user }).parsed;
     if (nl.interpreted.length) setFilters((current) => ({ ...current, ...nl.filters }));
     setSubmitted(query); setSort(query ? "relevance" : "recent"); setVisibleCount(12); setCollectionIds(null);
-    searchService.recordSearch(user, query, { ...filters, ...nl.filters }, searchService.search(tracks, { query, filters: { ...filters, ...nl.filters }, user }).total, "Explore Music");
+    searchService.recordSearch(user, query, { ...filters, ...nl.filters }, searchService.search(tracks, { query, filters: { ...filters, ...nl.filters }, user, includePinnedResults: true }).total, "Explore Music");
     const params = new URLSearchParams(); if (query) params.set("q", query); window.history.replaceState(null, "", `#search${params.toString() ? `?${params}` : ""}`);
   };
   const runSearch = (item, ids = null) => {
@@ -761,6 +739,15 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
       }
     }
     openTrack(track);
+  };
+  const openFilters = (section = "creative") => {
+    setFilterSection(section);
+    setShowFilters(true);
+  };
+  const clearDiscovery = () => {
+    setFilters(clone(DEFAULT_SEARCH_FILTERS));
+    setQuery("");
+    setSubmitted("");
   };
   if (view === "search-saved")
     return (
@@ -826,23 +813,13 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
       <SearchInput query={query} setQuery={setQuery} suggestions={suggestions} onSubmit={submit} onSelectSuggestion={(suggestion) => { setQuery(suggestion.query); setSubmitted(suggestion.query); setSort("relevance"); searchService.recordSearch(user, suggestion.query, filters, 1, "Suggestion"); if (suggestion.trackId) openTrack(tracks.find((track) => track.id === suggestion.trackId)); }} />
       {projectContext && <div className="search-project-context"><div><small>Searching for project</small><strong>{projectContext.name}</strong><span>Automotive · Uplifting · Worldwide · Stems preferred · Professional or VIP</span></div><button onClick={() => { window.localStorage.removeItem("beatmondo-search-project-context"); setProjectContext(null); setFilters(clone(DEFAULT_SEARCH_FILTERS)); setQuery(""); setSubmitted(""); }}>Remove project context <X /></button></div>}
       {search.correction && <div className="search-correction" role="status">Showing results for <button onClick={() => { setQuery(search.correction); setSubmitted(search.correction); }}>{search.correction}</button><button onClick={() => setSubmitted(query)}>Search instead for {query}</button></div>}
-      <AppliedChips query={submitted} filters={filters} parsed={search.parsed.interpreted} setFilters={setFilters} setQuery={(value) => { setQuery(value); setSubmitted(value); }} />
       <SearchLibraryNav active="music" navigate={navigate} user={user} />
+      <SearchFilterCommandBar filters={filters} onOpen={openFilters} />
+      <AppliedChips query={submitted} filters={filters} parsed={search.parsed.interpreted} setFilters={setFilters} setQuery={(value) => { setQuery(value); setSubmitted(value); }} onClearAll={clearDiscovery} />
       <div className="search-workspace">
-        <SearchFilters
-          filters={filters}
-          setFilters={setFilters}
-          facets={search.facets}
-          internal={search.context.internal}
-          showAdvanced={showAdvancedFilters}
-          setShowAdvanced={setShowAdvancedFilters}
-        />
         <div className="search-results-area">
           <div className="search-results-toolbar">
             <div>
-              <button className="mobile-filter-button" onClick={() => setShowFilters(true)}>
-                <FadersHorizontal /> Filters
-              </button>
               <strong aria-live="polite">
                 {search.total} accessible tracks found
               </strong>
@@ -1038,7 +1015,7 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
         </div>
       </div>
       {showFilters && (
-        <div className="search-filter-drawer">
+        <div className="search-filter-drawer" role="dialog" aria-modal="true" aria-label="All music filters">
           <button
             className="drawer-backdrop"
             aria-label="Close filters"
@@ -1050,8 +1027,8 @@ export function SearchExperience({ view, tracks, navigate, openTrack, playingId,
             facets={search.facets}
             internal={search.context.internal}
             onClose={() => setShowFilters(false)}
-            showAdvanced={showAdvancedFilters}
-            setShowAdvanced={setShowAdvancedFilters}
+            resultCount={search.total}
+            initialSection={filterSection}
           />
         </div>
       )}
