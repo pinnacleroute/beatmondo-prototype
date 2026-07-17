@@ -51,9 +51,13 @@ The current implementation follows the updated Preston review direction:
 ├── public/
 │   ├── CNAME
 │   └── assets/
-│       ├── beatmondo-logo.png
-│       ├── beatmondo-logo-gif.mp4
-│       └── beatmondo-opener.mp4
+│       ├── artists/
+│       ├── audio/
+│       ├── auth/
+│       ├── editorial/
+│       ├── footer/
+│       ├── hero/
+│       └── beatmondo-logo.png
 ├── src/
 │   ├── App.jsx
 │   ├── main.jsx

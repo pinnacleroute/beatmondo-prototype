@@ -1,3 +1,13 @@
 .DS_Store
 dist/
 node_modules/
+
+# Generated QA and visual audit evidence
+/audit/
+/audits/
+/qa-audit/
+/qa-*.png
+/membership-plans-*.png
+
+# Reproducible media renders; keep only optimized site assets in public/assets
+/media/*/renders/
