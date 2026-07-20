@@ -50,6 +50,8 @@ export const PUBLIC_VIEWS = new Set([
   "content",
   "stories",
   "media",
+  "merchandise",
+  "investor",
   "contact",
   "membership-plans",
   "access",

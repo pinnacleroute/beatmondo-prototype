@@ -6,16 +6,19 @@ import {
   CaretRight,
   CheckCircle,
   CreditCard,
+  CurrencyBtc,
   CurrencyDollar,
   FileText,
   Funnel,
   Money,
+  PaypalLogo,
   Printer,
   Receipt,
   Repeat,
   ShieldCheck,
   TrendUp,
   WarningCircle,
+  Wallet,
   XCircle,
 } from "@phosphor-icons/react";
 import { useAuth } from "../auth/AuthContext.jsx";
@@ -107,8 +110,9 @@ const Notice = () => (
     <ShieldCheck />
     <span>
       <strong>Simulated licensing payment.</strong> No real processor, bank, tax
-      service, accounting platform, card authorization, or fund movement is
-      connected. Never enter real financial information.
+      service, accounting platform, card authorization, PayPal authorization,
+      crypto gateway, or fund movement is connected. Never enter real
+      financial information.
     </span>
   </div>
 );
@@ -155,6 +159,9 @@ function BuyerDashboard({ navigate }) {
   const invoices = paymentService.getInvoices(user);
   const transactions = paymentService.getTransactions(user);
   const credits = paymentService.getCredits(user);
+  const refunds = paymentService
+    .getRefunds(user)
+    .filter((r) => r.organizationId === user.organizationId);
   const list = invoices.filter(
     (i) =>
       filter === "All" ||
@@ -177,6 +184,83 @@ function BuyerDashboard({ navigate }) {
       />
       <Notice />
       <Separation />
+      <section className="pm-payment-demo">
+        <div className="pm-demo-block">
+          <div className="pm-demo-heading">
+            <div>
+              <span>Payment methods</span>
+              <h2>Buyer choice, finance control.</h2>
+            </div>
+            <button onClick={() => navigate("buyer-payment-methods")}>
+              View method details <ArrowRight />
+            </button>
+          </div>
+          <div className="pm-method-showcase">
+            <article>
+              <CreditCard />
+              <strong>Card</strong>
+              <small>Tokenized test flow</small>
+            </article>
+            <article>
+              <Bank />
+              <strong>Bank transfer</strong>
+              <small>Finance reconciliation</small>
+            </article>
+            <article>
+              <PaypalLogo />
+              <strong>PayPal</strong>
+              <small>Partner simulation</small>
+            </article>
+            <article>
+              <CurrencyBtc />
+              <strong>Crypto</strong>
+              <small>Planned · compliance gated</small>
+            </article>
+          </div>
+        </div>
+        <div className="pm-demo-block">
+          <div className="pm-demo-heading">
+            <div>
+              <span>Payment lifecycle</span>
+              <h2>Every commercial state is visible.</h2>
+            </div>
+          </div>
+          <ol className="pm-lifecycle-showcase">
+            {[
+              ["Payment pending", "Authorization or reconciliation open"],
+              ["Payment received", "Allocated to the invoice obligation"],
+              ["Payment failed", "Safe retry without duplicate capture"],
+              ["Refund initiated", "Approval and impact review started"],
+              ["Refund completed", "Ledger and receipt history retained"],
+            ].map(([label, note], index) => (
+              <li key={label}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <strong>{label}</strong>
+                <small>{note}</small>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+      <section className="pm-settlement-strip">
+        <article>
+          <span>01</span>
+          <strong>Invoice payment</strong>
+          <small>One contract-linked commercial obligation</small>
+        </article>
+        <CaretRight />
+        <article>
+          <span>02</span>
+          <strong>Deposit or partial payment</strong>
+          <small>Recorded without implying final clearance</small>
+        </article>
+        <CaretRight />
+        <article>
+          <span>03</span>
+          <strong>Final settlement</strong>
+          <small>Balance cleared; licence and delivery rechecked</small>
+        </article>
+      </section>
       <div className="pm-metrics">
         <article>
           <span>Outstanding balance</span>
@@ -282,6 +366,31 @@ function BuyerDashboard({ navigate }) {
           </article>
         ))}
       </section>
+      <section className="pm-panel">
+        <div className="pm-title-row">
+          <div>
+            <Repeat />
+            <h2>Refund activity</h2>
+          </div>
+          <small>Separate from the original payment record</small>
+        </div>
+        {refunds.map((refund) => (
+          <article className="pm-list-row" key={refund.id}>
+            <div>
+              <strong>{refund.reference}</strong>
+              <small>{refund.buyerMessage}</small>
+            </div>
+            <strong>{formatPaymentMoney(refund.amount, refund.currency)}</strong>
+            <Status
+              value={
+                refund.status === "Completed"
+                  ? "Refund completed"
+                  : "Refund initiated"
+              }
+            />
+          </article>
+        ))}
+      </section>
     </section>
   );
 }
@@ -301,6 +410,73 @@ function InvoiceDetail({ navigate, showToast }) {
   const contract = contractService.getContract(invoice.contractId);
   const readiness = calculateLicencePaymentReadiness(contract);
   const delivery = calculatePaymentDeliveryReadiness(contract, null);
+  const paymentState = paymentService.getState();
+  const invoiceTransactions = paymentState.transactions.filter(
+    (item) => item.invoiceId === invoice.id,
+  );
+  const invoiceRefunds = paymentState.refunds.filter(
+    (item) => item.invoiceId === invoice.id,
+  );
+  const timeline = [
+    {
+      id: `issued-${invoice.id}`,
+      date: invoice.issueDate,
+      title: "Invoice issued",
+      detail: `${invoice.reference} · ${invoice.paymentTerms}`,
+    },
+    ...invoiceTransactions.flatMap((payment) => [
+      {
+        id: `${payment.id}-started`,
+        date: payment.initiatedAt,
+        title:
+          payment.source === "Credit Ledger"
+            ? "Account credit allocation initiated"
+            : "Payment initiated",
+        detail: `${payment.reference} · ${payment.paymentMethodLabel}`,
+      },
+      ...(payment.capturedAt || payment.reconciledAt
+        ? [
+            {
+              id: `${payment.id}-received`,
+              date: payment.capturedAt || payment.reconciledAt,
+              title:
+                payment.source === "Credit Ledger"
+                  ? "Account credit applied"
+                  : "Payment received",
+              detail: `${formatPaymentMoney(payment.amount, payment.currency)} allocated to the invoice.`,
+            },
+          ]
+        : []),
+      ...(payment.failedAt
+        ? [
+            {
+              id: `${payment.id}-failed`,
+              date: payment.failedAt,
+              title: "Payment failed",
+              detail: payment.failureMessage || "The attempt was not completed.",
+            },
+          ]
+        : []),
+    ]),
+    ...invoiceRefunds.flatMap((refund) => [
+      {
+        id: `${refund.id}-initiated`,
+        date: refund.createdAt,
+        title: "Refund initiated",
+        detail: `${refund.reference} · ${formatPaymentMoney(refund.amount, refund.currency)}`,
+      },
+      ...(refund.completedAt
+        ? [
+            {
+              id: `${refund.id}-completed`,
+              date: refund.completedAt,
+              title: "Refund completed",
+              detail: refund.buyerMessage,
+            },
+          ]
+        : []),
+    ]),
+  ].sort((a, b) => new Date(a.date) - new Date(b.date));
   const openReceipt = () => {
     try {
       const generated = expiringAccessService.generateExpiringAccess(
@@ -358,16 +534,22 @@ function InvoiceDetail({ navigate, showToast }) {
               </strong>
             </div>
             <dl className="pm-dl">
+              <dt>Invoice number</dt>
+              <dd>{invoice.reference}</dd>
               <dt>Buyer</dt>
               <dd>{invoice.buyer}</dd>
               <dt>Organization</dt>
               <dd>{invoice.organization}</dd>
+              <dt>Project reference</dt>
+              <dd>{invoice.projectId}</dd>
               <dt>Project</dt>
               <dd>{invoice.project}</dd>
               <dt>Track</dt>
               <dd>{invoice.track}</dd>
-              <dt>Contract</dt>
+              <dt>Contract reference</dt>
               <dd>{invoice.contractReference}</dd>
+              <dt>Licence reference</dt>
+              <dd>{invoice.licenceReference || "Pending separate issuance"}</dd>
               <dt>Issue date</dt>
               <dd>{date(invoice.issueDate)}</dd>
               <dt>Due date</dt>
@@ -382,7 +564,27 @@ function InvoiceDetail({ navigate, showToast }) {
               </div>
             ))}
             <div className="pm-total">
-              <span>Total</span>
+              <span>Subtotal</span>
+              <strong>
+                {formatPaymentMoney(invoice.subtotal, invoice.currency)}
+              </strong>
+            </div>
+            <div className="pm-line">
+              <span>
+                {invoice.taxLabel} · {invoice.taxRate}%
+              </span>
+              <strong>{formatPaymentMoney(invoice.tax, invoice.currency)}</strong>
+            </div>
+            <div className="pm-line">
+              <span>Tax jurisdiction</span>
+              <strong>{invoice.taxJurisdiction}</strong>
+            </div>
+            <div className="pm-line">
+              <span>Buyer tax reference</span>
+              <strong>{invoice.taxRegistrationReference}</strong>
+            </div>
+            <div className="pm-total">
+              <span>Invoice total</span>
               <strong>
                 {formatPaymentMoney(invoice.total, invoice.currency)}
               </strong>
@@ -407,6 +609,26 @@ function InvoiceDetail({ navigate, showToast }) {
               This licensing invoice is a simulated commercial document and is
               not combined with platform-membership billing.
             </footer>
+          </section>
+          <section className="pm-panel">
+            <div className="pm-title-row">
+              <div>
+                <TrendUp />
+                <h2>Payment timeline</h2>
+              </div>
+              <small>Browser-persisted prototype evidence</small>
+            </div>
+            <ol className="pm-payment-timeline">
+              {timeline.map((event) => (
+                <li key={event.id}>
+                  <span>{date(event.date)}</span>
+                  <div>
+                    <strong>{event.title}</strong>
+                    <small>{event.detail}</small>
+                  </div>
+                </li>
+              ))}
+            </ol>
           </section>
         </main>
         <aside>
@@ -446,6 +668,54 @@ function InvoiceDetail({ navigate, showToast }) {
               release protected master audio or stems.
             </small>
           </section>
+          <section className="pm-panel pm-download-eligibility">
+            <h2>Download eligibility after payment</h2>
+            <div>
+              <CheckCircle />
+              <span>
+                <strong>Payment condition</strong>
+                <small>
+                  {invoice.balanceDue === 0
+                    ? "Payment received"
+                    : `${formatPaymentMoney(invoice.balanceDue)} remains`}
+                </small>
+              </span>
+            </div>
+            <div>
+              {invoice.licenceReference ? <CheckCircle /> : <WarningCircle />}
+              <span>
+                <strong>Licence condition</strong>
+                <small>
+                  {invoice.licenceReference || "Issued licence still required"}
+                </small>
+              </span>
+            </div>
+            <div>
+              <WarningCircle />
+              <span>
+                <strong>Secure delivery condition</strong>
+                <small>
+                  {delivery.ready
+                    ? "Separate delivery authorization active"
+                    : invoice.licenceReference
+                      ? "Separate delivery authorization still required"
+                      : delivery.status}
+                </small>
+              </span>
+            </div>
+            <Status
+              value={
+                invoice.balanceDue === 0 &&
+                invoice.licenceReference &&
+                delivery.ready
+                  ? "Download eligible"
+                  : "Download locked"
+              }
+            />
+            <small>
+              Payment alone never unlocks protected master audio or stems.
+            </small>
+          </section>
         </aside>
       </div>
     </section>
@@ -470,6 +740,10 @@ const defaultCheckout = {
   bankReference: "",
   transferDate: "",
   proofFile: "",
+  paypalEmail: "billing@northstarpictures.com",
+  cryptoProvider: "Approved crypto payment partner — selection pending",
+  finalSettlementCurrency: "USD — prototype example",
+  cryptoWalletConfirmed: false,
   idempotencyKey: "",
 };
 function Checkout({ navigate, showToast }) {
@@ -558,6 +832,46 @@ function Checkout({ navigate, showToast }) {
         user,
       );
       showToast(r.message || "Bank transfer submitted for reconciliation.");
+      if (r.ok) {
+        localStorage.removeItem(CHECKOUT_KEY);
+        navigate("buyer-payment-success");
+      }
+      return;
+    }
+    if (form.method === "PayPal") {
+      const r = paymentService.processPayPal(
+        invoice.id,
+        {
+          payerEmail: form.paypalEmail,
+          creditId: form.creditId,
+          creditAmount,
+          purchaseOrder: form.purchaseOrder,
+          idempotencyKey: form.idempotencyKey,
+        },
+        user,
+      );
+      showToast(r.message || "Mock PayPal payment recorded.");
+      if (r.ok) {
+        localStorage.removeItem(CHECKOUT_KEY);
+        navigate("buyer-payment-success");
+      }
+      return;
+    }
+    if (form.method === "Crypto") {
+      const r = paymentService.processCrypto(
+        invoice.id,
+        {
+          providerSelection: form.cryptoProvider,
+          finalSettlementCurrency: form.finalSettlementCurrency,
+          walletConfirmed: form.cryptoWalletConfirmed,
+          creditId: form.creditId,
+          creditAmount,
+          purchaseOrder: form.purchaseOrder,
+          idempotencyKey: form.idempotencyKey,
+        },
+        user,
+      );
+      showToast(r.message || "Mock wallet payment confirmation recorded.");
       if (r.ok) {
         localStorage.removeItem(CHECKOUT_KEY);
         navigate("buyer-payment-success");
@@ -699,20 +1013,32 @@ function Checkout({ navigate, showToast }) {
             <>
               <h2>Payment method</h2>
               <div className="pm-method-grid">
-                {["Card", "Bank transfer"].map((m) => (
+                {["Card", "Bank transfer", "PayPal", "Crypto"].map((m) => (
                   <button
                     className={form.method === m ? "selected" : ""}
                     onClick={() => update("method", m)}
                     key={m}
                   >
-                    {m === "Card" ? <CreditCard /> : <Bank />}
+                    {m === "Card" ? (
+                      <CreditCard />
+                    ) : m === "Bank transfer" ? (
+                      <Bank />
+                    ) : m === "PayPal" ? (
+                      <PaypalLogo />
+                    ) : (
+                      <CurrencyBtc />
+                    )}
                     <strong>{m}</strong>
                     <small>
                       {m === "Card"
                         ? methods[0]
                           ? `${methods[0].brand} ending ${methods[0].last4}`
                           : "Use a test card"
-                        : "Finance reconciliation required"}
+                        : m === "Bank transfer"
+                          ? "Finance reconciliation required"
+                          : m === "PayPal"
+                            ? "Mock partner authorization"
+                          : "Provider selection and compliance review pending"}
                     </small>
                   </button>
                 ))}
@@ -748,7 +1074,7 @@ function Checkout({ navigate, showToast }) {
                     />
                   </label>
                 </div>
-              ) : (
+              ) : form.method === "Bank transfer" ? (
                 <div className="pm-bank">
                   <Bank />
                   <h3>Bank-transfer instructions</h3>
@@ -788,6 +1114,113 @@ function Checkout({ navigate, showToast }) {
                         }
                       />
                     </label>
+                  </div>
+                </div>
+              ) : form.method === "PayPal" ? (
+                <div className="pm-paypal">
+                  <div className="pm-crypto-heading">
+                    <PaypalLogo />
+                    <div>
+                      <h3>PayPal payment simulation</h3>
+                      <p>
+                        Demonstrates a partner-authorized invoice payment. No
+                        PayPal account, redirect, credential, authorization, or
+                        fund movement is connected.
+                      </p>
+                    </div>
+                  </div>
+                  <label>
+                    Payer email placeholder
+                    <input
+                      type="email"
+                      value={form.paypalEmail}
+                      onChange={(e) => update("paypalEmail", e.target.value)}
+                    />
+                    <small>
+                      Prototype display only. Do not enter a real PayPal login.
+                    </small>
+                  </label>
+                  <div className="pm-crypto-status-grid">
+                    <div>
+                      <span>Partner environment</span>
+                      <strong>Simulation only</strong>
+                    </div>
+                    <div>
+                      <span>Settlement</span>
+                      <strong>{invoice.currency}</strong>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="pm-crypto">
+                  <div className="pm-crypto-heading">
+                    <CurrencyBtc />
+                    <div>
+                      <h3>Crypto payment configuration</h3>
+                      <p>
+                        A future-facing wallet-payment simulation for approved
+                        international transactions. No gateway, wallet, token,
+                        or blockchain transfer is connected.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="pm-form-grid">
+                    <label>
+                      Provider selection
+                      <select
+                        value={form.cryptoProvider}
+                        onChange={(e) =>
+                          update("cryptoProvider", e.target.value)
+                        }
+                      >
+                        <option>
+                          Approved crypto payment partner — selection pending
+                        </option>
+                        <option>Coinbase Commerce — example only</option>
+                        <option>Other approved provider — planned</option>
+                      </select>
+                      <small>
+                        Coinbase is an example only. No preferred provider has
+                        been confirmed.
+                      </small>
+                    </label>
+                    <label>
+                      Final settlement currency
+                      <select
+                        value={form.finalSettlementCurrency}
+                        onChange={(e) =>
+                          update("finalSettlementCurrency", e.target.value)
+                        }
+                      >
+                        <option>USD — prototype example</option>
+                        <option>EUR — prototype example</option>
+                        <option>GBP — prototype example</option>
+                      </select>
+                      <small>
+                        Supported countries, assets, and currencies remain to
+                        be defined.
+                      </small>
+                    </label>
+                  </div>
+                  <div className="pm-crypto-status-grid">
+                    <div>
+                      <span>Merchant verification</span>
+                      <strong>Required</strong>
+                    </div>
+                    <div>
+                      <span>Compliance review</span>
+                      <strong>Pending</strong>
+                    </div>
+                  </div>
+                  <div className="pm-crypto-launch">
+                    <strong>Live gateway activation is blocked until:</strong>
+                    <ul>
+                      <li>The preferred provider is confirmed</li>
+                      <li>Legal and tax treatment is reviewed</li>
+                      <li>Supported countries and currencies are defined</li>
+                      <li>KYC and AML requirements are finalized</li>
+                      <li>Refund and dispute policies are approved</li>
+                    </ul>
                   </div>
                 </div>
               )}
@@ -875,6 +1308,26 @@ function Checkout({ navigate, showToast }) {
                 <dd>
                   {form.name} · {form.billingEmail}
                 </dd>
+                {form.method === "Crypto" && (
+                  <>
+                    <dt>Provider</dt>
+                    <dd>{form.cryptoProvider}</dd>
+                    <dt>Final settlement currency</dt>
+                    <dd>{form.finalSettlementCurrency}</dd>
+                    <dt>Merchant verification</dt>
+                    <dd>Required</dd>
+                    <dt>Compliance review</dt>
+                    <dd>Pending</dd>
+                  </>
+                )}
+                {form.method === "PayPal" && (
+                  <>
+                    <dt>Partner</dt>
+                    <dd>PayPal · simulated</dd>
+                    <dt>Settlement currency</dt>
+                    <dd>{invoice.currency}</dd>
+                  </>
+                )}
               </dl>
               {[
                 "I authorize this simulated payment.",
@@ -898,6 +1351,25 @@ function Checkout({ navigate, showToast }) {
                   {label}
                 </label>
               ))}
+              {form.method === "Crypto" && (
+                <label className="pm-check pm-crypto-confirmation">
+                  <input
+                    type="checkbox"
+                    checked={form.cryptoWalletConfirmed}
+                    onChange={(e) =>
+                      update("cryptoWalletConfirmed", e.target.checked)
+                    }
+                  />
+                  <span>
+                    <strong>Confirm mock wallet payment</strong>
+                    <small>
+                      This records a browser-persisted prototype confirmation
+                      only. No wallet address, private key, token, real
+                      transaction hash, or provider call is created.
+                    </small>
+                  </span>
+                </label>
+              )}
               <button
                 className="pm-primary pm-large"
                 disabled={
@@ -905,13 +1377,22 @@ function Checkout({ navigate, showToast }) {
                   (form.method === "Bank transfer" &&
                     (!form.bankReference ||
                       !form.transferDate ||
-                      !form.proofFile))
+                      !form.proofFile)) ||
+                  (form.method === "Crypto" && !form.cryptoWalletConfirmed)
                 }
                 onClick={submit}
               >
                 {form.method === "Bank transfer" ? (
                   <>
                     <Bank /> Submit for reconciliation
+                  </>
+                ) : form.method === "Crypto" ? (
+                  <>
+                    <Wallet /> Confirm mock wallet payment
+                  </>
+                ) : form.method === "PayPal" ? (
+                  <>
+                    <PaypalLogo /> Pay with PayPal simulation
                   </>
                 ) : (
                   <>
@@ -1017,6 +1498,8 @@ function PaymentSuccess({ navigate }) {
   const receipt = paymentService
     .getReceipts(user)
     .find((r) => r.paymentId === p?.id);
+  const isCrypto = Boolean(p?.metadata?.crypto);
+  const isPayPal = p?.metadata?.partner === "PayPal";
   return (
     <section className="pm-page pm-state-page">
       <CheckCircle />
@@ -1031,7 +1514,13 @@ function PaymentSuccess({ navigate }) {
             ? "Finance review is pending"
             : "Licensing payment successful"
         }
-        text="The transaction is recorded separately from membership billing, licence issuance, and delivery."
+        text={
+          isCrypto
+            ? "The mock wallet confirmation is recorded. Provider activation and compliance approval remain pending."
+            : isPayPal
+              ? "The mock PayPal authorization and invoice allocation are recorded without a live provider call."
+            : "The transaction is recorded separately from membership billing, licence issuance, and delivery."
+        }
       />
       <Notice />
       <section className="pm-panel">
@@ -1052,7 +1541,44 @@ function PaymentSuccess({ navigate }) {
           <dd>
             {receipt?.reference || "Generated after successful reconciliation"}
           </dd>
+          {isCrypto && (
+            <>
+              <dt>Wallet confirmation</dt>
+              <dd>{p.metadata.walletConfirmationReference}</dd>
+              <dt>Transaction status</dt>
+              <dd>{p.metadata.transactionStatus}</dd>
+              <dt>Provider</dt>
+              <dd>{p.metadata.providerSelection}</dd>
+              <dt>Final settlement currency</dt>
+              <dd>{p.metadata.finalSettlementCurrency}</dd>
+              <dt>Merchant verification</dt>
+              <dd>{p.metadata.merchantVerification}</dd>
+              <dt>Compliance review</dt>
+              <dd>{p.metadata.complianceReview}</dd>
+              <dt>Audit reference</dt>
+              <dd>{p.metadata.auditReference}</dd>
+            </>
+          )}
+          {isPayPal && (
+            <>
+              <dt>Partner authorization</dt>
+              <dd>{p.mockAuthorizationId}</dd>
+              <dt>Transaction status</dt>
+              <dd>{p.metadata.transactionStatus}</dd>
+              <dt>Settlement currency</dt>
+              <dd>{p.metadata.settlementCurrency}</dd>
+              <dt>Audit reference</dt>
+              <dd>{p.metadata.auditReference}</dd>
+            </>
+          )}
         </dl>
+        {isCrypto && (
+          <div className="pm-warning">
+            <ShieldCheck /> Simulation only — this is not evidence of a
+            blockchain payment, merchant approval, legal clearance, or final
+            settlement.
+          </div>
+        )}
         <p>
           <strong>Next step:</strong>{" "}
           {invoice?.balanceDue
@@ -1133,9 +1659,9 @@ function PaymentMethods({ navigate }) {
         <ArrowLeft /> Licence payments
       </button>
       <Header
-        eyebrow="Tokenized display only"
+        eyebrow="Approved methods and planned partners"
         title="Payment Methods"
-        text="Existing method summaries may be selected for licensing checkout, but membership and licensing transaction ledgers remain separate."
+        text="Card summaries, finance-managed transfers, and simulated partner pathways are shown here while membership and licensing transaction ledgers remain separate."
       />
       <Notice />
       <div className="pm-method-grid">
@@ -1146,7 +1672,8 @@ function PaymentMethods({ navigate }) {
               {m.brand} ending {m.last4}
             </h2>
             <p>
-              Expires {m.expMonth}/{m.expYear}
+              Expires {String(m.expiryMonth || m.expMonth).padStart(2, "0")}/
+              {m.expiryYear || m.expYear}
             </p>
             <Status value={m.status} />
             <small>{m.scope}</small>
@@ -1158,6 +1685,27 @@ function PaymentMethods({ navigate }) {
           <p>
             Instructions use placeholders and require finance reconciliation.
           </p>
+        </article>
+        <article className="pm-panel pm-paypal-method-card">
+          <PaypalLogo />
+          <h2>PayPal</h2>
+          <p>Mock partner authorization for contract-linked invoices.</p>
+          <Status value="Simulation only" />
+          <small>
+            No account login, provider token, redirect, or live settlement is
+            connected.
+          </small>
+        </article>
+        <article className="pm-panel pm-crypto-method-card">
+          <CurrencyBtc />
+          <h2>Crypto</h2>
+          <p>Approved crypto payment partner — selection pending.</p>
+          <Status value="Merchant verification required" />
+          <small>
+            Coinbase may be evaluated as an example only. Legal, tax, market,
+            KYC/AML, refund, and dispute policies require approval before any
+            live gateway work.
+          </small>
         </article>
       </div>
     </section>
@@ -1214,6 +1762,10 @@ function ReceiptView({ navigate }) {
         <dd>{receipt.contractReference}</dd>
         <dt>Project</dt>
         <dd>{receipt.project}</dd>
+        <dt>Project reference</dt>
+        <dd>{receipt.projectId || "Recorded on linked invoice"}</dd>
+        <dt>Licence reference</dt>
+        <dd>{receipt.licenceReference || "Pending separate issuance"}</dd>
         <dt>Track</dt>
         <dd>{receipt.track}</dd>
         <dt>Method</dt>
@@ -1224,6 +1776,14 @@ function ReceiptView({ navigate }) {
         <dd>{formatPaymentMoney(receipt.creditApplied)}</dd>
         <dt>Remaining balance</dt>
         <dd>{formatPaymentMoney(receipt.remainingBalance)}</dd>
+        <dt>Tax treatment</dt>
+        <dd>
+          {receipt.taxLabel || "Tax review / not calculated"} · {receipt.taxRate || 0}%
+        </dd>
+        <dt>Tax amount</dt>
+        <dd>{formatPaymentMoney(receipt.tax, receipt.currency)}</dd>
+        <dt>Tax jurisdiction</dt>
+        <dd>{receipt.taxJurisdiction || "Buyer jurisdiction review required"}</dd>
       </dl>
       <footer>
         Simulated receipt for a music-licensing payment. This is not a
@@ -1425,6 +1985,22 @@ function AdminDetail({ navigate }) {
               <dd>{p.authenticationStatus || "Not required"}</dd>
               <dt>Reconciled</dt>
               <dd>{date(p.reconciledAt)}</dd>
+              {p.metadata?.crypto && (
+                <>
+                  <dt>Transaction status</dt>
+                  <dd>{p.metadata.transactionStatus}</dd>
+                  <dt>Wallet confirmation</dt>
+                  <dd>{p.metadata.walletConfirmationReference}</dd>
+                  <dt>Final settlement currency</dt>
+                  <dd>{p.metadata.finalSettlementCurrency}</dd>
+                  <dt>Merchant verification</dt>
+                  <dd>{p.metadata.merchantVerification}</dd>
+                  <dt>Compliance review</dt>
+                  <dd>{p.metadata.complianceReview}</dd>
+                  <dt>Audit reference</dt>
+                  <dd>{p.metadata.auditReference}</dd>
+                </>
+              )}
             </dl>
           </section>
           <section className="pm-panel">
@@ -1474,8 +2050,12 @@ function AdminDetail({ navigate }) {
             <p>
               Provider reference: {p.providerReference || "Manual workflow"}
             </p>
+            {p.metadata?.crypto && (
+              <p>Provider selection: {p.metadata.providerSelection}</p>
+            )}
             <small>
-              No full card number, CVC, or bank credential is stored.
+              No full card number, CVC, bank credential, wallet address,
+              private key, seed phrase, or real transaction hash is stored.
             </small>
           </section>
         </aside>

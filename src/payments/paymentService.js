@@ -37,12 +37,18 @@ function normalize(value) {
   return {
     ...base,
     ...value,
-    invoices: merge(value.invoices, base.invoices),
+    invoices: merge(value.invoices, base.invoices).map((invoice) => ({
+      ...base.invoices.find((item) => item.id === invoice.id),
+      ...invoice,
+    })),
     obligations: merge(value.obligations, base.obligations),
     transactions: merge(value.transactions, base.transactions),
     credits: merge(value.credits, base.credits),
     refunds: merge(value.refunds, base.refunds),
-    receipts: merge(value.receipts, base.receipts),
+    receipts: merge(value.receipts, base.receipts).map((receipt) => ({
+      ...base.receipts.find((item) => item.id === receipt.id),
+      ...receipt,
+    })),
     allocations: value.allocations || [],
     bankTransfers: value.bankTransfers || [],
     reconciliations: value.reconciliations || [],
@@ -393,6 +399,12 @@ function finishSuccess(state, invoice, transaction, creditAmount, user) {
     project: invoice.project,
     track: invoice.track,
     tax: invoice.tax,
+    taxRate: invoice.taxRate,
+    taxLabel: invoice.taxLabel,
+    taxJurisdiction: invoice.taxJurisdiction,
+    taxRegistrationReference: invoice.taxRegistrationReference,
+    projectId: invoice.projectId,
+    licenceReference: invoice.licenceReference || null,
     creditApplied: creditAmount || 0,
     remainingBalance: invoice.balanceDue,
     assetId: `asset-receipt-${transaction.id}`,
@@ -425,6 +437,113 @@ function finishSuccess(state, invoice, transaction, creditAmount, user) {
   syncContractPayment(invoice.contractId, state);
   localStorage.setItem(SELECTED_PAYMENT_KEY, transaction.id);
   return receipt;
+}
+
+function processSimulatedPartnerPayment(invoiceId, values, user) {
+  const state = readPaymentState();
+  const invoice = state.invoices.find((item) => item.id === invoiceId);
+  if (!invoice) return { ok: false, message: "Licensing invoice not found." };
+  if (
+    state.transactions.some(
+      (transaction) =>
+        transaction.metadata?.idempotencyKey === values.idempotencyKey,
+    )
+  )
+    return {
+      ok: false,
+      code: "DUPLICATE_PAYMENT",
+      message: "This simulated PayPal request was already submitted.",
+    };
+  const credit = state.credits.find(
+    (item) =>
+      item.id === values.creditId &&
+      item.organizationId === invoice.organizationId &&
+      item.status === "Active",
+  );
+  const creditAmount = Math.min(
+    Number(values.creditAmount || 0),
+    credit?.remainingAmount || 0,
+    invoice.balanceDue,
+  );
+  const charge = invoice.balanceDue - creditAmount;
+  state.lastNumbers.payment += 1;
+  const sequence = String(state.lastNumbers.payment).padStart(4, "0");
+  const transaction = {
+    id: uid("payment"),
+    reference: `BM-PAY-2026-${sequence}`,
+    paymentType: invoice.invoiceType,
+    source: "PayPal Partner Simulation",
+    buyerId: user.id,
+    buyer: user.name,
+    organizationId: invoice.organizationId,
+    organization: invoice.organization,
+    projectId: invoice.projectId,
+    quoteId: invoice.quoteId,
+    contractId: invoice.contractId,
+    licenceId: invoice.licenceId || null,
+    invoiceId: invoice.id,
+    paymentMethodId: null,
+    paymentMethodLabel: "PayPal · simulated",
+    currency: invoice.currency,
+    amount: charge,
+    status: "Processing",
+    providerReference: `mock_paypal_${Date.now()}`,
+    mockAuthorizationId: `MOCK-PAYPAL-AUTH-${sequence}`,
+    failureCode: null,
+    failureMessage: null,
+    authenticationRequired: false,
+    authenticationStatus: "Mock approved",
+    initiatedAt: now(),
+    authorizedAt: null,
+    capturedAt: null,
+    failedAt: null,
+    refundedAt: null,
+    reconciledAt: null,
+    createdBy: user.name,
+    metadata: {
+      idempotencyKey: values.idempotencyKey || uid("bm_pay_idem"),
+      purchaseOrder: values.purchaseOrder || null,
+      creditId: credit?.id || null,
+      creditAmount,
+      partner: "PayPal",
+      transactionStatus: "Mock partner authorization received",
+      settlementCurrency: invoice.currency,
+      auditReference: `BM-AUD-PAYPAL-2026-${sequence}`,
+      internalOnly: false,
+    },
+  };
+  state.transactions.unshift(transaction);
+  state.paymentAttempts.unshift({
+    id: uid("attempt"),
+    transactionId: transaction.id,
+    invoiceId: invoice.id,
+    attemptedAt: now(),
+    method: transaction.paymentMethodLabel,
+    status: "Mock authorization received",
+  });
+  activity(
+    state,
+    transaction,
+    user,
+    "Mock PayPal authorization received",
+    `${transaction.metadata.auditReference} recorded without a live PayPal call.`,
+    "Buyer",
+  );
+  const receipt = finishSuccess(
+    state,
+    invoice,
+    transaction,
+    creditAmount,
+    user,
+  );
+  writePaymentState(state);
+  return {
+    ok: true,
+    message: "Mock PayPal payment recorded.",
+    transaction: clone(transaction),
+    receipt: clone(receipt),
+    invoice: clone(invoice),
+  };
 }
 
 export const paymentService = {
@@ -487,6 +606,18 @@ export const paymentService = {
         (r) => r.organizationId === user.organizationId,
       );
     return clone(receipts);
+  },
+  getRefunds(user) {
+    let refunds = readPaymentState().refunds;
+    if (user?.userType === "buyer")
+      refunds = refunds.filter(
+        (refund) => refund.organizationId === user.organizationId,
+      );
+    return clone(
+      [...refunds].sort((a, b) =>
+        String(b.createdAt).localeCompare(String(a.createdAt)),
+      ),
+    );
   },
   getPaymentMethods(user) {
     return membershipService.getPaymentMethods(user.id).map((m) => ({
@@ -836,6 +967,153 @@ export const paymentService = {
         invoice: clone(invoice),
       };
     });
+  },
+  processPayPal(invoiceId, values, user) {
+    const invoice = this.getInvoice(invoiceId, user);
+    const eligibility = this.validateEligibility(invoice, user);
+    if (!eligibility.ok) return eligibility;
+    if (!values.payerEmail)
+      return {
+        ok: false,
+        message: "A payer email placeholder is required for the simulation.",
+      };
+    return processSimulatedPartnerPayment(invoiceId, values, user);
+  },
+  processCrypto(invoiceId, values, user) {
+    const visibleInvoice = this.getInvoice(invoiceId, user);
+    const eligibility = this.validateEligibility(visibleInvoice, user);
+    if (!eligibility.ok) return eligibility;
+    if (
+      !values.providerSelection ||
+      !values.finalSettlementCurrency ||
+      !values.walletConfirmed
+    )
+      return {
+        ok: false,
+        message:
+          "Provider placeholder, settlement currency, and mock wallet confirmation are required.",
+      };
+    const state = readPaymentState();
+    if (
+      state.transactions.some(
+        (t) => t.metadata?.idempotencyKey === values.idempotencyKey,
+      )
+    )
+      return {
+        ok: false,
+        code: "DUPLICATE_PAYMENT",
+        message: "This mock wallet-payment request was already submitted.",
+      };
+    const invoice = state.invoices.find((item) => item.id === invoiceId);
+    const credit = state.credits.find(
+      (c) =>
+        c.id === values.creditId &&
+        c.organizationId === invoice.organizationId &&
+        c.status === "Active",
+    );
+    const creditAmount = Math.min(
+      Number(values.creditAmount || 0),
+      credit?.remainingAmount || 0,
+      invoice.balanceDue,
+    );
+    const charge = invoice.balanceDue - creditAmount;
+    if (charge < 0)
+      return {
+        ok: false,
+        code: "AMOUNT_INVALID",
+        message: safeFailure("AMOUNT_INVALID"),
+      };
+    state.lastNumbers.payment += 1;
+    const sequence = String(state.lastNumbers.payment).padStart(4, "0");
+    const transaction = {
+      id: uid("payment"),
+      reference: `BM-PAY-2026-${sequence}`,
+      paymentType: invoice.invoiceType,
+      source: "Crypto Wallet Simulation",
+      buyerId: user.id,
+      buyer: user.name,
+      organizationId: invoice.organizationId,
+      organization: invoice.organization,
+      projectId: invoice.projectId,
+      quoteId: invoice.quoteId,
+      contractId: invoice.contractId,
+      licenceId: null,
+      invoiceId: invoice.id,
+      paymentMethodId: null,
+      paymentMethodLabel: "Crypto wallet · simulated",
+      currency: invoice.currency,
+      amount: charge,
+      status: "Processing",
+      providerReference: `mock_crypto_provider_${Date.now()}`,
+      mockAuthorizationId: null,
+      failureCode: null,
+      failureMessage: null,
+      authenticationRequired: false,
+      authenticationStatus: null,
+      initiatedAt: now(),
+      authorizedAt: null,
+      capturedAt: null,
+      failedAt: null,
+      refundedAt: null,
+      reconciledAt: null,
+      createdBy: user.name,
+      metadata: {
+        crypto: true,
+        idempotencyKey: values.idempotencyKey || uid("bm_pay_idem"),
+        purchaseOrder: values.purchaseOrder || null,
+        creditId: credit?.id || null,
+        creditAmount,
+        providerSelection: values.providerSelection,
+        providerExample: "Coinbase Commerce — example only",
+        merchantVerification: "Required — not completed in prototype",
+        finalSettlementCurrency: values.finalSettlementCurrency,
+        walletConfirmationReference: `MOCK-WALLET-2026-${sequence}`,
+        transactionStatus: "Mock wallet confirmed · simulation only",
+        auditReference: `BM-AUD-CRYPTO-2026-${sequence}`,
+        complianceReview: "Pending",
+        internalOnly: false,
+      },
+    };
+    state.transactions.unshift(transaction);
+    state.paymentAttempts.unshift({
+      id: uid("attempt"),
+      transactionId: transaction.id,
+      invoiceId: invoice.id,
+      attemptedAt: now(),
+      method: transaction.paymentMethodLabel,
+      status: "Mock wallet confirmed",
+    });
+    activity(
+      state,
+      invoice,
+      user,
+      "Mock crypto wallet confirmed",
+      `${transaction.metadata.walletConfirmationReference} recorded without a provider or blockchain call.`,
+      "Buyer",
+    );
+    activity(
+      state,
+      transaction,
+      user,
+      "Crypto compliance review pending",
+      `${transaction.metadata.auditReference}: merchant verification, provider, legal, tax, market, KYC/AML, refund, and dispute approvals remain outstanding.`,
+      "Internal",
+    );
+    const receipt = finishSuccess(
+      state,
+      invoice,
+      transaction,
+      creditAmount,
+      user,
+    );
+    writePaymentState(state);
+    return {
+      ok: true,
+      message: "Mock wallet payment confirmation recorded.",
+      transaction: clone(transaction),
+      receipt: clone(receipt),
+      invoice: clone(invoice),
+    };
   },
   submitBankTransfer(invoiceId, values, user) {
     const invoice = this.getInvoice(invoiceId, user);

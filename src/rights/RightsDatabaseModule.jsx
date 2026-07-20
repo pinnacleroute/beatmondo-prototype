@@ -118,11 +118,11 @@ function Completeness({ record }) {
   return (
     <div
       className="rights-completeness"
-      aria-label={`Rights completeness ${completeness.percentage} percent`}
+      aria-label={`Rights health score ${completeness.percentage} percent`}
     >
       <div>
         <strong>{completeness.percentage}%</strong>
-        <span>Rights completeness</span>
+        <span>Rights health score</span>
       </div>
       <div className="completeness-rail">
         <span style={{ width: `${completeness.percentage}%` }} />
@@ -144,8 +144,207 @@ function Completeness({ record }) {
         </div>
       )}
       <small>
-        This score measures supplied workflow information, not legal certainty.
+        Operational score based on supplied data, documents, conflicts and
+        review state—not proof of ownership or legal certainty.
       </small>
+    </div>
+  );
+}
+
+function RightsOverviewCockpit({ record, user, onAssign, onOpenChecklist }) {
+  const completeness = calculateCompleteness(record);
+  const documents = rightsService.getDocuments({ trackId: record.trackId });
+  const parties = rightsService.getParties();
+  const partyIds = new Set([
+    ...(record.masterRights.owners || []).map((item) => item.partyId),
+    ...(record.compositionRights.writers || []).map((item) => item.partyId),
+    ...(record.publishingRights.publishers || []).map((item) => item.partyId),
+  ]);
+  const relatedParties = parties.filter((item) => partyIds.has(item.id));
+  const labels = relatedParties.filter((item) => item.partyType === "Record Label");
+  const missingDocuments = documents.filter(
+    (item) => !["Accepted", "Superseded"].includes(item.reviewStatus),
+  );
+  const activeDisputes = (record.disputes || []).filter(
+    (item) => !["Resolved", "Rejected", "Closed"].includes(item.status),
+  );
+  const conflicts = [
+    ...(record.territories.conflicts || []),
+    ...activeDisputes.map(
+      (item) => `${item.claimType || "Rights claim"}: ${item.status}`,
+    ),
+    ...completeness.blockingIssues.filter((item) =>
+      /ownership|shares|conflict/i.test(item),
+    ),
+  ];
+  const checklistEntries = Object.entries(record.review.checklist || {});
+  const checklistComplete = checklistEntries.filter(([, value]) => value).length;
+  const checklistPending = checklistEntries
+    .filter(([, value]) => !value)
+    .map(([label]) => label);
+  const expiryDates = [
+    record.review.nextReviewAt && {
+      label: "Rights review",
+      date: record.review.nextReviewAt,
+    },
+    ...(record.contracts || [])
+      .filter((item) => item.expiryDate)
+      .map((item) => ({ label: item.type, date: item.expiryDate })),
+  ]
+    .filter(Boolean)
+    .sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  const nextExpiry = expiryDates[0];
+  const territoryRestrictions = (record.restrictions || []).filter(
+    (item) => item.type === "Territory Restriction",
+  );
+  const canSeeLegal =
+    user.permissions?.includes("*") ||
+    user.permissions?.includes("rights.view_legal_notes");
+  const legalNotes = (record.internalNotes || []).filter(
+    (item) => item.visibility !== "Legal Restricted" || canSeeLegal,
+  );
+  const ownerLine = (item, shareKey, nameKey) => (
+    <li key={`${item.partyId}-${item[nameKey]}`}>
+      <span>{item[nameKey]}</span>
+      <strong>{item[shareKey]}%</strong>
+    </li>
+  );
+  return (
+    <div className="rights-cockpit">
+      <section className="rights-decision-strip" aria-label="Rights decision summary">
+        <article>
+          <span>Rights health</span>
+          <strong>{completeness.percentage}%</strong>
+          <small>{completeness.missingSections.length} missing-data areas</small>
+        </article>
+        <article>
+          <span>Clearance status</span>
+          <strong>{record.licensingEligibility}</strong>
+          <small>{record.status}</small>
+        </article>
+        <article className={conflicts.length ? "attention" : "clear"}>
+          <span>Conflict alerts</span>
+          <strong>{conflicts.length}</strong>
+          <small>{conflicts.length ? "Reviewer action required" : "No active conflicts"}</small>
+        </article>
+        <article className={!nextExpiry ? "attention" : ""}>
+          <span>Rights expiry notification</span>
+          <strong>{nextExpiry ? formatDate(nextExpiry.date) : "Not scheduled"}</strong>
+          <small>{nextExpiry?.label || "Set a review or authority expiry"}</small>
+        </article>
+      </section>
+
+      <div className="rights-record-grid">
+        <section className="rights-panel rights-map-panel">
+          <div className="rights-panel-heading">
+            <div>
+              <span className="eyebrow">Rights map</span>
+              <h3>{record.trackTitle}</h3>
+            </div>
+            <RightsStatusBadge status={record.status} />
+          </div>
+          <div className="rights-domain-grid">
+            <article>
+              <span>Master rights · {record.masterRights.status}</span>
+              <strong>{record.masterRights.totalOwnership}% recorded</strong>
+              <ul>
+                {record.masterRights.owners.map((item) =>
+                  ownerLine(item, "ownershipPercentage", "partyName"),
+                )}
+              </ul>
+            </article>
+            <article>
+              <span>Composition rights · {record.compositionRights.status}</span>
+              <strong>{record.compositionRights.writerShareTotal}% writer shares</strong>
+              <ul>
+                {record.compositionRights.writers.map((item) =>
+                  ownerLine(item, "writerShare", "name"),
+                )}
+              </ul>
+            </article>
+            <article>
+              <span>Publishers · {record.publishingRights.status}</span>
+              <strong>{record.publishingRights.publisherShareTotal}% publisher shares</strong>
+              <ul>
+                {record.publishingRights.publishers.map((item) =>
+                  ownerLine(item, "publisherShare", "name"),
+                )}
+              </ul>
+            </article>
+            <article>
+              <span>Labels</span>
+              <strong>{labels.length ? labels.map((item) => item.displayName).join(", ") : "No label recorded"}</strong>
+              <small>{record.artist} · {record.isrc || "ISRC pending"}</small>
+            </article>
+          </div>
+        </section>
+
+        <section className="rights-panel rights-governance-panel">
+          <span className="eyebrow">Scope & governance</span>
+          <h3>Clearance controls</h3>
+          <dl>
+            <dt>Territories</dt>
+            <dd>{record.territories.included.join(", ")}</dd>
+            <dt>Territory restrictions</dt>
+            <dd>
+              {record.territories.excluded.length
+                ? `Excluded: ${record.territories.excluded.join(", ")}`
+                : territoryRestrictions.map((item) => item.description).join("; ") || "None recorded"}
+            </dd>
+            <dt>Restrictions</dt>
+            <dd>{record.restrictions.map((item) => item.description).join("; ") || "None recorded"}</dd>
+            <dt>Expiry dates</dt>
+            <dd>{expiryDates.map((item) => `${item.label}: ${formatDate(item.date)}`).join(" · ") || "No expiry date recorded"}</dd>
+            <dt>Internal reviewer</dt>
+            <dd>{reviewerName(record.assignedReviewerId)} · {record.priority} priority · due {formatDate(record.review.dueDate)}</dd>
+            <dt>Contact information</dt>
+            <dd>
+              {relatedParties.length
+                ? relatedParties.map((item) => `${item.displayName}: ${item.contactEmail || "contact missing"}`).join(" · ")
+                : "No rights-party contacts recorded"}
+            </dd>
+            <dt>Legal notes</dt>
+            <dd>{legalNotes.length ? legalNotes.map((item) => item.content).join(" · ") : "No notes visible to this role"}</dd>
+          </dl>
+          <button onClick={onAssign}>Assign internal reviewer</button>
+        </section>
+      </div>
+
+      <div className="rights-attention-grid">
+        <section className="rights-panel">
+          <span className="eyebrow">Missing-data warnings</span>
+          <h3>{completeness.missingSections.length} areas incomplete</h3>
+          <ul className="rights-signal-list">
+            {[...completeness.missingSections, ...completeness.warnings]
+              .slice(0, 6)
+              .map((item) => <li key={item}><WarningCircle /> {item}</li>)}
+            {!labels.length && <li><WarningCircle /> Label information not recorded</li>}
+          </ul>
+        </section>
+        <section className="rights-panel">
+          <span className="eyebrow">Missing documents & conflicts</span>
+          <h3>{missingDocuments.length + conflicts.length} active alerts</h3>
+          <ul className="rights-signal-list critical">
+            {missingDocuments.map((item) => (
+              <li key={item.id}><FileArrowUp /> {item.category}: {item.reviewStatus}</li>
+            ))}
+            {conflicts.map((item) => <li key={item}><WarningCircle /> {item}</li>)}
+            {!missingDocuments.length && !conflicts.length && <li><CheckCircle /> No active document or conflict alerts</li>}
+          </ul>
+        </section>
+        <section className="rights-panel">
+          <span className="eyebrow">Clearance checklist</span>
+          <h3>{checklistComplete}/{checklistEntries.length} complete</h3>
+          <div className="rights-checklist-rail" aria-label={`${checklistComplete} of ${checklistEntries.length} clearance checks complete`}>
+            <span style={{ width: `${checklistEntries.length ? (checklistComplete / checklistEntries.length) * 100 : 0}%` }} />
+          </div>
+          <ul className="rights-signal-list">
+            {checklistPending.slice(0, 4).map((item) => <li key={item}><WarningCircle /> {item}</li>)}
+            {!checklistPending.length && <li><CheckCircle /> All checklist items recorded</li>}
+          </ul>
+          <button onClick={onOpenChecklist}>Open clearance checklist</button>
+        </section>
+      </div>
     </div>
   );
 }
@@ -306,8 +505,10 @@ export function RightsDashboard({ navigate, showToast }) {
               <th>Rights status</th>
               <th>Master</th>
               <th>Publishing</th>
-              <th>Completeness</th>
+              <th>Rights health</th>
               <th>Licensing</th>
+              <th>Missing data / conflicts</th>
+              <th>Rights expiry</th>
               <th>Reviewer</th>
               <th>Updated</th>
               <th>Priority</th>
@@ -344,6 +545,18 @@ export function RightsDashboard({ navigate, showToast }) {
                 </td>
                 <td>
                   <EligibilityBadge status={record.licensingEligibility} />
+                </td>
+                <td>
+                  <strong>{record.completeness.missingSections.length} missing</strong>
+                  <small>
+                    {(record.territories.conflicts.length || record.disputes.length)
+                      ? `${record.territories.conflicts.length + record.disputes.length} conflict alert(s)`
+                      : "No recorded conflict"}
+                  </small>
+                </td>
+                <td>
+                  {formatDate(record.review.nextReviewAt)}
+                  <small>{record.review.expiryStatus}</small>
                 </td>
                 <td>{reviewerName(record.assignedReviewerId)}</td>
                 <td>{formatDate(record.updatedAt)}</td>
@@ -450,32 +663,6 @@ export function RightsTrackWorkspace({ navigate, showToast }) {
           {error}
         </div>
       )}
-      <div className="rights-workspace-summary">
-        <Completeness record={record} />
-        <dl>
-          <dt>Master</dt>
-          <dd>
-            {record.masterRights.status} · {record.masterRights.totalOwnership}%
-          </dd>
-          <dt>Publishing</dt>
-          <dd>
-            {record.publishingRights.status} ·{" "}
-            {record.publishingRights.publisherShareTotal}%
-          </dd>
-          <dt>Writers</dt>
-          <dd>{record.compositionRights.writerShareTotal}%</dd>
-          <dt>Samples</dt>
-          <dd>
-            {record.samples.length
-              ? record.samples.map((item) => item.status).join(", ")
-              : "No Sample Declared"}
-          </dd>
-          <dt>Territory</dt>
-          <dd>{record.territories.included.join(", ")}</dd>
-          <dt>Reviewer</dt>
-          <dd>{reviewerName(record.assignedReviewerId)}</dd>
-        </dl>
-      </div>
       <nav className="rights-tabs" aria-label="Rights workspace sections">
         {workspaceTabs.map((item) => (
           <button
@@ -488,24 +675,32 @@ export function RightsTrackWorkspace({ navigate, showToast }) {
         ))}
       </nav>
       {tab === "Summary" && (
-        <RightsSummary
-          record={record}
-          result={result}
-          user={user}
-          onAssign={() => setModal("assign")}
-          onVerify={() => setModal("verify")}
-          onReverify={() =>
-            action(
-              rightsService.triggerReverification(
-                record.id,
-                user,
-                "Scheduled rights reverification",
-              ),
-              "Reverification started.",
-            )
-          }
-          onDispute={() => setModal("dispute")}
-        />
+        <>
+          <RightsOverviewCockpit
+            record={record}
+            user={user}
+            onAssign={() => setModal("assign")}
+            onOpenChecklist={() => setTab("Review Checklist")}
+          />
+          <RightsSummary
+            record={record}
+            result={result}
+            user={user}
+            onAssign={() => setModal("assign")}
+            onVerify={() => setModal("verify")}
+            onReverify={() =>
+              action(
+                rightsService.triggerReverification(
+                  record.id,
+                  user,
+                  "Scheduled rights reverification",
+                ),
+                "Reverification started.",
+              )
+            }
+            onDispute={() => setModal("dispute")}
+          />
+        </>
       )}
       {tab === "Master Rights" && (
         <OwnershipEditor

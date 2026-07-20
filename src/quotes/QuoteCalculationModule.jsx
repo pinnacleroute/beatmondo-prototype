@@ -6,6 +6,7 @@ import {
   CheckCircle,
   Clock,
   CurrencyDollar,
+  DownloadSimple,
   FileText,
   Funnel,
   PaperPlaneTilt,
@@ -96,6 +97,228 @@ const Notice = () => (
     </span>
   </div>
 );
+
+function quotePricingContext(q) {
+  const calculation = quoteService
+    .getState()
+    .calculations?.find((item) => item.id === q.calculationId);
+  const input = calculation?.inputs || {};
+  const lines = q.lineItems || [];
+  const baseLicencePrice = lines
+    .filter((item) =>
+      ["Master Licence Fee", "Publishing Licence Fee"].includes(item.type),
+    )
+    .reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const rushFee = lines
+    .filter((item) => item.type === "Rush Fee")
+    .reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const addOns = lines.filter(
+    (item) =>
+      ![
+        "Master Licence Fee",
+        "Publishing Licence Fee",
+        "Rush Fee",
+        "Discount",
+        "Credit",
+        "Tax",
+      ].includes(item.type),
+  );
+  const addOnsTotal = addOns.reduce(
+    (sum, item) => sum + Number(item.total || 0),
+    0,
+  );
+  const discount =
+    Number(q.discounts || 0) ||
+    lines
+      .filter((item) => ["Discount", "Credit"].includes(item.type))
+      .reduce((sum, item) => sum + Number(item.total || 0), 0);
+  const activeRules = quoteService
+    .getState()
+    .pricingModels?.find((model) => model.active)?.rules;
+  const threshold = activeRules?.approvalThresholds || {};
+  const approvalThreshold =
+    q.total >= Number(threshold.seniorAbove || Infinity)
+      ? `Senior approval above ${formatQuoteMoney(threshold.seniorAbove)}`
+      : q.total >= Number(threshold.financeFrom || Infinity)
+        ? `Finance approval from ${formatQuoteMoney(threshold.financeFrom)}`
+        : `Licensing approval below ${formatQuoteMoney(threshold.financeFrom)}`;
+  const rights = q.rightsSummary || {};
+  const rightsInvolved = [
+    rights.masterControlledShare != null
+      ? `Master ${rights.masterControlledShare}% controlled`
+      : "Master rights",
+    rights.publishingControlledShare != null
+      ? `Publishing ${rights.publishingControlledShare}% controlled`
+      : "Publishing rights",
+  ].join(" · ");
+  const customEdit =
+    q.terms?.assets?.some((asset) => /custom|cut|edit/i.test(asset)) ||
+    lines.some((item) => /custom|cut|edit/i.test(item.type));
+  return {
+    projectType: input.projectType || "Advertising campaign",
+    territory: q.terms?.territory || input.territory || "—",
+    term: q.terms?.term || input.term || "—",
+    exclusivity: q.terms?.exclusivity || input.exclusivity || "—",
+    media: q.terms?.media?.join(", ") || input.media?.join(", ") || "—",
+    scale: q.terms?.scale || input.scale || "—",
+    track: `${q.trackTitle} — ${q.artist}`,
+    rightsInvolved,
+    files: q.terms?.assets?.join(", ") || "None requested",
+    customEdit: customEdit ? "Required" : "Not requested",
+    rushFee,
+    baseLicencePrice: baseLicencePrice || Math.max(0, q.subtotal - addOnsTotal - rushFee),
+    addOns,
+    addOnsTotal,
+    tax: Number(q.tax || 0),
+    discount,
+    total: Number(q.total || 0),
+    internalMargin: q.internalMarginRate ?? 0.32,
+    approvalThreshold,
+  };
+}
+
+function QuoteRequestBridge({ q }) {
+  return (
+    <section className="qt-request-bridge" aria-label="Request to quote workflow">
+      <div>
+        <span>01</span>
+        <strong>Request received</strong>
+        <small>{q.licensingRequestId || "Linked licensing request"}</small>
+      </div>
+      <ArrowRight aria-hidden="true" />
+      <div>
+        <span>02</span>
+        <strong>Pricing logic applied</strong>
+        <small>Usage, rights and delivery inputs</small>
+      </div>
+      <ArrowRight aria-hidden="true" />
+      <div>
+        <span>03</span>
+        <strong>Quote ready</strong>
+        <small>{q.reference} · version {q.version}</small>
+      </div>
+      <ArrowRight aria-hidden="true" />
+      <div>
+        <span>04</span>
+        <strong>Contract follows</strong>
+        <small>Only after quote acceptance</small>
+      </div>
+    </section>
+  );
+}
+
+function QuotePricingStory({ q, internal = false }) {
+  const pricing = quotePricingContext(q);
+  const inputs = [
+    ["Project type", pricing.projectType],
+    ["Territory", pricing.territory],
+    ["Term", pricing.term],
+    ["Exclusivity", pricing.exclusivity],
+    ["Media usage", pricing.media],
+    ["Audience scale", pricing.scale],
+    ["Track", pricing.track],
+    ["Rights involved", pricing.rightsInvolved],
+    ["Requested files", pricing.files],
+    ["Custom edit", pricing.customEdit],
+  ];
+  return (
+    <>
+      <section className="qt-panel qt-pricing-story">
+        <div className="qt-section-heading">
+          <div>
+            <span>Request inputs</span>
+            <h2>What shaped this quote</h2>
+          </div>
+          <small>Snapshot locked to quote version {q.version}</small>
+        </div>
+        <div className="qt-input-map">
+          {inputs.map(([label, value]) => (
+            <div key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </div>
+          ))}
+        </div>
+      </section>
+      <section className="qt-panel qt-price-stack">
+        <div className="qt-section-heading">
+          <div>
+            <span>Pricing logic</span>
+            <h2>Quote breakdown</h2>
+          </div>
+          <small>Fictional, review-subject guidance</small>
+        </div>
+        <div className="qt-price-row">
+          <span>Base licence price</span>
+          <strong>{formatQuoteMoney(pricing.baseLicencePrice, q.currency)}</strong>
+        </div>
+        <div className="qt-price-row">
+          <span>Rush fee <small>{q.terms?.rush || "Standard"}</small></span>
+          <strong>{formatQuoteMoney(pricing.rushFee, q.currency)}</strong>
+        </div>
+        <div className="qt-price-row">
+          <span>Add-ons <small>{pricing.addOns.map((item) => item.name).join(", ") || "None"}</small></span>
+          <strong>{formatQuoteMoney(pricing.addOnsTotal, q.currency)}</strong>
+        </div>
+        <div className="qt-price-row">
+          <span>Taxes <small>Final tax treatment reviewed at invoicing</small></span>
+          <strong>{formatQuoteMoney(pricing.tax, q.currency)}</strong>
+        </div>
+        <div className="qt-price-row qt-discount-row">
+          <span>Discount</span>
+          <strong>{formatQuoteMoney(pricing.discount, q.currency)}</strong>
+        </div>
+        <div className="qt-price-row qt-grand-total">
+          <span>Total</span>
+          <strong>{formatQuoteMoney(pricing.total, q.currency)}</strong>
+        </div>
+        <div className="qt-validity-row">
+          <Clock aria-hidden="true" /> Valid until {date(q.validUntil)}
+        </div>
+      </section>
+      {internal && (
+        <section className="qt-panel qt-internal-controls">
+          <div>
+            <span>Internal margin</span>
+            <strong>{Math.round(pricing.internalMargin * 100)}% illustrative</strong>
+            <small>Restricted internal planning assumption</small>
+          </div>
+          <div>
+            <span>Approval threshold</span>
+            <strong>{pricing.approvalThreshold}</strong>
+            <small>{q.approvalStatus} · pricing model v{q.pricingModelVersion}</small>
+          </div>
+        </section>
+      )}
+    </>
+  );
+}
+
+function downloadQuote(q) {
+  const pricing = quotePricingContext(q);
+  const content = [
+    "beatmondo licensing quote — prototype",
+    `${q.reference} · version ${q.version}`,
+    `${q.trackTitle} — ${q.artist}`,
+    `${q.project} · ${q.organization}`,
+    "",
+    `Media usage: ${pricing.media}`,
+    `Territory: ${pricing.territory}`,
+    `Term: ${pricing.term}`,
+    `Exclusivity: ${pricing.exclusivity}`,
+    `Requested files: ${pricing.files}`,
+    `Total: ${formatQuoteMoney(pricing.total, q.currency)}`,
+    `Valid until: ${date(q.validUntil)}`,
+    "",
+    "Fictional, non-binding prototype quote. Rights, contract, payment and delivery remain separate approval stages.",
+  ].join("\n");
+  const url = URL.createObjectURL(new Blob([content], { type: "text/plain" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${q.reference}-beatmondo-quote.txt`;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
 function selectQuote(id, navigate, target = "admin-quote") {
   localStorage.setItem(SELECTED_QUOTE_KEY, id);
   navigate(target);
@@ -646,50 +869,10 @@ function QuoteDetail({ navigate, showToast }) {
         }
       />
       <Notice />
+      <QuoteRequestBridge q={q} />
       <div className="qt-detail-grid">
         <main>
-          <section className="qt-panel">
-            <div className="qt-title-row">
-              <div>
-                <Status value={q.status} />
-                <Status value={q.approvalStatus} />
-              </div>
-              <strong>
-                {q.minimum != null && q.maximum != null
-                  ? `${formatQuoteMoney(q.minimum)}–${formatQuoteMoney(q.maximum)}`
-                  : formatQuoteMoney(q.total)}
-              </strong>
-            </div>
-            <h2>Commercial terms</h2>
-            <dl className="qt-dl">
-              <dt>Media</dt>
-              <dd>{q.terms.media?.join(", ")}</dd>
-              <dt>Territory</dt>
-              <dd>{q.terms.territory}</dd>
-              <dt>Term</dt>
-              <dd>{q.terms.term}</dd>
-              <dt>Exclusivity</dt>
-              <dd>{q.terms.exclusivity}</dd>
-              <dt>Prominence</dt>
-              <dd>{q.terms.prominence}</dd>
-              <dt>Deliverables</dt>
-              <dd>{q.terms.assets?.join(", ")}</dd>
-            </dl>
-            <h3>Line items</h3>
-            {q.lineItems?.map((l) => (
-              <div className="qt-line" key={l.id}>
-                <span>
-                  <strong>{l.name}</strong>
-                  <small>{l.description}</small>
-                </span>
-                <strong>{formatQuoteMoney(l.total, q.currency)}</strong>
-              </div>
-            ))}
-            <div className="qt-total">
-              <span>Quote total</span>
-              <strong>{formatQuoteMoney(q.total, q.currency)}</strong>
-            </div>
-          </section>
+          <QuotePricingStory q={q} internal />
           <section className="qt-panel">
             <h2>Conditions & exclusions</h2>
             {q.conditions?.map((x) => (
@@ -944,43 +1127,32 @@ function BuyerQuote({ navigate, showToast }) {
         }
       />
       <Notice />
+      <QuoteRequestBridge q={q} />
       <div className="qt-buyer-detail">
-        <main className="qt-panel">
-          <div className="qt-title-row">
-            <Status value={QUOTE_STATUSES[q.status]?.buyerLabel || q.status} />
-            <strong>
-              {q.minimum != null && q.maximum != null
-                ? `${formatQuoteMoney(q.minimum)}–${formatQuoteMoney(q.maximum)}`
-                : formatQuoteMoney(q.total)}
-            </strong>
-          </div>
-          <h2>Approved usage</h2>
-          <dl className="qt-dl">
-            <dt>Media</dt>
-            <dd>{q.terms.media.join(", ")}</dd>
-            <dt>Territory</dt>
-            <dd>{q.terms.territory}</dd>
-            <dt>Term</dt>
-            <dd>{q.terms.term}</dd>
-            <dt>Exclusivity</dt>
-            <dd>{q.terms.exclusivity}</dd>
-            <dt>Deliverables</dt>
-            <dd>{q.terms.assets?.join(", ")}</dd>
-          </dl>
-          <h2>Conditions</h2>
-          {q.conditions?.map((x) => (
-            <p className="qt-condition" key={x}>
-              <WarningCircle /> {x}
-            </p>
-          ))}
-          <p>{q.buyerMessage}</p>
-          <small>
-            Acceptance records commercial intent only. It does not transfer
-            rights, complete payment, or unlock protected master audio.
-          </small>
+        <main>
+          <QuotePricingStory q={q} />
+          <section className="qt-panel">
+            <h2>Conditions</h2>
+            {q.conditions?.map((x) => (
+              <p className="qt-condition" key={x}>
+                <WarningCircle /> {x}
+              </p>
+            ))}
+            <p>{q.buyerMessage}</p>
+            <small>
+              Acceptance records commercial intent only. It does not transfer
+              rights, complete payment, or unlock protected master audio.
+            </small>
+          </section>
         </main>
         <aside className="qt-panel">
           <h2>Your response</h2>
+          <button className="qt-full" onClick={() => downloadQuote(q)}>
+            <DownloadSimple /> Download quote summary
+          </button>
+          <button className="qt-full" onClick={() => navigate("quote-print")}>
+            <Printer /> Print or save as PDF
+          </button>
           {["Sent", "Viewed", "Buyer Revision Requested"].includes(q.status) ? (
             <>
               <button
@@ -1030,6 +1202,22 @@ function BuyerQuote({ navigate, showToast }) {
                 </div>
               )}
             </>
+          ) : q.status === "Accepted" ? (
+            <div className="qt-complete qt-contract-ready">
+              <CheckCircle />
+              <strong>Quote accepted</strong>
+              <p>Commercial intent is recorded. Contract preparation is the next separate stage.</p>
+              <button
+                className="qt-primary qt-full"
+                onClick={() => {
+                  const result = quoteService.proceedToContract(q.id, user);
+                  showToast(result.message || "Contract preparation opened.");
+                  if (result.ok) navigate("buyer-contracts");
+                }}
+              >
+                Proceed to contract <ArrowRight />
+              </button>
+            </div>
           ) : (
             <div className="qt-complete">
               <CheckCircle />
@@ -1188,6 +1376,7 @@ function PrintQuote({ navigate }) {
         </div>
       </section>
     );
+  const pricing = quotePricingContext(q);
   return (
     <section className="qt-print">
       <div className="qt-print-actions">
@@ -1215,16 +1404,41 @@ function PrintQuote({ navigate }) {
         </strong>
       </div>
       <dl className="qt-dl">
+        <dt>Project type</dt>
+        <dd>{pricing.projectType}</dd>
         <dt>Media</dt>
-        <dd>{q.terms.media.join(", ")}</dd>
+        <dd>{pricing.media}</dd>
         <dt>Territory</dt>
-        <dd>{q.terms.territory}</dd>
+        <dd>{pricing.territory}</dd>
         <dt>Term</dt>
-        <dd>{q.terms.term}</dd>
+        <dd>{pricing.term}</dd>
         <dt>Exclusivity</dt>
-        <dd>{q.terms.exclusivity}</dd>
+        <dd>{pricing.exclusivity}</dd>
+        <dt>Audience scale</dt>
+        <dd>{pricing.scale}</dd>
+        <dt>Rights involved</dt>
+        <dd>{pricing.rightsInvolved}</dd>
+        <dt>Requested files</dt>
+        <dd>{pricing.files}</dd>
+        <dt>Custom edit</dt>
+        <dd>{pricing.customEdit}</dd>
         <dt>Valid until</dt>
         <dd>{date(q.validUntil)}</dd>
+      </dl>
+      <h2>Pricing breakdown</h2>
+      <dl className="qt-dl">
+        <dt>Base licence price</dt>
+        <dd>{formatQuoteMoney(pricing.baseLicencePrice, q.currency)}</dd>
+        <dt>Rush fee</dt>
+        <dd>{formatQuoteMoney(pricing.rushFee, q.currency)}</dd>
+        <dt>Add-ons</dt>
+        <dd>{formatQuoteMoney(pricing.addOnsTotal, q.currency)}</dd>
+        <dt>Taxes</dt>
+        <dd>{formatQuoteMoney(pricing.tax, q.currency)}</dd>
+        <dt>Discount</dt>
+        <dd>{formatQuoteMoney(pricing.discount, q.currency)}</dd>
+        <dt>Total</dt>
+        <dd><strong>{formatQuoteMoney(pricing.total, q.currency)}</strong></dd>
       </dl>
       <h2>Conditions</h2>
       {q.conditions.map((x) => (

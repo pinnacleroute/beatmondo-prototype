@@ -3,3 +3,39 @@
 @media(max-width:760px){.sd-page{padding:24px 16px 100px}.sd-header{display:block}.sd-actions{margin-top:15px}.sd-grid,.sd-assets,.sd-buyer-list{grid-template-columns:1fr}.sd-metrics{grid-template-columns:1fr 1fr}.sd-quick{grid-template-columns:1fr}.sd-toolbar{display:grid}.sd-toolbar label{max-width:none}.sd-toolbar select{width:100%}.sd-summary{grid-template-columns:1fr 1fr}.sd-dependencies{grid-template-columns:1fr}.sd-approvals{grid-template-columns:1fr}.sd-definition>div{grid-template-columns:1fr;gap:3px}.sd-section-head{display:block}.sd-asset-meta{grid-template-columns:1fr 1fr}.sd-separation{align-items:stretch;flex-direction:column}.sd-separation svg{transform:rotate(90deg);align-self:center}.sd-extension>div{grid-template-columns:1fr}.sd-request-list article{align-items:flex-start;flex-direction:column}.sd-request-list article>div:last-child{flex-wrap:wrap}.sd-manifest header{align-items:flex-start;flex-direction:column;gap:12px}.full-grid{grid-column:auto}}
 @media(max-width:390px){.sd-metrics,.sd-summary,.sd-asset-meta,.sd-buyer-package,.sd-type-stats{grid-template-columns:1fr}.sd-header h1{overflow-wrap:anywhere}.sd-asset-actions{align-items:stretch;flex-direction:column}.sd-asset-actions button{width:100%}.sd-readiness header{align-items:flex-start}.sd-ring{width:54px;height:54px;flex:0 0 auto}}
 .sd-temp-access{display:flex;gap:9px;align-items:center;padding:12px;margin:12px 0;background:#ded3bd;border-left:3px solid #8b713e;color:#4f4436}.sd-temp-access svg{font-size:24px;color:#7d6435}.sd-temp-access span{display:grid}.sd-temp-access strong{color:#2b241d}
+
+/* Release gate and access-policy controls */
+.sd-page button{min-height:44px}
+.sd-summary{grid-template-columns:repeat(6,1fr)}
+.sd-release-gate{margin:22px 0;padding:24px;border:1px solid #6d4930;background:linear-gradient(135deg,#251711,#171411)}
+.sd-release-gate.released{border-color:#526b50;background:linear-gradient(135deg,#172117,#141713)}
+.sd-release-gate>header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}
+.sd-release-gate>header span:first-child{color:#c5a45d;text-transform:uppercase;letter-spacing:.14em;font-size:.7rem}
+.sd-release-gate h2{font:400 clamp(1.55rem,2.6vw,2.35rem) Georgia,serif;margin:8px 0}
+.sd-release-gate header p{color:#b6ad9f;margin:0;max-width:760px;line-height:1.55}
+.sd-release-checks{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:20px}
+.sd-release-checks>div{display:flex;gap:10px;align-items:flex-start;min-height:68px;padding:12px;border:1px solid #44382d;background:#12110f}
+.sd-release-checks>div.passed{border-color:#445b43;background:#151d14}
+.sd-release-checks svg{font-size:21px;flex:0 0 auto;color:#c7a45a}
+.sd-release-checks .passed svg{color:#8fba86}
+.sd-release-checks span{display:grid;gap:3px}
+.sd-release-checks small{color:#918779}
+.sd-terms-action,.sd-terms-proof{display:flex;align-items:center;gap:14px;margin:16px 0 0;padding:14px;border-top:1px solid #44382d}
+.sd-terms-action>span{display:grid;color:#aaa092;margin-right:auto}
+.sd-terms-action strong{color:#eee5d8}
+.sd-terms-proof{color:#b9d2b2}
+.sd-terms-proof svg{font-size:22px;flex:0 0 auto}
+.sd-package-options{border:1px solid #40372d;padding:14px;margin:16px 0}
+.sd-package-options legend{padding:0 7px;color:#c4a25b;text-transform:uppercase;letter-spacing:.1em;font-size:.7rem}
+.sd-package-options label{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid #302a23}
+.sd-package-options label:last-child{border-bottom:0}
+.sd-package-options input{width:18px;height:18px;accent-color:#9a171a}
+.sd-package-options span{display:grid}
+.sd-package-options small{color:#8f8578}
+.sd-config-grid{display:grid;grid-template-columns:1.35fr .65fr;gap:22px}
+.sd-config-actions{padding:16px;border:1px solid #393229;background:#11100f}
+.sd-config-actions button{width:100%;margin-top:8px}
+.sd-config-actions>small{display:block;color:#8f8578;line-height:1.5;margin-top:12px}
+@media(max-width:1100px){.sd-release-checks{grid-template-columns:repeat(2,1fr)}.sd-summary{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.sd-config-grid,.sd-release-checks{grid-template-columns:1fr}.sd-release-gate>header,.sd-terms-action{align-items:flex-start;flex-direction:column}.sd-terms-action button{width:100%}.sd-summary{grid-template-columns:1fr 1fr}}
+@media(max-width:390px){.sd-summary{grid-template-columns:1fr}}

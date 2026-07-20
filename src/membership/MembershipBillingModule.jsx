@@ -30,6 +30,7 @@ import {
 import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 
 export const MEMBERSHIP_RETURN_KEY = "beatmondo-membership-return-view";
+const PLAN_CHANGE_REVIEW_KEY = "beatmondo-membership-plan-change-review";
 
 function BillingSectionNav({ navigate, active }) {
   const items = [
@@ -104,6 +105,7 @@ export const MEMBERSHIP_VIEWS = new Set([
   "billing-invoices",
   "billing-invoice",
   "billing-subscription",
+  "billing-plan-change-confirmation",
   "billing-cancel",
   "billing-reactivate",
   "billing-payment-failed",
@@ -1478,6 +1480,75 @@ export function BillingDashboard({ navigate, showToast }) {
           </button>
         </div>
       )}
+      <section className="membership-demo-overview">
+        <article className="membership-demo-tiers">
+          <div className="membership-demo-heading">
+            <div>
+              <span className="eyebrow">Access architecture</span>
+              <h3>Three tiers. Monthly or annual.</h3>
+            </div>
+            <button onClick={() => navigate("membership-plans")}>Compare plans</button>
+          </div>
+          <div>
+            {["Discovery Access", "Professional Buyer", "VIP Sync Access"].map(
+              (name, index) => (
+                <span
+                  className={membership.planName === name ? "current" : ""}
+                  key={name}
+                >
+                  <small>0{index + 1}</small>
+                  <strong>{name}</strong>
+                  {membership.planName === name && <em>Current plan</em>}
+                </span>
+              ),
+            )}
+          </div>
+        </article>
+        <article className="membership-renewal-card">
+          <span className="eyebrow">Renewal reminder</span>
+          <h3>
+            {membership.autoRenew
+              ? `Renewal scheduled ${formatDate(membership.nextInvoiceAt || membership.currentPeriodEnd)}`
+              : `Access continues until ${formatDate(membership.currentPeriodEnd)}`}
+          </h3>
+          <p>
+            {membership.autoRenew
+              ? "A simulated reminder is scheduled 30 days before renewal. The saved payment method will be revalidated before any mock charge."
+              : "Auto-renewal is disabled. Reactivation restores the existing renewal schedule before period end."}
+          </p>
+          <dl>
+            <dt>Billing cycle</dt>
+            <dd>{membership.billingInterval}</dd>
+            <dt>Auto-renewal</dt>
+            <dd>{membership.autoRenew ? "Enabled" : "Disabled"}</dd>
+            <dt>Payment method</dt>
+            <dd>{method ? `${method.brand} ending ${method.last4}` : "Not required"}</dd>
+          </dl>
+        </article>
+      </section>
+      <section className="membership-state-demo">
+        <div className="membership-demo-heading">
+          <div>
+            <span className="eyebrow">Renewal protection</span>
+            <h3>Failed renewal to restored access.</h3>
+          </div>
+          <small>Frontend lifecycle demonstration</small>
+        </div>
+        <ol>
+          {[
+            ["Failed renewal", "Payment attempt fails; no licence fee is affected."],
+            ["Grace period", "Existing projects remain visible while premium actions are restricted."],
+            ["Suspended access", "Paid-tier entitlements fall back to permitted Discovery access."],
+            ["Reactivation", "Payment and eligibility are revalidated before paid access returns."],
+          ].map(([title, text], index) => (
+            <li key={title}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <strong>{title}</strong>
+              <small>{text}</small>
+            </li>
+          ))}
+        </ol>
+      </section>
       <div className="billing-metrics">
         <article>
           <span>Billing interval</span>
@@ -1650,7 +1721,7 @@ function CurrentPlan({ membership, access, verification, method, navigate }) {
       <div className="billing-actions">
         <button
           className="gold-button"
-          onClick={() => navigate("membership-plans")}
+          onClick={() => navigate("billing-subscription")}
         >
           Change plan
         </button>
@@ -2065,34 +2136,22 @@ export function SubscriptionManager({ navigate, showToast }) {
   );
   if (!user || !membership) return null;
   const plan = membershipService.getPlan(target);
+  const currentPlan = membershipService.getPlan(membership.planId);
   const proration = calculateProration(membership, plan, interval);
-  const upgrade = () => {
-    const result = membershipService.changePlan(
-      user,
-      membership.id,
-      target,
-      interval,
-      verification,
+  const reviewChange = () => {
+    const changeType =
+      plan.sortOrder < currentPlan.sortOrder ? "Downgrade" : "Upgrade";
+    window.localStorage.setItem(
+      PLAN_CHANGE_REVIEW_KEY,
+      JSON.stringify({
+        membershipId: membership.id,
+        targetPlanId: target,
+        interval,
+        changeType,
+        createdAt: new Date().toISOString(),
+      }),
     );
-    if (!result.ok) {
-      showToast(result.message);
-      if (target === "plan-vip") navigate("buyer-verification");
-      return;
-    }
-    setMembership(result.membership);
-    showToast("Membership plan updated.");
-  };
-  const downgrade = () => {
-    const result = membershipService.scheduleDowngrade(
-      user,
-      membership.id,
-      target,
-    );
-    if (!result.ok) showToast(result.message);
-    else {
-      setMembership(result.membership);
-      showToast("Downgrade scheduled at period end.");
-    }
+    navigate("billing-plan-change-confirmation");
   };
   return (
     <section className="membership-page">
@@ -2193,14 +2252,254 @@ export function SubscriptionManager({ navigate, showToast }) {
         </button>
         {target === "plan-discovery" ||
         (membership.planId === "plan-vip" && target === "plan-professional") ? (
-          <button className="gold-button" onClick={downgrade}>
-            Schedule downgrade
+          <button className="gold-button" onClick={reviewChange}>
+            Review downgrade
           </button>
         ) : (
-          <button className="gold-button" onClick={upgrade}>
-            Confirm plan change
+          <button className="gold-button" onClick={reviewChange}>
+            Review plan change
           </button>
         )}
+      </div>
+    </section>
+  );
+}
+
+export function PlanChangeConfirmation({ navigate, showToast }) {
+  const { user } = useAuth();
+  const [acknowledged, setAcknowledged] = useState(false);
+  const [completed, setCompleted] = useState(null);
+  const proposal = JSON.parse(
+    window.localStorage.getItem(PLAN_CHANGE_REVIEW_KEY) || "null",
+  );
+  const membership = user
+    ? membershipService.getCurrentMembership(user.id)
+    : null;
+  const currentPlan = membership
+    ? membershipService.getPlan(membership.planId)
+    : null;
+  const targetPlan = proposal
+    ? membershipService.getPlan(proposal.targetPlanId)
+    : null;
+  const verification = verificationFor(user);
+  const method = membership
+    ? membershipService.getPaymentMethod(membership.paymentMethodId)
+    : null;
+  if (!user || !membership || !proposal || !currentPlan || !targetPlan)
+    return (
+      <section className="membership-page">
+        <EmptyBilling
+          title="No plan change to review"
+          text="Choose a new membership plan before opening confirmation."
+          action="Manage subscription"
+          onAction={() => navigate("billing-subscription")}
+        />
+      </section>
+    );
+  const currentEntitlements = currentPlan.entitlements || [];
+  const targetEntitlements = targetPlan.entitlements || [];
+  const targetOnly = targetEntitlements.filter(
+    (item) => !currentEntitlements.includes(item),
+  );
+  const removed = currentEntitlements.filter(
+    (item) => !targetEntitlements.includes(item),
+  );
+  const retained = targetEntitlements.filter((item) =>
+    currentEntitlements.includes(item),
+  );
+  const isDowngrade = proposal.changeType === "Downgrade";
+  const gained = isDowngrade ? [] : targetOnly;
+  const changed = isDowngrade ? targetOnly : [];
+  const effectiveDate = isDowngrade
+    ? membership.currentPeriodEnd
+    : new Date().toISOString();
+  const confirm = () => {
+    const result = isDowngrade
+      ? membershipService.scheduleDowngrade(
+          user,
+          membership.id,
+          targetPlan.id,
+        )
+      : membershipService.changePlan(
+          user,
+          membership.id,
+          targetPlan.id,
+          proposal.interval,
+          verification,
+        );
+    if (!result.ok) {
+      showToast(result.message);
+      if (targetPlan.id === "plan-vip") navigate("buyer-verification");
+      return;
+    }
+    window.localStorage.removeItem(PLAN_CHANGE_REVIEW_KEY);
+    setCompleted(result.membership);
+    showToast(
+      isDowngrade
+        ? "Membership downgrade scheduled."
+        : "Membership plan updated.",
+    );
+  };
+  if (completed)
+    return (
+      <section className="membership-page">
+        <div className="checkout-confirmation plan-change-complete">
+          <CheckCircle />
+          <span className="eyebrow">Plan change confirmed</span>
+          <h2>
+            {isDowngrade
+              ? `${targetPlan.name} is scheduled.`
+              : `${targetPlan.name} is now recorded.`}
+          </h2>
+          <p>
+            {isDowngrade
+              ? `Your current access remains available until ${formatDate(membership.currentPeriodEnd)}.`
+              : "Eligible access has been recalculated from the new plan, payment state, and buyer verification."}
+          </p>
+          <div className="confirmation-facts">
+            <span>
+              Plan<strong>{targetPlan.name}</strong>
+            </span>
+            <span>
+              Effective<strong>{formatDate(effectiveDate)}</strong>
+            </span>
+            <span>
+              Auto-renewal<strong>{completed.autoRenew ? "Enabled" : "Disabled"}</strong>
+            </span>
+          </div>
+          <div className="confirmation-actions">
+            <button className="gold-button" onClick={() => navigate("billing")}>
+              View current membership
+            </button>
+            <button
+              className="outline-button"
+              onClick={() => navigate("billing-invoices")}
+            >
+              Invoice history
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  return (
+    <section className="membership-page plan-change-review">
+      <BillingSectionNav navigate={navigate} active="billing-subscription" />
+      <header className="billing-page-header">
+        <div>
+          <span className="eyebrow">Plan modification confirmation</span>
+          <h2>Confirm how your access will change.</h2>
+          <p>
+            Review the entitlement, billing, and effective-date impact before
+            applying this simulated membership change.
+          </p>
+        </div>
+        <MembershipStatusBadge status={membership.status} />
+      </header>
+      <div className="plan-change-route">
+        <article>
+          <span>Current plan</span>
+          <h3>{currentPlan.name}</h3>
+          <strong>{membership.billingInterval}</strong>
+        </article>
+        <div>
+          <strong>{isDowngrade ? "Downgrade" : "Upgrade"}</strong>
+          <small>
+            {isDowngrade ? "At period end" : "Immediate after confirmation"}
+          </small>
+        </div>
+        <article>
+          <span>New plan</span>
+          <h3>{targetPlan.name}</h3>
+          <strong>{proposal.interval}</strong>
+        </article>
+      </div>
+      <div className="access-impact-grid">
+        <article className="gained">
+          <span>Access gained</span>
+          <h3>{gained.length}</h3>
+          {gained.length ? (
+            gained.map((item) => (
+              <small key={item}>
+                <CheckCircle /> {formatEntitlementLabel(item)}
+              </small>
+            ))
+          ) : (
+            <small>No additional entitlements.</small>
+          )}
+        </article>
+        <article className="retained">
+          <span>Access retained</span>
+          <h3>{retained.length}</h3>
+          {retained.slice(0, 8).map((item) => (
+            <small key={item}>
+              <ShieldCheck /> {formatEntitlementLabel(item)}
+            </small>
+          ))}
+        </article>
+        <article className="removed">
+          <span>Access removed</span>
+          <h3>{removed.length}</h3>
+          {removed.length ? (
+            removed.map((item) => (
+              <small key={item}>
+                <WarningCircle /> {formatEntitlementLabel(item)}
+              </small>
+            ))
+          ) : (
+            <small>No current entitlements are removed.</small>
+          )}
+          {changed.map((item) => (
+            <small key={item}>
+              <WarningCircle /> New limit: {formatEntitlementLabel(item)}
+            </small>
+          ))}
+        </article>
+      </div>
+      <section className="billing-panel plan-change-facts">
+        <h3>Billing and continuity</h3>
+        <dl>
+          <dt>Effective date</dt>
+          <dd>{formatDate(effectiveDate)}</dd>
+          <dt>Renewal date</dt>
+          <dd>{formatDate(membership.currentPeriodEnd)}</dd>
+          <dt>Auto-renewal</dt>
+          <dd>{membership.autoRenew ? "Enabled" : "Disabled"}</dd>
+          <dt>Payment method</dt>
+          <dd>{method ? `${method.brand} ending ${method.last4}` : "Not required"}</dd>
+          <dt>New recurring price</dt>
+          <dd>{formatMoney(planPrice(targetPlan, proposal.interval))}</dd>
+        </dl>
+        <div className="billing-trust-note">
+          <ShieldCheck />
+          <div>
+            <strong>Commercial records remain intact</strong>
+            <p>
+              Existing quotes, contracts, issued licences, receipts, and
+              delivery history are preserved. New protected delivery remains
+              governed by licence and delivery authorization.
+            </p>
+          </div>
+        </div>
+        <label className="confirmation-check">
+          <input
+            type="checkbox"
+            checked={acknowledged}
+            onChange={(event) => setAcknowledged(event.target.checked)}
+          />
+          I understand when this change takes effect and which access will be
+          gained, retained, or removed.
+        </label>
+      </section>
+      <div className="billing-actions">
+        <button
+          className="outline-button"
+          onClick={() => navigate("billing-subscription")}
+        >
+          Back to plan selection
+        </button>
+        <button className="gold-button" disabled={!acknowledged} onClick={confirm}>
+          {isDowngrade ? "Schedule downgrade" : "Confirm upgrade"}
+        </button>
       </div>
     </section>
   );
@@ -3249,6 +3548,8 @@ export function renderMembershipView(view, props) {
   if (view === "billing-invoice") return <InvoiceDetail {...props} />;
   if (view === "billing-subscription")
     return <SubscriptionManager {...props} />;
+  if (view === "billing-plan-change-confirmation")
+    return <PlanChangeConfirmation {...props} />;
   if (view === "billing-cancel") return <CancellationFlow {...props} />;
   if (view === "billing-reactivate") return <ReactivationPage {...props} />;
   if (view === "billing-payment-failed")

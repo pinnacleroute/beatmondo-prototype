@@ -499,6 +499,85 @@ export const DEFAULT_TEMPLATES = [
     { supportedProjectTypes: ["Trailer", "Cinema", "Online trailer"] },
   ),
   template(
+    "template-digital-social",
+    "Digital and Social Licence",
+    "Digital and social synchronization licence agreement",
+    standardClauses,
+    {
+      description:
+        "Channel, format, territory, paid-media and campaign-term controls for digital-first and social uses.",
+      supportedProjectTypes: [
+        "Paid social",
+        "Organic social",
+        "Online campaign",
+        "Creator partnership",
+        "Branded content",
+      ],
+    },
+  ),
+  template(
+    "template-festival-event",
+    "Festival or Event Licence",
+    "Festival or event synchronization licence agreement",
+    standardClauses,
+    {
+      description:
+        "Time-bound event, venue, presentation, promotional-edit and archival-use terms for live and hybrid programmes.",
+      supportedProjectTypes: [
+        "Festival",
+        "Live event",
+        "Conference",
+        "Experiential",
+        "Hybrid event",
+      ],
+    },
+  ),
+  template(
+    "template-limited-term",
+    "Limited-Term Licence",
+    "Limited-term synchronization licence agreement",
+    standardClauses,
+    {
+      description:
+        "A tightly scoped licence with explicit start, expiry, takedown and renewal review requirements.",
+      supportedProjectTypes: [
+        "Short campaign",
+        "Festival run",
+        "Awards submission",
+        "Pilot",
+        "Market test",
+      ],
+    },
+  ),
+  template(
+    "template-exclusive",
+    "Exclusive Licence",
+    "Exclusive synchronization licence agreement",
+    standardClauses,
+    {
+      description:
+        "Rights-holder-controlled exclusivity with defined media, category, territory, term and conflict-review scope.",
+      requiredApprovals: [
+        "Licensing",
+        "Rights",
+        "Finance",
+        "Legal",
+        "Senior",
+      ],
+      requiredSigners: [
+        "Buyer signatory",
+        "Beatmondo senior signatory",
+        "Rights-holder signatory",
+      ],
+      supportedProjectTypes: [
+        "Exclusive campaign",
+        "Brand partnership",
+        "Trailer",
+        "Film",
+      ],
+    },
+  ),
+  template(
     "template-amendment",
     "Amendment and Renewal Agreement",
     "Amendment Agreement",
@@ -583,7 +662,7 @@ const contract = (id, reference, status, overrides = {}) => ({
   rightsRecordIds: overrides.rightsRecordIds || ["rights-1"],
   rightsVersions: overrides.rightsVersions || [1],
   templateId: overrides.templateId || "template-standard",
-  templateVersion: 1,
+  templateVersion: overrides.templateVersion || 1,
   title:
     overrides.title ||
     `${overrides.project || "Premium Hotel Launch Film"} — Music Licence`,
@@ -660,6 +739,11 @@ const contract = (id, reference, status, overrides = {}) => ({
   generatedDocumentAssetId:
     overrides.generatedDocumentAssetId || `contract-document-${id}-v1`,
   signedDocumentAssetId: overrides.signedDocumentAssetId || null,
+  documentExpiry:
+    overrides.documentExpiry || overrides.signatureDeadline || "2026-08-03T23:59:59.000Z",
+  finalLockedVersion: overrides.finalLockedVersion || null,
+  finalLockedAt: overrides.finalLockedAt || null,
+  auditReference: overrides.auditReference || `AUD-${reference}`,
   createdAt: overrides.createdAt || "2026-07-16T09:00:00.000Z",
   createdBy: overrides.createdBy || "Jordan Lee",
   updatedAt: overrides.updatedAt || "2026-07-18T10:00:00.000Z",
@@ -685,6 +769,8 @@ const contract = (id, reference, status, overrides = {}) => ({
 
 export const DEFAULT_CONTRACTS = [
   contract("contract-21", "BM-C-2026-0021", "Effective", {
+    finalLockedVersion: 1,
+    finalLockedAt: "2026-07-18T16:01:00.000Z",
     project: "Premium Hotel Launch Film",
     effectiveDate: "2026-07-18T16:00:00.000Z",
     signatureDeadline: "2026-07-31T23:59:59.000Z",
@@ -781,6 +867,8 @@ export const DEFAULT_CONTRACTS = [
     deliveryStatus: "Not authorized",
   }),
   contract("contract-22", "BM-C-2026-0022", "Awaiting Buyer Signature", {
+    version: 3,
+    templateVersion: 2,
     quoteId: "quote-47",
     quoteReference: "BM-Q-2026-0047",
     projectId: "project-luxury-auto",
@@ -794,6 +882,18 @@ export const DEFAULT_CONTRACTS = [
       preparationFees: 200000,
     },
     assets: ["WAV master", "Stems"],
+    clauses: baseClauses.map((item) =>
+      item.id === "clause-term"
+        ? {
+            ...item,
+            clauseVersion: 2,
+            resolvedBody:
+              "The permitted term is {{TERM}}, beginning on the first public exhibition date.",
+          }
+        : item.id === "clause-restrictions"
+          ? { ...item, clauseVersion: 2 }
+          : item,
+    ),
     sentAt: "2026-07-20T10:00:00.000Z",
     approvals: [
       approval("Licensing", "Approved", "Jordan Lee"),
@@ -1014,6 +1114,8 @@ export const DEFAULT_CONTRACTS = [
     ],
   }),
   contract("contract-26", "BM-C-2026-0026", "Effective", {
+    finalLockedVersion: 1,
+    finalLockedAt: "2026-07-15T16:01:00.000Z",
     quoteId: "quote-49",
     quoteReference: "BM-Q-2026-0049",
     projectId: "project-brand-film",
@@ -1167,6 +1269,115 @@ export const DEFAULT_CONTRACTS = [
   }),
 ];
 
+const contract22Current = DEFAULT_CONTRACTS.find(
+  (item) => item.id === "contract-22",
+);
+export const DEFAULT_CONTRACT_VERSIONS = [
+  {
+    id: "contract-22",
+    snapshotId: "contract-22-v1",
+    version: 1,
+    templateVersion: 1,
+    snapshotAt: "2026-07-18T14:00:00.000Z",
+    snapshotReason: "Initial draft generated from accepted quote BM-Q-2026-0047.",
+    clauses: baseClauses,
+  },
+  {
+    id: "contract-22",
+    snapshotId: "contract-22-v2",
+    version: 2,
+    templateVersion: 2,
+    snapshotAt: "2026-07-19T16:30:00.000Z",
+    snapshotReason:
+      "Buyer-requested revision clarified campaign commencement and protected-file delivery conditions.",
+    clauses: contract22Current.clauses.map((item) =>
+      item.id === "clause-restrictions"
+        ? { ...item, clauseVersion: 1 }
+        : item,
+    ),
+  },
+];
+
+export const DEFAULT_CONTRACT_ACTIVITY = [
+  {
+    id: "contract-event-22-created",
+    contractId: "contract-22",
+    reference: "BM-C-2026-0022",
+    version: 1,
+    actor: "Jordan Lee",
+    timestamp: "2026-07-18T14:00:00.000Z",
+    action: "Contract created",
+    description:
+      "Generated from accepted quote BM-Q-2026-0047 using the Standard Sync Licence template.",
+    source: "Contracts and E-Signature",
+    visibility: "Buyer Visible",
+  },
+  {
+    id: "contract-event-22-buyer-revision",
+    contractId: "contract-22",
+    reference: "BM-C-2026-0022",
+    version: 2,
+    actor: "Olivia Bennett",
+    timestamp: "2026-07-19T12:20:00.000Z",
+    action: "Buyer revision received",
+    description:
+      "Requested clarification of campaign commencement and delivery timing.",
+    source: "Contracts and E-Signature",
+    visibility: "Buyer Visible",
+  },
+  {
+    id: "contract-event-22-version",
+    contractId: "contract-22",
+    reference: "BM-C-2026-0022",
+    version: 3,
+    actor: "Preston Repenning",
+    timestamp: "2026-07-19T16:30:00.000Z",
+    action: "Contract version approved",
+    description:
+      "Clause changes reviewed; internal, rights-holder and finance approvals preserved as versioned evidence.",
+    source: "Contracts and E-Signature",
+    visibility: "Buyer Visible",
+  },
+  {
+    id: "contract-event-22-sent",
+    contractId: "contract-22",
+    reference: "BM-C-2026-0022",
+    version: 3,
+    actor: "Jordan Lee",
+    timestamp: "2026-07-20T10:00:00.000Z",
+    action: "Signature request sent",
+    description:
+      "Final review version sent to the buyer; signature order is buyer first, then beatmondo.",
+    source: "Contracts and E-Signature",
+    visibility: "All Signers",
+  },
+  {
+    id: "contract-event-22-viewed",
+    contractId: "contract-22",
+    reference: "BM-C-2026-0022",
+    version: 3,
+    actor: "Olivia Bennett",
+    timestamp: "2026-07-20T12:00:00.000Z",
+    action: "Document viewed",
+    description: "Buyer opened the controlled signature workspace.",
+    source: "Contracts and E-Signature",
+    visibility: "All Signers",
+  },
+  {
+    id: "contract-event-21-locked",
+    contractId: "contract-21",
+    reference: "BM-C-2026-0021",
+    version: 1,
+    actor: "Contract service",
+    timestamp: "2026-07-18T16:01:00.000Z",
+    action: "Final version locked",
+    description:
+      "Fully signed contract v1 preserved as an immutable prototype artifact and linked to the separate licence record BM-LIC-2026-0018.",
+    source: "Contracts and E-Signature",
+    visibility: "Buyer Visible",
+  },
+];
+
 export const DEFAULT_CONTRACT_STATE = {
   version: 1,
   templates: DEFAULT_TEMPLATES,
@@ -1174,7 +1385,7 @@ export const DEFAULT_CONTRACT_STATE = {
   clauses: DEFAULT_CLAUSES,
   clauseVersions: [],
   contracts: DEFAULT_CONTRACTS,
-  contractVersions: [],
+  contractVersions: DEFAULT_CONTRACT_VERSIONS,
   signatureRecords: DEFAULT_CONTRACTS.flatMap((c) => c.signatures),
   consentRecords: [],
   signedDocuments: [
@@ -1189,7 +1400,7 @@ export const DEFAULT_CONTRACT_STATE = {
         "Prototype signature record — not a certified e-signature-provider certificate.",
     },
   ],
-  activity: [],
+  activity: DEFAULT_CONTRACT_ACTIVITY,
   analyticsEvents: [],
   notifications: [],
   amendments: ["amendment-3"],

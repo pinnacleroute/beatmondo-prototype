@@ -94,6 +94,8 @@ const invoice = (
   contractReference: contract.reference,
   quoteId: overrides.quoteId || null,
   quoteReference: overrides.quoteReference || null,
+  licenceId: overrides.licenceId || null,
+  licenceReference: overrides.licenceReference || null,
   projectId: overrides.projectId || contract.projectId,
   project,
   track,
@@ -110,7 +112,13 @@ const invoice = (
     },
   ],
   subtotal: total,
-  tax: 0,
+  tax: overrides.tax ?? 0,
+  taxRate: overrides.taxRate ?? 0,
+  taxLabel: overrides.taxLabel || "Tax review / not calculated",
+  taxJurisdiction:
+    overrides.taxJurisdiction || "Buyer jurisdiction review required",
+  taxRegistrationReference:
+    overrides.taxRegistrationReference || "Not supplied in prototype",
   creditApplied: overrides.creditApplied || 0,
   total,
   amountPaid: overrides.amountPaid || 0,
@@ -249,6 +257,8 @@ export const DEFAULT_LICENSING_INVOICES = [
     {
       amountPaid: 4200000,
       balanceDue: 0,
+      licenceId: "licence-19",
+      licenceReference: "BM-LIC-2026-0019",
       paymentTerms: "Enterprise bank-transfer terms",
     },
   ),
@@ -338,7 +348,13 @@ export const DEFAULT_LICENSING_INVOICES = [
     "Contract Amendment",
     1800000,
     "Partially Refunded",
-    { amountPaid: 1800000, balanceDue: 0 },
+    {
+      amountPaid: 1800000,
+      balanceDue: 0,
+      licenceId: "licence-amended-11",
+      licenceReference: "BM-LIC-AMD-2026-0003",
+      issueDate: "2026-07-08T00:00:00.000Z",
+    },
   ),
   invoice(
     "invoice-lic-39",
@@ -355,7 +371,12 @@ export const DEFAULT_LICENSING_INVOICES = [
     "Full Licence Fee",
     250000,
     "Refunded",
-    { amountPaid: 0, balanceDue: 0 },
+    {
+      amountPaid: 0,
+      balanceDue: 0,
+      licenceId: "licence-44",
+      licenceReference: "BM-LIC-2025-0044",
+    },
   ),
 ];
 
@@ -700,6 +721,30 @@ export const DEFAULT_CREDITS = [
 ];
 export const DEFAULT_REFUNDS = [
   {
+    id: "refund-15",
+    reference: "BM-REF-2026-0015",
+    originalTransactionId: "payment-68",
+    invoiceId: "invoice-lic-38",
+    buyerId: "user-olivia",
+    organizationId: "org-northstar",
+    currency: "USD",
+    amount: 150000,
+    status: "Initiated",
+    reason: "Campaign scope adjustment requested",
+    buyerMessage:
+      "A partial refund request is awaiting finance and contract-impact review.",
+    internalNote: "Prototype refund request; no provider action taken.",
+    contractImpact: "Review required",
+    licenceImpact: "No automatic change",
+    deliveryImpact: "No automatic change",
+    approvals: [
+      { type: "Finance", status: "Pending", approver: null },
+      { type: "Legal", status: "Pending", approver: null },
+    ],
+    createdAt: "2026-07-20T11:00:00.000Z",
+    completedAt: null,
+  },
+  {
     id: "refund-14",
     reference: "BM-REF-2026-0014",
     originalTransactionId: "payment-68",
@@ -765,6 +810,10 @@ export const DEFAULT_RECEIPTS = [
     project: "Premium Hotel Launch Film",
     track: "Golden Hours",
     tax: 0,
+    taxRate: 0,
+    taxLabel: "Tax review / not calculated",
+    taxJurisdiction: "Buyer jurisdiction review required",
+    taxRegistrationReference: "Not supplied in prototype",
     creditApplied: 0,
     remainingBalance: 525000,
     assetId: "asset-receipt-58",

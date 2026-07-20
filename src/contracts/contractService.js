@@ -36,17 +36,34 @@ function normalize(value) {
     ...a,
     ...b.filter((x) => !a.some((y) => y.id === x.id)),
   ];
+  const contracts = merge(value.contracts, base.contracts).map((current) => {
+    const seeded = base.contracts.find((item) => item.id === current.id);
+    if (!seeded) return current;
+    if (current.id === "contract-22" && !current.auditReference) return seeded;
+    return { ...seeded, ...current };
+  });
+  const contractVersions = [
+    ...(value.contractVersions || []),
+    ...base.contractVersions.filter(
+      (item) =>
+        !(value.contractVersions || []).some(
+          (existing) =>
+            (existing.snapshotId || `${existing.id}-v${existing.version}`) ===
+            (item.snapshotId || `${item.id}-v${item.version}`),
+        ),
+    ),
+  ];
   return {
     ...base,
     ...value,
-    contracts: merge(value.contracts, base.contracts),
-    templates: value.templates?.length ? value.templates : base.templates,
-    clauses: value.clauses?.length ? value.clauses : base.clauses,
-    contractVersions: value.contractVersions || [],
+    contracts,
+    templates: merge(value.templates, base.templates),
+    clauses: merge(value.clauses, base.clauses),
+    contractVersions,
     signatureRecords: value.signatureRecords || [],
     consentRecords: value.consentRecords || [],
-    signedDocuments: value.signedDocuments || [],
-    activity: value.activity || [],
+    signedDocuments: merge(value.signedDocuments, base.signedDocuments),
+    activity: merge(value.activity, base.activity),
     analyticsEvents: value.analyticsEvents || [],
   };
 }
@@ -141,14 +158,15 @@ export function renderContractTemplate(template, variables, clauses = []) {
     sections: template.clauseIds
       .map((id, index) => {
         const clause = clauses.find((c) => c.id === id);
+        const clauseBody = clause?.resolvedBody || clause?.body;
         return clause
           ? {
               id: clause.id,
               number: String(index + 1),
               title: clause.title,
-              body: replace(clause.body),
+              body: replace(clauseBody),
               version: clause.version,
-              unresolved: replace(clause.body).match(/\[[A-Z0-9_]+\]/g) || [],
+              unresolved: replace(clauseBody).match(/\[[A-Z0-9_]+\]/g) || [],
             }
           : null;
       })

@@ -276,6 +276,8 @@ function ReadinessPanel({ result }) {
     expiry: "Package expiry",
     downloadLimits: "Download limits",
     namedAccess: "Named access",
+    adminApproval: "Admin approval",
+    downloadTerms: "Download terms",
   };
   return (
     <section className={`sd-readiness ${result.ready ? "ready" : "blocked"}`}>
@@ -324,30 +326,120 @@ function ReadinessPanel({ result }) {
   );
 }
 
+function ReleaseGate({ delivery, result, buyer, user, refresh, showToast }) {
+  const checks = [
+    ["Buyer verified", result.dependencies.buyerVerification],
+    ["Contract signed", result.dependencies.contract],
+    ["Payment received", result.dependencies.payment],
+    ["Rights cleared", result.dependencies.rights],
+    ["Licence generated", result.dependencies.licence],
+    ["Admin approval", result.dependencies.adminApproval],
+    ["Download terms accepted", result.dependencies.downloadTerms],
+  ];
+  const complete = checks.every(([, value]) =>
+    ["Complete", "Not Applicable"].includes(value),
+  );
+  const released = complete && Boolean(DELIVERY_STATUSES[delivery.status]?.download);
+  return (
+    <section className={`sd-release-gate ${released ? "released" : "locked"}`}>
+      <header>
+        <div>
+          <span>Protected asset release gate</span>
+          <h2>{released ? "All release conditions satisfied" : "Assets remain locked"}</h2>
+          <p>
+            {released
+              ? "This exact package version is authorized for controlled download."
+              : "No protected master audio, stems, or package link is released until every condition is complete."}
+          </p>
+        </div>
+        <Status value={released ? "Active" : "Readiness Incomplete"} />
+      </header>
+      <div className="sd-release-checks">
+        {checks.map(([label, value]) => {
+          const passed = ["Complete", "Not Applicable"].includes(value);
+          return (
+            <div className={passed ? "passed" : "pending"} key={label}>
+              {passed ? <CheckCircle /> : <Clock />}
+              <span><strong>{label}</strong><small>{passed ? "Satisfied" : "Required before release"}</small></span>
+            </div>
+          );
+        })}
+      </div>
+      {buyer && delivery.termsAcceptance?.status !== "Accepted" && (
+        <div className="sd-terms-action">
+          <span>
+            <strong>Delivery Terms v1.0</strong>
+            Accept the project-specific download, confidentiality, and no-onward-distribution terms.
+          </span>
+          <button
+            className="primary"
+            onClick={() => {
+              try {
+                secureDeliveryService.acceptDownloadTerms(delivery.id, user);
+                refresh();
+                showToast("Download terms accepted for this package version.");
+              } catch (error) {
+                showToast(error.message);
+              }
+            }}
+          >
+            Accept download terms
+          </button>
+        </div>
+      )}
+      {delivery.termsAcceptance?.status === "Accepted" && (
+        <p className="sd-terms-proof">
+          <ShieldCheck /> {delivery.termsAcceptance.version} accepted by {delivery.termsAcceptance.acceptedBy} on {date(delivery.termsAcceptance.acceptedAt, true)}.
+        </p>
+      )}
+    </section>
+  );
+}
+
 function NewDelivery({ navigate, showToast }) {
   const { user } = useAuth();
   const candidates = secureDeliveryService.getEligibleAuthorizations();
+  const initialCandidate =
+    candidates.find((item) => item.authorization.status === "Approved") ||
+    candidates[0];
   const [authorizationId, setAuthorizationId] = useState(
-    candidates.find((item) => item.authorization.status === "Approved")
-      ?.authorization.id || candidates[0]?.authorization.id,
+    initialCandidate?.authorization.id,
   );
   const current = candidates.find(
     (item) => item.authorization.id === authorizationId,
   );
-  const [expiryDays, setExpiryDays] = useState(14);
+  const [expiryPolicy, setExpiryPolicy] = useState("14");
+  const [customExpiry, setCustomExpiry] = useState("");
   const [limit, setLimit] = useState(3);
+  const [recipient, setRecipient] = useState(initialCandidate?.licence?.buyer || "Approved named buyer");
+  const [watermarkIdentifier, setWatermarkIdentifier] = useState(
+    initialCandidate ? `BM-${initialCandidate.licence?.reference || initialCandidate.authorization.licenceId}-${initialCandidate.authorization.buyerId}` : "",
+  );
+  const [selectedAssetIds, setSelectedAssetIds] = useState(
+    initialCandidate?.authorization.approvedAssetIds || [],
+  );
   const [overrideReason, setOverrideReason] = useState("");
   const create = () => {
     try {
+      const selected = selectedAssetIds.filter((id) =>
+        current.authorization.approvedAssetIds.includes(id),
+      );
+      const assetIds = selected.length
+        ? selected
+        : current.authorization.approvedAssetIds;
+      const expiresAt = expiryPolicy === "custom"
+        ? new Date(customExpiry).toISOString()
+        : new Date(Date.now() + Number(expiryPolicy) * 86400000).toISOString();
       const delivery = secureDeliveryService.createDeliveryPackage(
         {
           authorizationId,
-          assetIds: current.authorization.approvedAssetIds,
+          assetIds,
           namedUserIds: current.authorization.namedUserIds,
           maxDownloadsPerAsset: limit,
-          maxTotalDownloads:
-            limit * current.authorization.approvedAssetIds.length,
-          expiresAt: new Date(Date.now() + expiryDays * 86400000).toISOString(),
+          maxTotalDownloads: limit * assetIds.length,
+          expiresAt,
+          recipient: { userId: current.authorization.buyerId, name: recipient, email: "Approved account email" },
+          watermarkIdentifier,
           overrideReason,
           buyerNote:
             "Your approved protected assets will appear here after final activation.",
@@ -401,7 +493,12 @@ function NewDelivery({ navigate, showToast }) {
                 className={
                   authorizationId === authorization.id ? "selected" : ""
                 }
-                onClick={() => setAuthorizationId(authorization.id)}
+                onClick={() => {
+                  setAuthorizationId(authorization.id);
+                  setSelectedAssetIds(authorization.approvedAssetIds);
+                  setRecipient(licence?.buyer || "Approved named buyer");
+                  setWatermarkIdentifier(`BM-${licence?.reference || authorization.licenceId}-${authorization.buyerId}`);
+                }}
               >
                 <span>
                   <strong>{authorization.id}</strong>
@@ -451,16 +548,23 @@ function NewDelivery({ navigate, showToast }) {
             <label className="sd-field">
               Expiry policy
               <select
-                value={expiryDays}
-                onChange={(event) => setExpiryDays(Number(event.target.value))}
+                value={expiryPolicy}
+                onChange={(event) => setExpiryPolicy(event.target.value)}
               >
                 <option value={1}>24 hours</option>
                 <option value={3}>3 days</option>
-                <option value={7}>7 days</option>
                 <option value={14}>14 days — VIP</option>
                 <option value={30}>30 days — enterprise</option>
+                <option value={365}>1 year</option>
+                <option value="custom">Custom date and time</option>
               </select>
             </label>
+            {expiryPolicy === "custom" && (
+              <label className="sd-field">
+                Custom expiry
+                <input type="datetime-local" value={customExpiry} onChange={(event) => setCustomExpiry(event.target.value)} />
+              </label>
+            )}
             <label className="sd-field">
               Downloads per asset
               <input
@@ -471,6 +575,32 @@ function NewDelivery({ navigate, showToast }) {
                 onChange={(event) => setLimit(Number(event.target.value))}
               />
             </label>
+            <label className="sd-field">
+              Recipient
+              <input value={recipient} onChange={(event) => setRecipient(event.target.value)} />
+            </label>
+            <label className="sd-field">
+              Watermark or delivery identifier
+              <input value={watermarkIdentifier} onChange={(event) => setWatermarkIdentifier(event.target.value)} />
+            </label>
+            <fieldset className="sd-package-options">
+              <legend>File package</legend>
+              {current.authorization.approvedAssetIds.map((assetId, index) => {
+                const selected = selectedAssetIds.includes(assetId);
+                return (
+                  <label key={assetId}>
+                    <input
+                      type="checkbox"
+                      checked={selected}
+                      onChange={() => {
+                        setSelectedAssetIds(selected ? selectedAssetIds.filter((id) => id !== assetId) : [...selectedAssetIds, assetId]);
+                      }}
+                    />
+                    <span>{current.authorization.approvedAssetTypes[index] || assetId}<small>{assetId}</small></span>
+                  </label>
+                );
+              })}
+            </fieldset>
             {current.packages.length > 0 && (
               <label className="sd-field">
                 Controlled duplicate reason
@@ -483,7 +613,7 @@ function NewDelivery({ navigate, showToast }) {
             )}
             <button
               className="primary full"
-              disabled={current.authorization.status !== "Approved"}
+              disabled={current.authorization.status !== "Approved" || selectedAssetIds.length === 0 || (expiryPolicy === "custom" && !customExpiry)}
               onClick={create}
             >
               Create controlled draft <ArrowRight />
@@ -535,6 +665,77 @@ function ApprovalPanel({ delivery, user, refresh, showToast }) {
             )}
           </article>
         ))}
+      </div>
+    </section>
+  );
+}
+
+function AdminDeliveryConfiguration({ delivery, user, refresh, showToast }) {
+  const [extensionPolicy, setExtensionPolicy] = useState("14");
+  const [customExpiry, setCustomExpiry] = useState("");
+  const canManage = can(user, "deliveries.manage_expiry");
+  const extend = () => {
+    try {
+      const expiresAt = extensionPolicy === "custom"
+        ? new Date(customExpiry).toISOString()
+        : new Date(Date.now() + Number(extensionPolicy) * 86400000).toISOString();
+      secureDeliveryService.extendDeliveryExpiry(delivery.id, expiresAt, user);
+      refresh();
+      showToast("Delivery expiry extended; inactive access was not restored.");
+    } catch (error) {
+      showToast(error.message);
+    }
+  };
+  return (
+    <section className="sd-card sd-configuration">
+      <div className="sd-section-head">
+        <div>
+          <span>Delivery configuration</span>
+          <h2>Access policy and link controls</h2>
+        </div>
+        <Status value={delivery.status} />
+      </div>
+      <div className="sd-config-grid">
+        <dl className="sd-definition">
+          <div><dt>Recipient</dt><dd>{delivery.recipient?.name} · {delivery.recipient?.email}</dd></div>
+          <div><dt>File package</dt><dd>{delivery.assetEntries.map((item) => item.assetType).join(", ")}</dd></div>
+          <div><dt>Download limit</dt><dd>{delivery.access.maxDownloadsPerAsset} per asset · {delivery.access.maxTotalDownloads} total</dd></div>
+          <div><dt>Watermark / identifier</dt><dd>{delivery.watermarkIdentifier}</dd></div>
+          <div><dt>Link version</dt><dd>v{delivery.linkVersion || 1}{delivery.linkRegeneratedAt ? ` · rotated ${date(delivery.linkRegeneratedAt, true)}` : ""}</dd></div>
+        </dl>
+        <div className="sd-config-actions">
+          <label className="sd-field">
+            Extend expiry
+            <select value={extensionPolicy} onChange={(event) => setExtensionPolicy(event.target.value)}>
+              <option value="1">24 hours</option>
+              <option value="3">3 days</option>
+              <option value="14">14 days</option>
+              <option value="30">30 days</option>
+              <option value="365">1 year</option>
+              <option value="custom">Custom date and time</option>
+            </select>
+          </label>
+          {extensionPolicy === "custom" && (
+            <label className="sd-field">Custom expiry<input type="datetime-local" value={customExpiry} onChange={(event) => setCustomExpiry(event.target.value)} /></label>
+          )}
+          <button className="outline" disabled={!canManage || (extensionPolicy === "custom" && !customExpiry)} onClick={extend}>Extend expiry</button>
+          <button
+            className="outline"
+            disabled={!canManage}
+            onClick={() => {
+              try {
+                secureDeliveryService.regenerateDeliveryLink(delivery.id, user);
+                refresh();
+                showToast("Delivery link regenerated; outstanding sessions were revoked.");
+              } catch (error) {
+                showToast(error.message);
+              }
+            }}
+          >
+            Regenerate link
+          </button>
+          <small>{canManage ? "No reusable private URL or storage reference is persisted." : "View only · expiry and link rotation require delivery-access permission."}</small>
+        </div>
       </div>
     </section>
   );
@@ -832,7 +1033,19 @@ function DeliveryDetail({ navigate, showToast, buyer = false }) {
           <span>Total allowance</span>
           <strong>{delivery.access.maxTotalDownloads} downloads</strong>
         </div>
+        <div>
+          <span>Recipient</span>
+          <strong>{delivery.recipient?.name || delivery.buyer}</strong>
+        </div>
       </div>
+      <ReleaseGate
+        delivery={delivery}
+        result={readiness}
+        buyer={buyer}
+        user={user}
+        refresh={refresh}
+        showToast={showToast}
+      />
       {!buyer && <ReadinessPanel result={readiness} />}
       <div className="sd-grid">
         <section className="sd-card">
@@ -894,6 +1107,14 @@ function DeliveryDetail({ navigate, showToast, buyer = false }) {
             <div>
               <dt>Per asset</dt>
               <dd>{delivery.access.maxDownloadsPerAsset} downloads</dd>
+            </div>
+            <div>
+              <dt>Watermark / identifier</dt>
+              <dd>{delivery.watermarkIdentifier}</dd>
+            </div>
+            <div>
+              <dt>Download terms</dt>
+              <dd>{delivery.termsAcceptance?.status} · {delivery.termsAcceptance?.version}</dd>
             </div>
           </dl>
           <h3>Buyer-visible delivery note</h3>
@@ -1006,6 +1227,14 @@ function DeliveryDetail({ navigate, showToast, buyer = false }) {
       )}
       {!buyer && (
         <ApprovalPanel
+          delivery={delivery}
+          user={user}
+          refresh={refresh}
+          showToast={showToast}
+        />
+      )}
+      {!buyer && (
+        <AdminDeliveryConfiguration
           delivery={delivery}
           user={user}
           refresh={refresh}
@@ -1144,14 +1373,13 @@ function DeliveryDetail({ navigate, showToast, buyer = false }) {
       {buyer && (
         <ExtensionPanel delivery={delivery} user={user} showToast={showToast} />
       )}
-      {!buyer && (
-        <History
-          sessions={sessions}
-          entitlements={entitlements}
-          state={state}
-          delivery={delivery}
-        />
-      )}
+      <History
+        sessions={sessions}
+        entitlements={entitlements}
+        state={state}
+        delivery={delivery}
+        buyer={buyer}
+      />
     </section>
   );
 }
@@ -1220,11 +1448,12 @@ function ExtensionPanel({ delivery, user, showToast }) {
   );
 }
 
-function History({ sessions, entitlements, state, delivery }) {
+function History({ sessions, entitlements, state, delivery, buyer = false }) {
   const events = state.activity.filter(
     (item) =>
-      item.delivery === delivery.reference ||
-      (item.delivery === null && item.project === delivery.project),
+      (item.delivery === delivery.reference ||
+        (item.delivery === null && item.project === delivery.project)) &&
+      (!buyer || item.visibility === "Organization"),
   );
   return (
     <div className="sd-grid">
@@ -1257,16 +1486,16 @@ function History({ sessions, entitlements, state, delivery }) {
         )}
       </section>
       <section className="sd-card">
-        <h2>Download sessions</h2>
+        <h2>Download history</h2>
         <div className="sd-list">
           {sessions.map((session) => (
             <article key={session.id}>
               <span>
                 <strong>{session.id}</strong>
-                {session.device} · {session.approximateLocation}
+                {date(session.completedAt || session.createdAt, true)} · {session.status}
               </span>
               <span>
-                {session.status}
+                {delivery.assetEntries.find((asset) => asset.id === session.assetEntryId)?.displayName || "Protected asset"}
                 <small>{bytes(session.bytesTransferred)}</small>
               </span>
             </article>
@@ -1276,7 +1505,27 @@ function History({ sessions, entitlements, state, delivery }) {
           <p className="muted">No sessions have been created.</p>
         )}
       </section>
-      <section className="sd-card full-grid">
+      <section className="sd-card">
+        <h2>IP and device activity</h2>
+        <div className="sd-list">
+          {sessions.map((session) => (
+            <article key={`device-${session.id}`}>
+              <span><strong>{session.device}</strong>{session.ipAddress || "IP unavailable"} · {session.approximateLocation}</span>
+              <span>{session.status}<small>{date(session.createdAt, true)}</small></span>
+            </article>
+          ))}
+        </div>
+        {!sessions.length && <p className="muted">No device activity recorded.</p>}
+      </section>
+      <section className="sd-card">
+        <h2>Delivery confirmation</h2>
+        <dl className="sd-definition">
+          <div><dt>Status</dt><dd>{delivery.deliveryConfirmation?.status || "Pending"}</dd></div>
+          <div><dt>Confirmed</dt><dd>{date(delivery.deliveryConfirmation?.confirmedAt, true)}</dd></div>
+          <div><dt>Method</dt><dd>{delivery.deliveryConfirmation?.method || "Required assets have not all been downloaded"}</dd></div>
+        </dl>
+      </section>
+      {!buyer && <section className="sd-card full-grid">
         <h2>Audit activity</h2>
         <div className="sd-timeline">
           {events.slice(0, 10).map((event) => (
@@ -1293,7 +1542,7 @@ function History({ sessions, entitlements, state, delivery }) {
             </article>
           ))}
         </div>
-      </section>
+      </section>}
     </div>
   );
 }

@@ -615,6 +615,47 @@ export const quoteService = {
       return { ok: true, quote: clone(q) };
     });
   },
+  proceedToContract(id, user) {
+    return mutate((state) => {
+      const q = state.quotes.find((x) => x.id === id);
+      if (!q || q.buyerId !== user?.id)
+        return {
+          ok: false,
+          message: "This quote is not available to your account.",
+        };
+      if (q.status !== "Accepted")
+        return {
+          ok: false,
+          message: "The quote must be accepted before contract preparation.",
+        };
+      q.status = "Converted to Contract";
+      q.updatedAt = now();
+      q.futureWorkflow = {
+        ...q.futureWorkflow,
+        contractReadiness: "Preparation requested",
+        invoiceReadiness: "Pending effective contract",
+      };
+      activity(
+        state,
+        q,
+        user,
+        "Contract preparation requested",
+        "Buyer proceeded from the accepted quote to the separate simulated contract workflow.",
+        "Buyer",
+      );
+      message(
+        "user-jordan",
+        `Contract requested for ${q.reference}`,
+        `${user.name} proceeded from the accepted quote to contract preparation.`,
+        "admin-contracts",
+      );
+      return {
+        ok: true,
+        quote: clone(q),
+        message: "Contract preparation requested in the prototype.",
+      };
+    });
+  },
   addNegotiation(id, text, amount, user, internal = false) {
     return mutate((state) => {
       const q = state.quotes.find((x) => x.id === id);

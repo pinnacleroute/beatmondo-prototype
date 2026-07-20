@@ -36,6 +36,7 @@ import {
   formatPaymentMoney,
   paymentService,
 } from "../payments/paymentService.js";
+import { licenceService } from "../licences/licenceService.js";
 import { SectionSubnav } from "../ui/SectionSubnav.jsx";
 import "./contracts.css";
 
@@ -730,12 +731,15 @@ function DocumentViewer({ contract, buyer = false }) {
 function ApprovalPanel({ contract, user, act }) {
   return (
     <section className="ct-panel">
-      <h2>Internal approval chain</h2>
+      <span>Version-controlled review</span>
+      <h2>Internal & rights-holder approvals</h2>
       {contract.approvals.length ? (
         contract.approvals.map((a) => (
           <article className="ct-approval" key={a.id}>
             <div>
-              <strong>{a.type}</strong>
+              <strong>
+                {a.type === "Rights" ? "Rights-holder approval" : a.type}
+              </strong>
               <small>
                 {a.approver}
                 {a.date && ` · ${date(a.date)}`}
@@ -786,6 +790,197 @@ function ApprovalPanel({ contract, user, act }) {
       ) : (
         <p>No approval chain configured.</p>
       )}
+    </section>
+  );
+}
+
+function ContractControlStrip({ contract }) {
+  const linkedLicence = licenceService
+    .getState()
+    .licences.find((item) => item.contractId === contract.id);
+  const approvalsComplete = contract.approvals.every(
+    (item) => item.status === "Approved",
+  );
+  const signaturesComplete = contract.signers.length > 0 && contract.signers
+    .filter((item) => item.required)
+    .every((item) => item.status === "Signed");
+  const steps = [
+    ["01", "Source", contract.quoteReference, true],
+    ["02", "Approvals", approvalsComplete ? "Internal + rights-holder complete" : "Internal + rights-holder review", approvalsComplete],
+    ["03", "Signatures", `${contract.signingOrder} · ${contract.signers.filter((item) => item.status === "Signed").length}/${contract.signers.filter((item) => item.required).length}`, signaturesComplete],
+    ["04", "Final document", contract.finalLockedVersion ? `Locked v${contract.finalLockedVersion}` : "Locks after execution", Boolean(contract.finalLockedVersion)],
+    ["05", "Licence", linkedLicence?.reference || linkedLicence?.status || contract.licenceGeneration, Boolean(linkedLicence?.reference)],
+  ];
+  return (
+    <section className="ct-control-strip" aria-label="Contract control path">
+      <header>
+        <div>
+          <span>Contract controls</span>
+          <strong>Every commercial stage remains separately gated</strong>
+        </div>
+        <Status value={contract.status} />
+      </header>
+      <ol>
+        {steps.map(([number, label, detail, complete]) => (
+          <li className={complete ? "complete" : ""} key={label}>
+            <span>{number}</span>
+            <div>
+              <strong>{label}</strong>
+              <small>{detail}</small>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+function VersionComparison({ contract, buyer = false }) {
+  const snapshots = contractService
+    .getState()
+    .contractVersions.filter((item) => item.id === contract.id)
+    .sort((a, b) => a.version - b.version);
+  const defaultVersion = snapshots.at(-1)?.version || contract.version;
+  const [baseline, setBaseline] = useState(defaultVersion);
+  const previous = snapshots.find((item) => item.version === Number(baseline));
+  const changes = (contract.clauses || [])
+    .map((current) => {
+      const prior = previous?.clauses?.find((item) => item.id === current.id);
+      const changed =
+        !prior ||
+        prior.clauseVersion !== current.clauseVersion ||
+        (prior.resolvedBody || prior.body) !==
+          (current.resolvedBody || current.body);
+      return { current, prior, changed };
+    })
+    .filter((item) => item.changed);
+
+  return (
+    <section className="ct-panel ct-version-compare">
+      <div className="ct-section-heading">
+        <div>
+          <span>Document intelligence</span>
+          <h2>Compare contract versions</h2>
+        </div>
+        <label>
+          Baseline
+          <select
+            value={baseline}
+            onChange={(event) => setBaseline(event.target.value)}
+          >
+            {snapshots.map((item) => (
+              <option value={item.version} key={item.snapshotId}>
+                Version {item.version}
+              </option>
+            ))}
+            {!snapshots.length && <option value={contract.version}>Version {contract.version}</option>}
+          </select>
+        </label>
+      </div>
+      <div className="ct-version-summary">
+        <strong>v{baseline}</strong>
+        <ArrowRight />
+        <strong>v{contract.version} current</strong>
+        <Status value={`${changes.length} clause change${changes.length === 1 ? "" : "s"}`} />
+      </div>
+      {previous?.snapshotReason && <p className="ct-muted">{previous.snapshotReason}</p>}
+      {changes.length ? (
+        <div className="ct-diff-list">
+          {changes.map(({ current, prior }) => (
+            <article key={current.id}>
+              <div>
+                <strong>{current.title}</strong>
+                <small>
+                  Clause v{prior?.clauseVersion || "—"} → v{current.clauseVersion}
+                </small>
+              </div>
+              {buyer ? (
+                <p>Approved wording updated in the current review version.</p>
+              ) : (
+                <div className="ct-diff-copy">
+                  <p><span>Previous</span>{prior?.resolvedBody || prior?.body || "Clause added"}</p>
+                  <p><span>Current</span>{current.resolvedBody || current.body}</p>
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      ) : (
+        <p className="ct-empty-note">No clause wording changed between these versions.</p>
+      )}
+      <small>
+        {buyer
+          ? "Only buyer-visible clause history is shown. Internal legal notes remain restricted."
+          : "Clause versions, change reasons and approval evidence remain attached to the contract record."}
+      </small>
+    </section>
+  );
+}
+
+function AuditHistory({ contract, buyer = false }) {
+  const entries = contractService
+    .getState()
+    .activity.filter(
+      (item) =>
+        item.contractId === contract.id &&
+        (!buyer || ["Buyer Visible", "All Signers"].includes(item.visibility)),
+    )
+    .sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+  return (
+    <section className="ct-panel ct-audit-history">
+      <div className="ct-section-heading">
+        <div>
+          <span>{contract.auditReference}</span>
+          <h2>Full audit history</h2>
+        </div>
+        <Status value={`${entries.length} events`} />
+      </div>
+      <ol>
+        {entries.map((item) => (
+          <li key={item.id}>
+            <span aria-hidden="true" />
+            <div>
+              <header>
+                <strong>{item.action}</strong>
+                <time>{date(item.timestamp)}</time>
+              </header>
+              <p>{item.description}</p>
+              <small>{item.actor} · v{item.version || contract.version} · {item.visibility}</small>
+            </div>
+          </li>
+        ))}
+      </ol>
+      {!entries.length && <p>No recorded events are visible in this scope.</p>}
+      <small>Append-only browser simulation; not certified as tamper-proof evidence.</small>
+    </section>
+  );
+}
+
+function DocumentGovernance({ contract, navigate, buyer = false, onDownload }) {
+  const licence = licenceService
+    .getState()
+    .licences.find((item) => item.contractId === contract.id);
+  return (
+    <section className="ct-panel ct-governance">
+      <span>Document governance</span>
+      <h2>Final version & linkage</h2>
+      <dl>
+        <div><dt>Document expiry</dt><dd>{date(contract.documentExpiry)}</dd></div>
+        <div><dt>Final locked version</dt><dd>{contract.finalLockedVersion ? `v${contract.finalLockedVersion}` : "Pending execution"}</dd></div>
+        <div><dt>Signature status</dt><dd>{contract.signers.filter((item) => item.status === "Signed").length}/{contract.signers.filter((item) => item.required).length} recorded</dd></div>
+        <div><dt>Licence linkage</dt><dd>{licence?.reference || licence?.status || "Not created"}</dd></div>
+      </dl>
+      {licence && (
+        <p className="ct-linkage-note">
+          <ShieldCheck /> {licence.status}. Contract v{licence.contractVersion} is preserved as the source snapshot; issuance remains a separate workflow.
+        </p>
+      )}
+      {contract.signedDocumentAssetId && (
+        <button className="ct-full" onClick={onDownload || (() => navigate("contract-print"))}>
+          <FileText /> Download signed PDF
+        </button>
+      )}
+      <small>Controlled prototype artifact; not a certified e-signature-provider result.</small>
     </section>
   );
 }
@@ -881,6 +1076,7 @@ function AdminDetail({ navigate, showToast }) {
         }
       />
       <Notice />
+      <ContractControlStrip contract={contract} />
       <div className="ct-detail-grid">
         <main>
           <section className="ct-panel">
@@ -966,6 +1162,7 @@ function AdminDetail({ navigate, showToast }) {
             <h2>Contract document</h2>
             <DocumentViewer contract={contract} />
           </section>
+          <VersionComparison contract={contract} />
           <section className="ct-panel">
             <h2>Review comments</h2>
             {contract.comments
@@ -1026,6 +1223,7 @@ function AdminDetail({ navigate, showToast }) {
               </button>
             </div>
           </section>
+          <AuditHistory contract={contract} />
         </main>
         <aside>
           <ApprovalPanel contract={contract} user={user} act={act} />
@@ -1129,8 +1327,10 @@ function AdminDetail({ navigate, showToast }) {
               Signed asset: {contract.signedDocumentAssetId || "Not generated"}
             </p>
           </section>
+          <DocumentGovernance contract={contract} navigate={navigate} />
           <section className="ct-panel">
-            <h2>Internal notes</h2>
+            <span>Restricted</span>
+            <h2>Comments & legal notes</h2>
             {contract.internalNotes.map((n) => (
               <p key={n}>{n}</p>
             ))}
@@ -1188,6 +1388,8 @@ function TemplateLibrary({ navigate, showToast }) {
               <dd>{t.requiredApprovals.join(", ")}</dd>
               <dt>Signers</dt>
               <dd>{t.requiredSigners.join(", ")}</dd>
+              <dt>Designed for</dt>
+              <dd>{t.supportedProjectTypes.join(", ")}</dd>
             </dl>
             <button
               disabled={!reason}
@@ -1487,11 +1689,11 @@ function BuyerDetail({ navigate, showToast }) {
           resourceLabel: `${c.reference} signed contract`,
           resourceId: c.signedDocumentAssetId,
           relatedContractId: c.id,
-          action: "VIEW",
+          action: "DOWNLOAD",
         },
         user,
         {
-          action: "VIEW",
+          action: "DOWNLOAD",
           userId: user.id,
           organizationId: c.organizationId,
           allowedMethods: ["VIEW", "DOWNLOAD"],
@@ -1516,7 +1718,7 @@ function BuyerDetail({ navigate, showToast }) {
           <>
             {c.signedDocumentAssetId ? (
               <button onClick={openSignedContract}>
-                <Printer /> Open signed contract
+                <FileText /> Download signed PDF
               </button>
             ) : (
               <button onClick={() => navigate("contract-print")}>
@@ -1538,6 +1740,7 @@ function BuyerDetail({ navigate, showToast }) {
         }
       />
       <Notice />
+      <ContractControlStrip contract={c} />
       <div className="ct-detail-grid">
         <main>
           <section className="ct-panel">
@@ -1584,6 +1787,7 @@ function BuyerDetail({ navigate, showToast }) {
             <h2>Contract document</h2>
             <DocumentViewer contract={c} buyer />
           </section>
+          <VersionComparison contract={c} buyer />
           <section className="ct-panel">
             <h2>Buyer-visible discussion</h2>
             {c.comments
@@ -1603,6 +1807,7 @@ function BuyerDetail({ navigate, showToast }) {
                 </article>
               ))}
           </section>
+          <AuditHistory contract={c} buyer />
         </main>
         <aside>
           <section className="ct-panel">
@@ -1696,6 +1901,12 @@ function BuyerDetail({ navigate, showToast }) {
               </div>
             )}
           </section>
+          <DocumentGovernance
+            contract={c}
+            navigate={navigate}
+            buyer
+            onDownload={openSignedContract}
+          />
           <section className="ct-panel">
             <h2>Next steps</h2>
             <p>
@@ -1736,8 +1947,8 @@ function BuyerDetail({ navigate, showToast }) {
               <Certificate />
               <h2>Signed copy</h2>
               <p>{c.signedDocumentAssetId}</p>
-              <button onClick={() => navigate("contract-print")}>
-                View signed document
+              <button onClick={openSignedContract}>
+                Download signed PDF
               </button>
             </section>
           )}

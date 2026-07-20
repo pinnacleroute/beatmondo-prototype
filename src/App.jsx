@@ -132,6 +132,7 @@ import {
   Play,
   Printer,
   ShieldCheck,
+  ShoppingBag,
   SignIn,
   Sliders,
   Sparkle,
@@ -1275,6 +1276,7 @@ const navItems = [
   ["content", "Editorial Hub", Article],
   ["stories", "Stories", Article],
   ["media", "Media Episodes", FilmSlate],
+  ["merchandise", "Merchandise", ShoppingBag],
   ["contact", "Contact", UsersThree],
   ["investor", "Investor Overview", Eye],
   ["system", "Design System", Sliders],
@@ -1290,6 +1292,7 @@ const navItems = [
   ["billing-invoices", "Invoices", FileAudio],
   ["billing-invoice", "Invoice", FileAudio],
   ["billing-subscription", "Manage Subscription", Sparkle],
+  ["billing-plan-change-confirmation", "Confirm Plan Change", CheckCircle],
   ["billing-cancel", "Cancel Membership", Sparkle],
   ["billing-reactivate", "Reactivate Membership", Sparkle],
   ["billing-payment-failed", "Resolve Payment", ShieldCheck],
@@ -1528,6 +1531,7 @@ const NAV_PARENT_BY_VIEW = {
   "billing-subscription": "billing",
   "billing-cancel": "billing",
   "billing-reactivate": "billing",
+  "billing-plan-change-confirmation": "billing-subscription",
   "billing-payment-failed": "billing",
   "admin-membership-detail": "admin-memberships",
   // Artist
@@ -1720,6 +1724,8 @@ const sidebarSections = [
 
 const standaloneViews = new Set([
   "home",
+  "merchandise",
+  "investor",
   "login",
   "register",
   "signup",
@@ -2657,6 +2663,7 @@ function App() {
             openArtistProfile={openArtistProfile}
           />
         )}
+        {view === "merchandise" && <MerchandisePage setView={navigate} />}
         {view === "contact" && <ContactPage setView={navigate} />}
         {view === "investor" && <InvestorOverview setView={navigate} />}
         {view === "system" && <DesignSystem />}
@@ -3021,6 +3028,12 @@ function PublicHeader({ setView, authMode = null }) {
             <button onClick={() => setView("licensing")}>Licensing</button>
             <button onClick={() => setView("legacy")}>Legacy</button>
             <button onClick={() => setView("stories")}>Stories</button>
+            <button
+              className="merchandise-button merchandise-button-compact"
+              onClick={() => setView("merchandise")}
+            >
+              <ShoppingBag size={15} aria-hidden="true" /> Merchandise
+            </button>
           </nav>
           <div className="public-auth-actions">
             {user ? (
@@ -4493,6 +4506,12 @@ function ArtistProfile({
               >
                 Explore Music <ArrowRight size={16} aria-hidden="true" />
               </button>
+              <button
+                className="merchandise-button"
+                onClick={() => setView("merchandise")}
+              >
+                <ShoppingBag size={18} /> Merchandise
+              </button>
             </div>
           </div>
         </div>
@@ -4730,6 +4749,12 @@ function ArtistProfile({
               >
                 <ShieldCheck size={18} /> Request License
               </button>
+              <button
+                className="merchandise-button"
+                onClick={() => setView("merchandise")}
+              >
+                <ShoppingBag size={18} /> Merchandise
+              </button>
             </div>
           </div>
         </div>
@@ -4897,6 +4922,12 @@ function ArtistProfile({
               onClick={() => setView("stories")}
             >
               <Article size={18} /> Editorial Story
+            </button>
+            <button
+              className="merchandise-button"
+              onClick={() => setView("merchandise")}
+            >
+              <ShoppingBag size={18} /> Merchandise
             </button>
           </div>
         </div>
@@ -5177,6 +5208,7 @@ function LicensingAccess({
       : "license";
   const [mode, setMode] = useState(initialMode);
   const [accessSent, setAccessSent] = useState(false);
+  const [requestSummary, setRequestSummary] = useState(null);
   const [selectedTier, setSelectedTier] = useState(
     authUser?.membershipTier?.includes("Buyer") ||
       authUser?.membershipTier?.includes("Access")
@@ -5272,6 +5304,7 @@ function LicensingAccess({
                 track={selectedTrack}
                 onSubmit={() => setRequestSent(true)}
                 selectedTier={selectedTier}
+                onDraftChange={setRequestSummary}
               />
             )
           ) : accessSent ? (
@@ -5287,23 +5320,33 @@ function LicensingAccess({
           track={selectedTrack}
           selectedTier={selectedTier}
           mode={mode}
+          draft={requestSummary}
         />
       </div>
     </section>
   );
 }
 
-function FieldGroup({ title, note, children }) {
+function FieldGroup({ title, note, children, requirement }) {
   return (
     <fieldset className="form-section">
-      <legend>{title}</legend>
+      <legend>
+        {title}
+        {requirement && (
+          <span
+            className={`field-requirement ${requirement === "Optional" ? "optional" : ""}`}
+          >
+            {requirement}
+          </span>
+        )}
+      </legend>
       {note && <p>{note}</p>}
       <div className="form-section-grid">{children}</div>
     </fieldset>
   );
 }
 
-function LicensingSummary({ track, selectedTier, mode }) {
+function LicensingSummary({ track, selectedTier, mode, draft }) {
   const { user } = useAuth();
   const isVip = selectedTier === "VIP Sync Access";
   const verified = user?.verificationStatus === "approved";
@@ -5363,6 +5406,34 @@ function LicensingSummary({ track, selectedTier, mode }) {
           <strong>Terms</strong>
           {isVip ? "Pre-approved where available" : "Quote-based licensing"}
         </span>
+        {mode === "license" && (
+          <>
+            <span>
+              <strong>Request status</strong>
+              {draft?.status || "Draft"}
+            </span>
+            <span>
+              <strong>Completion</strong>
+              {draft?.completion || 0}%
+            </span>
+            <span>
+              <strong>Project</strong>
+              {draft?.form?.projectName || "Not completed"}
+            </span>
+            <span>
+              <strong>Usage / territory</strong>
+              {draft?.form?.usage || "—"} · {draft?.form?.territory || "—"}
+            </span>
+            <span>
+              <strong>Term / rights</strong>
+              {draft?.form?.term || "—"} · {draft?.form?.rights || "—"}
+            </span>
+            <span>
+              <strong>Budget pathway</strong>
+              {draft?.form?.budget || "Not selected"}
+            </span>
+          </>
+        )}
       </div>
       <div className="workflow-steps">
         {steps.map((step, index) => (
@@ -5458,6 +5529,7 @@ function InquiryForm({
   onSubmit,
   compact,
   selectedTier = currentBuyer.accessTier,
+  onDraftChange,
 }) {
   const { user } = useAuth();
   const sessionBuyer = user
@@ -5485,7 +5557,8 @@ function InquiryForm({
       return null;
     }
   })();
-  const [form, setForm] = useState({
+  const draftKey = `beatmondo-license-draft-${user?.id || "guest"}-${track.id}`;
+  const baseForm = {
     name: sessionBuyer.name,
     email: sessionBuyer.email,
     company: sessionBuyer.company,
@@ -5506,12 +5579,143 @@ function InquiryForm({
     assets: ["WAV Master", "Stems", "Instrumental"],
     budget: "",
     notes: "",
-  });
+  };
+  const savedDraft = (() => {
+    try {
+      return JSON.parse(window.localStorage.getItem(draftKey) || "null");
+    } catch {
+      return null;
+    }
+  })();
+  const [form, setForm] = useState(() => ({
+    ...baseForm,
+    ...(savedDraft?.form || {}),
+    buyerLevel: sessionBuyer.tier,
+  }));
 
-  const [attempted, setAttempted] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(() =>
+    Math.min(9, Math.max(0, Number(savedDraft?.step || 0))),
+  );
+  const [highestCompleted, setHighestCompleted] = useState(() =>
+    Math.min(
+      9,
+      Math.max(
+        0,
+        Number(savedDraft?.highestCompleted ?? savedDraft?.step ?? 0),
+      ),
+    ),
+  );
+  const [errors, setErrors] = useState({});
+  const [savedAt, setSavedAt] = useState(savedDraft?.updatedAt || null);
 
-  const update = (field, value) => setForm({ ...form, [field]: value });
+  const requiredFieldsByStep = {
+    0: ["name", "email", "company", "role"],
+    1: ["projectName", "projectType", "description"],
+    2: ["usage"],
+    3: ["territory"],
+    4: ["term"],
+    5: ["rights"],
+    6: ["assets"],
+    7: ["budget"],
+  };
+  const requiredFieldLabels = {
+    name: "Full name",
+    email: "Work email",
+    company: "Company",
+    role: "Job title",
+    projectName: "Project name",
+    projectType: "Project type",
+    description: "Project description",
+    usage: "Usage category",
+    territory: "Territory",
+    term: "Term duration",
+    rights: "Rights scope",
+    assets: "Asset selection",
+    budget: "Budget pathway",
+  };
+  const stepIsComplete = (index) => {
+    if (index === 8) return true;
+    if (index === 9)
+      return Object.keys(requiredFieldsByStep).every((value) =>
+        stepIsComplete(Number(value)),
+      );
+    return (requiredFieldsByStep[index] || []).every((field) => {
+      const value = form[field];
+      if (field === "email")
+        return /\S+@\S+\.\S+/.test(String(value || ""));
+      return Array.isArray(value) ? value.length > 0 : Boolean(String(value || "").trim());
+    });
+  };
+  const effectiveCompleted = Math.max(
+    highestCompleted,
+    stepIsComplete(step) ? step + 1 : step,
+  );
+  const completion = Math.min(100, Math.round((effectiveCompleted / 10) * 100));
+  const estimatedMinutes = Math.max(1, 10 - effectiveCompleted);
+  const duplicateRequest = (() => {
+    let submissions = [];
+    try {
+      submissions = JSON.parse(
+        window.localStorage.getItem("beatmondo-license-submissions") || "[]",
+      );
+    } catch {
+      submissions = [];
+    }
+    const storedDuplicate = submissions.some(
+      (item) =>
+        String(item.trackId) === String(track.id) &&
+        item.projectName?.toLowerCase() === form.projectName.toLowerCase(),
+    );
+    const seededDuplicate =
+      track.title === "Golden Hours" &&
+      form.projectName.toLowerCase().includes("luxury auto campaign");
+    return storedDuplicate || seededDuplicate;
+  })();
+  const persistDraft = (status = "Draft") => {
+    const updatedAt = new Date().toISOString();
+    window.localStorage.setItem(
+      draftKey,
+      JSON.stringify({
+        form,
+        step,
+        highestCompleted,
+        status,
+        completion,
+        updatedAt,
+      }),
+    );
+    setSavedAt(updatedAt);
+    onDraftChange?.({ form, step, status, completion, updatedAt });
+  };
+  useEffect(() => {
+    const timeout = window.setTimeout(() => persistDraft("Draft"), 250);
+    return () => window.clearTimeout(timeout);
+  }, [form, step, highestCompleted]);
+
+  const update = (field, value) => {
+    setForm((current) => ({ ...current, [field]: value }));
+    setErrors((current) => ({ ...current, [field]: undefined }));
+  };
+
+  const validateStep = (index) => {
+    const nextErrors = {};
+    (requiredFieldsByStep[index] || []).forEach((field) => {
+      const value = form[field];
+      const valid =
+        field === "email"
+          ? /\S+@\S+\.\S+/.test(String(value || ""))
+          : Array.isArray(value)
+            ? value.length > 0
+            : Boolean(String(value || "").trim());
+      if (!valid)
+        nextErrors[field] =
+          field === "email"
+            ? `${requiredFieldLabels[field]}: enter a valid work email.`
+            : `${requiredFieldLabels[field]}: complete this required field before continuing.`;
+    });
+    setErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
 
   const toggleAsset = (assetName) => {
     setForm((prev) => {
@@ -5524,7 +5728,35 @@ function InquiryForm({
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    setAttempted(true);
+    const invalidStep = Object.keys(requiredFieldsByStep)
+      .map(Number)
+      .find((index) => !stepIsComplete(index));
+    if (invalidStep !== undefined) {
+      validateStep(invalidStep);
+      setStep(invalidStep);
+      return;
+    }
+    let submissions = [];
+    try {
+      submissions = JSON.parse(
+        window.localStorage.getItem("beatmondo-license-submissions") || "[]",
+      );
+    } catch {
+      submissions = [];
+    }
+    submissions.unshift({
+      id: `mock-request-${Date.now()}`,
+      trackId: track.id,
+      trackTitle: track.title,
+      projectName: form.projectName,
+      status: "Submitted for review",
+      submittedAt: new Date().toISOString(),
+    });
+    window.localStorage.setItem(
+      "beatmondo-license-submissions",
+      JSON.stringify(submissions),
+    );
+    window.localStorage.removeItem(draftKey);
     onSubmit();
   };
 
@@ -5550,9 +5782,10 @@ function InquiryForm({
         <FieldGroup
           title="Buyer Details"
           note="Provide supervisor/buyer context."
+          requirement="Required"
         >
           <label>
-            Full Name{" "}
+            Full Name <span className="required-mark">Required</span>
             <input
               required
               value={form.name}
@@ -5560,7 +5793,7 @@ function InquiryForm({
             />
           </label>
           <label>
-            Work Email{" "}
+            Work Email <span className="required-mark">Required</span>
             <input
               type="email"
               required
@@ -5569,7 +5802,7 @@ function InquiryForm({
             />
           </label>
           <label>
-            Company{" "}
+            Company <span className="required-mark">Required</span>
             <input
               required
               value={form.company}
@@ -5577,7 +5810,7 @@ function InquiryForm({
             />
           </label>
           <label>
-            Job Title{" "}
+            Job Title <span className="required-mark">Required</span>
             <input
               required
               value={form.role}
@@ -5603,9 +5836,10 @@ function InquiryForm({
         <FieldGroup
           title="Project Details"
           note="Details of the production workspace."
+          requirement="Required core fields · supporting fields optional"
         >
           <label>
-            Project Name{" "}
+            Project Name <span className="required-mark">Required</span>
             <input
               required
               value={form.projectName}
@@ -5613,7 +5847,7 @@ function InquiryForm({
             />
           </label>
           <label>
-            Project Type{" "}
+            Project Type <span className="required-mark">Required</span>
             <select
               value={form.projectType}
               onChange={(e) => update("projectType", e.target.value)}
@@ -5632,28 +5866,28 @@ function InquiryForm({
             </select>
           </label>
           <label>
-            Brand / Client{" "}
+            Brand / Client <span className="optional-mark">Optional</span>
             <input
               value={form.brand}
               onChange={(e) => update("brand", e.target.value)}
             />
           </label>
           <label>
-            Production Company{" "}
+            Production Company <span className="optional-mark">Optional</span>
             <input
               value={form.productionCompany}
               onChange={(e) => update("productionCompany", e.target.value)}
             />
           </label>
           <label>
-            Project Description{" "}
+            Project Description <span className="required-mark">Required</span>
             <input
               value={form.description}
               onChange={(e) => update("description", e.target.value)}
             />
           </label>
           <label>
-            Project Deadline{" "}
+            Project Deadline <span className="optional-mark">Optional</span>
             <input
               type="date"
               value={form.deadline}
@@ -5671,6 +5905,7 @@ function InquiryForm({
         <FieldGroup
           title="Usage Categories"
           note="Choose how the track will be placed."
+          requirement="Required"
         >
           <div className="toggle-button-group">
             {[
@@ -5703,7 +5938,11 @@ function InquiryForm({
       title: "Step 4 — Territory Scope",
       note: "What distribution territories are required?",
       fields: (
-        <FieldGroup title="Territory Scope" note="Select licensing coverage.">
+        <FieldGroup
+          title="Territory Scope"
+          note="Select licensing coverage."
+          requirement="Required"
+        >
           <div className="toggle-button-group">
             {["Local", "National", "Regional", "Global", "Custom"].map(
               (opt) => (
@@ -5726,7 +5965,11 @@ function InquiryForm({
       title: "Step 5 — Term Duration",
       note: "How long will the licensing coverage remain active?",
       fields: (
-        <FieldGroup title="Term Duration" note="Select the license period.">
+        <FieldGroup
+          title="Term Duration"
+          note="Select the licence period."
+          requirement="Required"
+        >
           <div className="toggle-button-group">
             {[
               "3 Months",
@@ -5758,6 +6001,7 @@ function InquiryForm({
         <FieldGroup
           title="Rights Scope"
           note="Exclusivity terms affect clearance pathways."
+          requirement="Required"
         >
           <div className="toggle-button-group">
             {[
@@ -5788,6 +6032,7 @@ function InquiryForm({
         <FieldGroup
           title="Asset Deliveries"
           note="Locked masters and stems will be prepared."
+          requirement="Required"
         >
           <div className="toggle-button-group multi">
             {[
@@ -5821,6 +6066,7 @@ function InquiryForm({
         <FieldGroup
           title="Budget Level"
           note="This shapes the quote calculations."
+          requirement="Required"
         >
           <div className="toggle-button-group">
             {[
@@ -5850,6 +6096,7 @@ function InquiryForm({
         <FieldGroup
           title="Editorial Notes"
           note="Add scene details or custom requests."
+          requirement="Optional"
         >
           <label className="full-field">
             Inquiry notes and creative brief
@@ -5870,7 +6117,7 @@ function InquiryForm({
         <div className="review-summary-wrapper">
           <div className="review-summary-header">
             <h4>Sync Licensing Request Summary</h4>
-            <span className="prototype-badge">Submitted for Review</span>
+            <span className="prototype-badge">Draft · Final review</span>
           </div>
           <div className="review-grid-two">
             <div className="review-block">
@@ -5951,6 +6198,23 @@ function InquiryForm({
             <h5>Editorial Notes</h5>
             <p className="review-notes-text">{form.notes}</p>
           </div>
+          <div className="review-edit-actions" aria-label="Edit request sections">
+            {[
+              ["Buyer", 0],
+              ["Project", 1],
+              ["Usage", 2],
+              ["Territory", 3],
+              ["Term", 4],
+              ["Rights", 5],
+              ["Assets", 6],
+              ["Budget", 7],
+              ["Notes", 8],
+            ].map(([label, index]) => (
+              <button type="button" key={label} onClick={() => setStep(index)}>
+                Edit {label}
+              </button>
+            ))}
+          </div>
         </div>
       ),
     },
@@ -5964,6 +6228,28 @@ function InquiryForm({
       onSubmit={handleSubmit}
       noValidate
     >
+      <div className="request-draft-bar">
+        <span className="draft-status"><em /> Draft</span>
+        <span>
+          {savedAt
+            ? `Saved ${new Date(savedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`
+            : "Saving automatically"}
+        </span>
+        <button type="button" onClick={() => persistDraft("Draft")}>
+          Save progress
+        </button>
+      </div>
+      <details className="licensing-terminology-help">
+        <summary>Licensing terminology help</summary>
+        <dl>
+          <dt>Usage</dt><dd>Where and how the music will appear.</dd>
+          <dt>Territory</dt><dd>The geographic distribution area.</dd>
+          <dt>Term</dt><dd>How long the approved use will remain active.</dd>
+          <dt>Rights scope</dt><dd>Whether the use is non-exclusive or restricts other licensing.</dd>
+          <dt>Assets</dt><dd>The protected master, instrumental, stems, or edits requested after approval.</dd>
+          <dt>Quote</dt><dd>A review-subject commercial proposal, not a licence or delivery authorization.</dd>
+        </dl>
+      </details>
       {form.buyerLevel === "VIP Sync Access" && step < 9 && (
         <p className="vip-form-note">
           VIP Concierge review is active. Your request will be prioritized for
@@ -5974,9 +6260,26 @@ function InquiryForm({
       <div className="request-progress" aria-hidden="true">
         <div
           className="request-progress-bar"
-          style={{ width: `${((step + 1) / steps.length) * 100}%` }}
+          style={{ width: `${completion}%` }}
         />
       </div>
+      <div className="request-progress-meta" aria-live="polite">
+        <strong>{completion}% complete</strong>
+        <span>About {estimatedMinutes} min remaining</span>
+        <span>Step {step + 1} of {steps.length}</span>
+      </div>
+      {duplicateRequest && (
+        <div className="duplicate-request-warning" role="status">
+          <WarningCircle size={20} />
+          <div>
+            <strong>Possible duplicate request</strong>
+            <span>
+              This track and project appear in another request. You may
+              continue, but review the existing request before submitting.
+            </span>
+          </div>
+        </div>
+      )}
       <div
         className="request-stepper-scrollable"
         role="navigation"
@@ -5987,9 +6290,11 @@ function InquiryForm({
             <button
               type="button"
               key={name}
-              className={`step-btn-10 ${index === step ? "active" : index < step ? "complete" : ""}`}
+              className={`step-btn-10 ${index === step ? "active" : index < highestCompleted ? "complete" : ""}`}
               aria-current={index === step ? "step" : undefined}
-              onClick={() => setStep(index)}
+              onClick={() => {
+                if (index <= highestCompleted) setStep(index);
+              }}
             >
               <em>{index + 1}</em>
               <span>{name}</span>
@@ -6007,6 +6312,17 @@ function InquiryForm({
       </div>
 
       <div className="step-fields-content">{steps[step].fields}</div>
+      {Object.keys(errors).length > 0 && (
+        <div className="step-validation" role="alert">
+          <WarningCircle size={20} />
+          <div>
+            <strong>Complete this step</strong>
+            {Object.entries(errors).map(([field, message]) => (
+              <span key={field}>{message}</span>
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="form-step-actions">
         <button
@@ -6025,9 +6341,12 @@ function InquiryForm({
           <button
             type="button"
             className="gold-button form-submit"
-            onClick={() =>
-              setStep((current) => Math.min(steps.length - 1, current + 1))
-            }
+            onClick={() => {
+              if (validateStep(step)) {
+                setHighestCompleted((current) => Math.max(current, step + 1));
+                setStep((current) => Math.min(steps.length - 1, current + 1));
+              }
+            }}
           >
             Continue
           </button>
@@ -8918,6 +9237,12 @@ function ContentPages({ setView, showToast, openArtistProfile }) {
             <button className="outline-button" onClick={() => setView("media")}>
               <FilmSlate size={18} /> Watch Media Episodes
             </button>
+            <button
+              className="merchandise-button"
+              onClick={() => setView("merchandise")}
+            >
+              <ShoppingBag size={18} /> Merchandise
+            </button>
           </div>
         </article>
         <aside className="hub-pathways">
@@ -9517,89 +9842,478 @@ function ContactPage({ setView }) {
   );
 }
 
-function InvestorOverview({ setView }) {
-  const sections = [
-    [
-      "The Opportunity",
-      "The global sync licensing market exceeds $1.5B annually and continues to grow with streaming, branded content, and premium media production. Most music licensing remains fragmented, manual, and disconnected from rights data. There is a clear opportunity for a technology-enabled platform that combines curated discovery, structured licensing, protected delivery, and catalog intelligence.",
-    ],
-    [
-      "The Problem",
-      "Music supervisors and professional buyers navigate disconnected tools, unclear rights, slow quote processes, and inconsistent access to masters and stems. Artists and rights holders lack visibility into demand and licensing activity. Valuable catalogs are underserved by generic stock libraries and open marketplaces.",
-    ],
-    [
-      "The Solution",
-      "beatmondo is a premium, curated, gated music discovery and sync licensing ecosystem. It connects exceptional catalogs with professional creative buyers while protecting rights, masters, metadata, and long-term catalog value. The platform combines curated discovery, structured licensing workflows, rights-aware metadata, protected master delivery, and catalog intelligence.",
-    ],
-    [
-      "How It Works",
-      "Selected artists and catalogs are reviewed and accepted into the platform. Buyers discover music through curated browsing, editorial content, and professional search tools. Licensing requests follow structured workflows with usage parameters, territory, term, rights review, and secure delivery. Three buyer tiers — Discovery Access, Professional Buyer, and VIP Sync Access — provide appropriate levels of access and service.",
-    ],
-    [
-      "Revenue Model",
-      "Revenue is generated through multiple pathways: approved sync licensing fees, premium buyer access, exclusive licensing arrangements, strategic catalog partnerships, and premium services including curated recommendations, priority review, and custom commercial pathways.",
-    ],
-    [
-      "Product Ecosystem",
-      "The platform serves professional buyers (music supervisors, studios, agencies, brands), artists and rights holders (selected catalogs, controlled participation), and platform operations (rights management, catalog intelligence, delivery infrastructure). Editorial content, stories, and media episodes support discovery and buyer engagement.",
-    ],
-    [
-      "Competitive Advantage",
-      "beatmondo is curated rather than open, professional rather than mass-market, rights-aware rather than discovery-only, and intelligence-driven rather than simple hosting. Protected master delivery, controlled artist participation, and catalog value signals create defensible differentiation from generic stock libraries and open marketplaces.",
-    ],
-    [
-      "Scalability",
-      "The platform architecture supports growth across catalog size, buyer volume, geographic markets, and licensing complexity. Catalog intelligence data becomes more valuable with scale. Rights management infrastructure creates operational moats. Premium buyer relationships and VIP access create recurring engagement.",
-    ],
-    [
-      "Current Prototype Status",
-      "This prototype demonstrates the full product concept including curated discovery, track detail with rights data, multi-step licensing workflows, buyer and admin dashboards, secure delivery representation, catalog intelligence, editorial content, and three buyer access tiers. All data is demonstration data. Authentication, payment, and file delivery are simulated.",
-    ],
-    [
-      "Future Development",
-      "Next phases include production backend development, real authentication and payment processing, encrypted file delivery infrastructure, expanded catalog onboarding, rights management automation, buyer CRM, analytics pipeline, and mobile-optimized experiences.",
-    ],
+function MerchandisePage({ setView }) {
+  const products = [
+    {
+      name: "The SMYRK Archive Vinyl",
+      category: "Featured artist merchandise",
+      format: "Limited-edition vinyl",
+      price: "$38",
+      image: img.smyrkCard,
+      position: "center 38%",
+      status: "Coming Soon",
+    },
+    {
+      name: "Slambovian 2022 Tour Poster",
+      category: "Tour merchandise",
+      format: "Numbered archival poster",
+      price: "$24",
+      image: img.slambovianArchive,
+      position: "center",
+      status: "Coming Soon",
+    },
+    {
+      name: "beatmondo Studio Jacket",
+      category: "beatmondo merchandise",
+      format: "Embroidered work jacket",
+      price: "$140",
+      image: img.privateStudio,
+      position: "center",
+      status: "Partner Integration Planned",
+    },
+    {
+      name: "beatmondo Wordmark Hat",
+      category: "beatmondo merchandise",
+      format: "Low-profile cotton cap",
+      price: "$32",
+      image: img.studio,
+      position: "center 58%",
+      status: "Partner Integration Planned",
+    },
+    {
+      name: "Artist Edition Apparel",
+      category: "Featured artist merchandise",
+      format: "Premium heavyweight tee",
+      price: "$36",
+      image: img.smyrkPortrait,
+      position: "center 34%",
+      status: "Coming Soon",
+    },
+    {
+      name: "Tour Night Hoodie",
+      category: "Tour merchandise",
+      format: "Venue-exclusive apparel",
+      price: "$72",
+      image: img.concert,
+      position: "center",
+      status: "Partner Integration Planned",
+    },
+    {
+      name: "Gary Burke Archive Print",
+      category: "Limited editions",
+      format: "Museum-grade art print",
+      price: "$45",
+      image: img.legacyDetail,
+      position: "center",
+      status: "Coming Soon",
+    },
+    {
+      name: "VIP Artist Experience",
+      category: "VIP packages",
+      format: "Curated event package",
+      price: "$195",
+      image: img.slambovianHero,
+      position: "center 32%",
+      status: "Partner Integration Planned",
+    },
   ];
+
   return (
-    <section className="investor-page">
-      <div className="investor-hero">
-        <span className="eyebrow">Investor overview</span>
-        <h2>beatmondo — Premium Sync Licensing Ecosystem</h2>
-        <p>
-          A curated, gated music discovery and sync licensing platform
-          connecting exceptional catalogs with professional creative buyers
-          while protecting rights, masters, metadata, and long-term catalog
-          value.
-        </p>
-        <div className="button-row">
-          <button className="gold-button" onClick={() => setView("home")}>
-            <House size={18} /> View Product
-          </button>
-          <button className="outline-button" onClick={() => setView("catalog")}>
-            <MagnifyingGlass size={18} /> Explore Music
-          </button>
-          <button className="outline-button" onClick={() => setView("admin")}>
-            <GearSix size={18} /> View Dashboard
-          </button>
+    <section className="merchandise-page">
+      <PublicHeader setView={setView} />
+      <div className="merchandise-hero">
+        <div>
+          <span className="eyebrow">Artist products · Tour goods · Limited editions</span>
+          <h1>Merchandise, built around the music.</h1>
+          <p>
+            A future commercial channel for artist-led products, beatmondo
+            editions, touring moments, vinyl, apparel, and premium fan
+            experiences.
+          </p>
+          <div className="merchandise-hero-status">
+            <span>Concept storefront</span>
+            <span>No live checkout</span>
+            <span>Approved partners only</span>
+          </div>
+        </div>
+        <aside className="merchandise-partner-note">
+          <ShoppingBag size={30} weight="duotone" aria-hidden="true" />
+          <span className="eyebrow">Partner-led commerce</span>
+          <h2>Produced and fulfilled by approved merchandise partners.</h2>
+          <p>
+            Fulfilment can be handled through external print-on-demand or
+            specialist merchandise partners. Checkout, inventory, payment, and
+            shipping integrations are planned for a later phase.
+          </p>
+        </aside>
+      </div>
+
+      <div className="merchandise-catalog">
+        <div className="merchandise-section-heading">
+          <div>
+            <span className="eyebrow">Future product mix</span>
+            <h2>Featured merchandise concepts</h2>
+          </div>
+          <p>
+            Dummy pricing is shown for prototype demonstration only. Nothing
+            on this page is available to purchase yet.
+          </p>
+        </div>
+        <div className="merchandise-category-row" aria-label="Merchandise categories">
+          {["Artist merchandise", "beatmondo", "Tour", "Limited editions", "VIP packages"].map(
+            (category) => <span key={category}>{category}</span>,
+          )}
+        </div>
+        <div className="merchandise-product-grid">
+          {products.map((product) => (
+            <article className="merchandise-product-card" key={product.name}>
+              <div
+                className="merchandise-product-image"
+                style={{
+                  backgroundImage: `linear-gradient(180deg, transparent 44%, rgba(8,7,5,.76)), url(${product.image})`,
+                  backgroundPosition: product.position,
+                }}
+                role="img"
+                aria-label={`${product.name} concept image`}
+              >
+                <span>{product.status}</span>
+              </div>
+              <div className="merchandise-product-copy">
+                <small>{product.category}</small>
+                <h3>{product.name}</h3>
+                <div>
+                  <span>{product.format}</span>
+                  <strong>{product.price}</strong>
+                </div>
+                <em>Mock price · Not available for purchase</em>
+              </div>
+            </article>
+          ))}
         </div>
       </div>
-      <div className="investor-sections">
-        {sections.map(([title, text], index) => (
-          <article key={title} className="investor-section">
-            <span className="investor-section-number">0{index + 1}</span>
-            <h3>{title}</h3>
-            <p>{text}</p>
+
+      <section className="merchandise-roadmap">
+        <div>
+          <span className="eyebrow">Commercial roadmap</span>
+          <h2>A partner-ready revenue channel—not a simulated shop.</h2>
+        </div>
+        <div className="merchandise-roadmap-steps">
+          {[
+            ["01", "Curate", "Select artist, brand, tour, and limited-edition concepts."],
+            ["02", "Approve", "Review brand, artist, rights, quality, and partner suitability."],
+            ["03", "Integrate", "Connect specialist production, fulfilment, and commerce partners."],
+            ["04", "Launch", "Activate products when commercial and operational terms are ready."],
+          ].map(([number, title, text]) => (
+            <article key={number}>
+              <span>{number}</span>
+              <strong>{title}</strong>
+              <p>{text}</p>
+            </article>
+          ))}
+        </div>
+        <button className="outline-button" onClick={() => setView("contact")}>
+          Discuss a merchandise partnership <ArrowRight size={16} />
+        </button>
+      </section>
+      <Footer setView={setView} />
+    </section>
+  );
+}
+
+function InvestorOverview({ setView }) {
+  const problems = [
+    "Valuable music catalogs remain undiscovered",
+    "Rights information is fragmented across people, files, and systems",
+    "Licensing is slow and manually coordinated",
+    "Artists lack visibility and secure commercial access",
+    "Buyers struggle to find distinctive, rights-cleared music",
+  ];
+  const solutions = [
+    [MagnifyingGlass, "Curated music discovery"],
+    [ShieldCheck, "Rights-aware metadata"],
+    [FileAudio, "Structured licensing requests"],
+    [FileText, "Quote and contract workflows"],
+    [HardDrives, "Secure WAV and stem delivery"],
+    [SquaresFour, "Role-specific operating dashboards"],
+    [Fingerprint, "Audit and compliance controls"],
+  ];
+  const revenuePathways = [
+    [Sparkle, "Discovery memberships", "Recurring access"],
+    [UsersThree, "Professional buyer memberships", "Recurring access"],
+    [Certificate, "VIP Sync Access", "Premium service"],
+    [CurrencyDollar, "Licensing and synchronization fees", "Transaction"],
+    [MicrophoneStage, "Artist and catalog partnerships", "Partnership"],
+    [ShoppingBag, "Merchandise", "Artist commerce"],
+    [CalendarBlank, "Touring and events", "Experiences"],
+    [Waveform, "Streaming and media", "Audience"],
+    [Archive, "Strategic catalog partnerships", "Portfolio"],
+    [SquaresFour, "Regional expansion", "Geographic growth"],
+  ];
+  const ecosystem = [
+    [MagnifyingGlass, "Discovery", "Curated buyer entry"],
+    [MusicNote, "Catalog", "Controlled music records"],
+    [ShieldCheck, "Rights", "Human-reviewed evidence"],
+    [FileAudio, "Licensing", "Structured requests"],
+    [FileText, "Contracts", "Versioned agreements"],
+    [CurrencyDollar, "Payments", "Separated commercial ledgers"],
+    [HardDrives, "Delivery", "Protected asset access"],
+    [MicrophoneStage, "Artists", "Managed participation"],
+    [TrendUp, "Analytics", "Role-safe intelligence"],
+    [LockKey, "Security & compliance", "Permissioned evidence"],
+  ];
+  const advantages = [
+    ["Premium curation", "Professional and selective—not commodity stock music."],
+    ["Human context", "Artist stories, archive depth, and Gary Burke legacy content."],
+    ["Artist-first control", "Rights, masters, access, and participation stay protected."],
+    ["Multiple revenue models", "Membership, licensing, services, commerce, media, and events."],
+    ["International readiness", "Modular operations can support regional market editions."],
+    ["Paragon 360 structure", "Independent divisions can share one operating foundation."],
+  ];
+  const divisions = [
+    [ShieldCheck, "Sync Licensing", "Core"],
+    [MusicNote, "Music & Artist Catalogs", "Core"],
+    [MicrophoneStage, "Touring", "Expansion"],
+    [FilmSlate, "Film & Entertainment", "Expansion"],
+    [Waveform, "Streaming", "Expansion"],
+    [ShoppingBag, "Merchandise", "Partner-led"],
+    [SquaresFour, "Regional Editions", "Future"],
+  ];
+
+  const scrollToRevenue = () => {
+    document.getElementById("investor-revenue-model")?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  return (
+    <section className="investor-page">
+      <PublicHeader setView={setView} />
+
+      <section
+        className="investor-hero"
+        style={{
+          backgroundImage: `linear-gradient(90deg, rgba(7,6,5,.97) 0%, rgba(9,8,6,.88) 48%, rgba(9,8,6,.3) 100%), url(${img.scoringStage})`,
+        }}
+      >
+        <div className="investor-hero-copy">
+          <span className="eyebrow">Private investor overview</span>
+          <h1>
+            The premium operating system for music discovery, licensing and
+            artist commerce.
+          </h1>
+          <p>
+            beatmondo connects distinctive music, verified rights context,
+            professional buyers, structured licensing, secure delivery, and
+            new artist-led commercial pathways in one curated ecosystem.
+          </p>
+          <div className="investor-status-line" aria-label="Current investment status">
+            <span>Architecture substantially complete</span>
+            <span>Advanced operating prototype</span>
+            <span>Private review by invitation</span>
+          </div>
+          <div className="button-row investor-hero-actions">
+            <button className="gold-button" onClick={() => setView("home")}>
+              Explore Platform <ArrowRight size={17} />
+            </button>
+            <button className="outline-button" onClick={scrollToRevenue}>
+              View Revenue Model <CurrencyDollar size={17} />
+            </button>
+          </div>
+        </div>
+        <div className="investor-hero-metrics" aria-label="Platform at a glance">
+          <article>
+            <strong>3</strong>
+            <span>Buyer access tiers</span>
           </article>
-        ))}
+          <article>
+            <strong>10</strong>
+            <span>Connected operating areas</span>
+          </article>
+          <article>
+            <strong>10</strong>
+            <span>Revenue pathways</span>
+          </article>
+        </div>
+      </section>
+
+      <div className="investor-page-body">
+        <section className="investor-framing" aria-labelledby="investor-problem-title">
+          <div className="investor-problem-panel">
+            <span className="eyebrow">The problem</span>
+            <h2 id="investor-problem-title">Music value is lost between discovery and clearance.</h2>
+            <div className="investor-problem-list">
+              {problems.map((problem, index) => (
+                <article key={problem}>
+                  <span>0{index + 1}</span>
+                  <p>{problem}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+          <div className="investor-solution-panel">
+            <span className="eyebrow">The solution</span>
+            <h2>A curated operating layer for the full commercial journey.</h2>
+            <div className="investor-solution-list">
+              {solutions.map(([Icon, label]) => (
+                <article key={label}>
+                  <Icon size={22} weight="duotone" aria-hidden="true" />
+                  <span>{label}</span>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="investor-revenue-model"
+          className="investor-revenue-section"
+          aria-labelledby="investor-revenue-title"
+        >
+          <div className="investor-section-heading">
+            <div>
+              <span className="eyebrow">Revenue pathways</span>
+              <h2 id="investor-revenue-title">One platform. Multiple commercial engines.</h2>
+            </div>
+            <p>
+              Revenue can combine recurring access, licensing transactions,
+              premium service, artist commerce, media, experiences, and
+              strategic expansion without collapsing those activities into one
+              financial model.
+            </p>
+          </div>
+          <div className="investor-revenue-grid">
+            {revenuePathways.map(([Icon, title, type]) => (
+              <article key={title} className={title === "Merchandise" ? "is-merchandise" : ""}>
+                <Icon size={23} weight="duotone" aria-hidden="true" />
+                <div>
+                  <strong>{title}</strong>
+                  <span>{type}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="investor-model-note">
+            Revenue pathways are strategic prototype concepts, not financial
+            forecasts. Licensing finance remains separate from membership,
+            merchandise, touring, and other commercial simulations.
+          </p>
+        </section>
+
+        <section className="investor-ecosystem-section" aria-labelledby="investor-ecosystem-title">
+          <div className="investor-section-heading">
+            <div>
+              <span className="eyebrow">Platform ecosystem</span>
+              <h2 id="investor-ecosystem-title">The operating architecture already connects the journey.</h2>
+            </div>
+            <p>
+              Buyers, artists, legal, finance, rights, security, and operations
+              work from role-specific views over one permissioned evidence
+              layer.
+            </p>
+          </div>
+          <div className="investor-ecosystem-map">
+            {ecosystem.map(([Icon, title, detail], index) => (
+              <article key={title}>
+                <span className="investor-ecosystem-number">{String(index + 1).padStart(2, "0")}</span>
+                <Icon size={24} weight="duotone" aria-hidden="true" />
+                <strong>{title}</strong>
+                <small>{detail}</small>
+              </article>
+            ))}
+          </div>
+          <div className="investor-architecture-band">
+            <span>Discover</span>
+            <ArrowRight size={16} aria-hidden="true" />
+            <span>Verify rights</span>
+            <ArrowRight size={16} aria-hidden="true" />
+            <span>License</span>
+            <ArrowRight size={16} aria-hidden="true" />
+            <span>Contract & pay</span>
+            <ArrowRight size={16} aria-hidden="true" />
+            <span>Deliver securely</span>
+          </div>
+        </section>
+
+        <section className="investor-advantage-section" aria-labelledby="investor-advantage-title">
+          <div className="investor-advantage-intro">
+            <span className="eyebrow">Commercial advantage</span>
+            <h2 id="investor-advantage-title">Built for catalog value—not volume at any cost.</h2>
+            <p>
+              beatmondo combines a premium public story with a deep private
+              operating model. That allows the platform to stay selective at
+              the surface while supporting commercial complexity underneath.
+            </p>
+          </div>
+          <div className="investor-advantage-grid">
+            {advantages.map(([title, text], index) => (
+              <article key={title}>
+                <span>0{index + 1}</span>
+                <strong>{title}</strong>
+                <p>{text}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="investor-expansion-section" aria-labelledby="investor-expansion-title">
+          <div className="investor-section-heading">
+            <div>
+              <span className="eyebrow">Expansion vision</span>
+              <h2 id="investor-expansion-title">A modular music and entertainment group under Paragon 360.</h2>
+            </div>
+            <p>
+              Future beatmondo divisions can share brand, technology,
+              relationships, rights intelligence, and operating controls while
+              developing their own commercial models.
+            </p>
+          </div>
+          <div className="investor-division-grid">
+            {divisions.map(([Icon, title, stage]) => (
+              <article key={title}>
+                <Icon size={28} weight="duotone" aria-hidden="true" />
+                <strong>{title}</strong>
+                <span>{stage}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="investor-cta" aria-labelledby="investor-cta-title">
+          <div>
+            <span className="eyebrow">Private review</span>
+            <h2 id="investor-cta-title">See the operating depth behind the business story.</h2>
+            <p>
+              Request access to the full prototype, schedule a guided review,
+              or contact Preston and the designated investment team for a
+              confidential conversation.
+            </p>
+          </div>
+          <div className="investor-cta-actions">
+            <button className="gold-button" onClick={() => setView("register")}>
+              Request Prototype Access <ArrowRight size={17} />
+            </button>
+            <button className="outline-button" onClick={() => setView("contact")}>
+              Schedule a Private Review <CalendarBlank size={17} />
+            </button>
+            <button className="text-action" onClick={() => setView("contact")}>
+              Contact the Investment Team <ArrowRight size={15} />
+            </button>
+          </div>
+        </section>
+
+        <div className="investor-disclaimer">
+          <ShieldCheck size={18} aria-hidden="true" />
+          <p>
+            Private prototype overview. No financial projections, valuation,
+            investment offer, legal conclusion, rights certification, or
+            commercial commitment is presented. Authentication, payment,
+            delivery, compliance, and other infrastructure remain simulated
+            until production systems and approved providers are implemented.
+          </p>
+        </div>
       </div>
-      <div className="investor-disclaimer">
-        <p>
-          This document represents the current prototype concept. No financial
-          projections, valuation estimates, or investment commitments are
-          included. All platform data is demonstration data. beatmondo is a
-          working brand name.
-        </p>
-      </div>
+      <Footer setView={setView} />
     </section>
   );
 }
@@ -10485,12 +11199,13 @@ function Footer({ setView }) {
   }, []);
 
   const linkGroups = [
-    ["Explore", ["Explore Music", "Licensing", "Artists", "Gary Burke Legacy"]],
+    ["Explore", ["Explore Music", "Licensing", "Artists", "Merchandise", "Gary Burke Legacy"]],
     ["Media", ["Editorial Hub", "Stories", "Media Episodes", "Contact"]],
     ["Access", ["Request Access", "Licensing Access", "Partner Inquiry"]],
   ];
   const navigate = (item) => {
     if (item === "Explore Music") setView("catalog");
+    else if (item === "Merchandise") setView("merchandise");
     else if (item === "Gary Burke Legacy") setView("legacy");
     else if (
       item === "Request Access" ||
@@ -10547,7 +11262,11 @@ function Footer({ setView }) {
             <div key={group}>
               <strong>{group}</strong>
               {links.map((item) => (
-                <button key={item} onClick={() => navigate(item)}>
+                <button
+                  key={item}
+                  className={item === "Merchandise" ? "merchandise-button merchandise-footer-button" : undefined}
+                  onClick={() => navigate(item)}
+                >
                   {item}
                 </button>
               ))}

@@ -733,6 +733,183 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
+.membership-demo-overview {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 0.8fr);
+  gap: 16px;
+  margin: 0 0 18px;
+}
+.membership-demo-overview > article,
+.membership-state-demo {
+  border: 1px solid var(--billing-border);
+  background:
+    radial-gradient(circle at 100% 0, rgba(200, 168, 107, 0.08), transparent 34%),
+    #171310;
+  padding: 22px;
+}
+.membership-demo-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 17px;
+}
+.membership-demo-heading h3,
+.membership-renewal-card h3 {
+  margin: 6px 0 0;
+  font-size: 1.45rem;
+}
+.membership-demo-tiers > div:last-child {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 9px;
+}
+.membership-demo-tiers > div:last-child > span {
+  display: grid;
+  gap: 8px;
+  min-height: 118px;
+  align-content: end;
+  border: 1px solid var(--billing-border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px;
+}
+.membership-demo-tiers > div:last-child > span.current {
+  border-color: rgba(200, 168, 107, 0.8);
+  background: rgba(200, 168, 107, 0.08);
+}
+.membership-demo-tiers small,
+.membership-state-demo li > span {
+  color: var(--billing-gold);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+.membership-demo-tiers em {
+  color: #9bd5ac;
+  font-size: 0.7rem;
+  font-style: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.membership-renewal-card p,
+.membership-state-demo small,
+.plan-change-review small {
+  color: rgba(242, 234, 220, 0.62);
+}
+.membership-renewal-card dl,
+.plan-change-facts dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 9px 16px;
+  border-top: 1px solid var(--billing-border);
+  margin-top: 18px;
+  padding-top: 16px;
+}
+.membership-renewal-card dt,
+.plan-change-facts dt {
+  color: rgba(242, 234, 220, 0.58);
+}
+.membership-renewal-card dd,
+.plan-change-facts dd {
+  margin: 0;
+  text-align: right;
+}
+.membership-state-demo {
+  margin-bottom: 20px;
+}
+.membership-state-demo ol {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 9px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.membership-state-demo li {
+  display: grid;
+  gap: 8px;
+  min-height: 120px;
+  align-content: start;
+  border-top: 2px solid var(--billing-gold);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 14px;
+}
+.plan-change-route {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 14px;
+  align-items: stretch;
+  margin: 24px 0 16px;
+}
+.plan-change-route article,
+.plan-change-route > div {
+  display: grid;
+  gap: 7px;
+  align-content: center;
+  border: 1px solid var(--billing-border);
+  background: #171310;
+  padding: 22px;
+}
+.plan-change-route article h3 {
+  margin: 0;
+  font-size: 1.65rem;
+}
+.plan-change-route > div {
+  min-width: 150px;
+  text-align: center;
+  border-color: rgba(200, 168, 107, 0.62);
+  color: var(--billing-gold);
+}
+.access-impact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 16px;
+}
+.access-impact-grid article {
+  display: grid;
+  align-content: start;
+  gap: 9px;
+  min-height: 260px;
+  border: 1px solid var(--billing-border);
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+}
+.access-impact-grid article > span {
+  color: var(--billing-gold);
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+}
+.access-impact-grid h3 {
+  margin: 0 0 5px;
+  font-size: 2rem;
+}
+.access-impact-grid small {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+}
+.access-impact-grid svg {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  color: var(--billing-gold);
+}
+.access-impact-grid .removed {
+  border-color: rgba(167, 53, 44, 0.42);
+}
+.access-impact-grid .removed svg {
+  color: #d66f63;
+}
+.plan-change-facts {
+  padding: 24px;
+}
+.plan-change-facts .billing-trust-note {
+  margin: 22px 0;
+}
+.plan-change-complete {
+  margin-top: 7vh;
+}
 .current-plan-card {
   grid-row: span 2;
 }
@@ -1082,6 +1259,9 @@
     grid-column: 1 / -1;
     width: max-content;
   }
+  .membership-demo-overview {
+    grid-template-columns: 1fr;
+  }
 }
 @media (max-width: 760px) {
   .membership-page {
@@ -1097,6 +1277,17 @@
   .payment-method-grid,
   .invoice-parties {
     grid-template-columns: 1fr;
+  }
+  .membership-demo-tiers > div:last-child,
+  .membership-state-demo ol,
+  .access-impact-grid {
+    grid-template-columns: 1fr;
+  }
+  .plan-change-route {
+    grid-template-columns: 1fr;
+  }
+  .plan-change-route > div {
+    min-width: 0;
   }
   .enterprise-callout,
   .enterprise-callout ul {
