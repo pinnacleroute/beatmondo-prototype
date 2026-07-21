@@ -1,91 +1,66 @@
-# Rights Database Queue — Design QA
+# Fixed Track Player Consistency — Design QA
 
 ## Comparison target
 
-- Source visual truth: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/01-rights-database-queue.png`
-- Final desktop implementation: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/09-rights-queue-final-desktop.png`
-- Final mobile implementation: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/10-rights-queue-final-mobile.png`
-- Full-view comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/07-full-view-comparison.png`
-- Focused table comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/08-table-comparison.png`
-- Desktop viewport/state: 1920 × 1080, super-administrator, Rights Database Queue, default filters
-- Mobile viewport/state: 390 × 844, super-administrator, Rights Database Queue, default filters
+- Source visual truth, protected-preview state: `/var/folders/jq/p0ttr61j475746h5f8g4zvz80000gn/T/TemporaryItems/NSIRD_screencaptureui_CwK33N/Screenshot 2026-07-21 at 3.23.23 PM.png`
+- Source visual truth, editorial-montage state: `/var/folders/jq/p0ttr61j475746h5f8g4zvz80000gn/T/TemporaryItems/NSIRD_screencaptureui_pfQYPg/Screenshot 2026-07-21 at 3.23.38 PM.png`
+- Implementation, protected-preview state: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/player-consistency-2026-07-21/01-smyrk-player.png`
+- Implementation, editorial-montage state: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/player-consistency-2026-07-21/02-slambovian-player.png`
+- Mobile implementation: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/player-consistency-2026-07-21/03-mobile-player.png`
+- Protected-preview comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/player-consistency-2026-07-21/04-smyrk-comparison.png`
+- Editorial-montage comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/player-consistency-2026-07-21/05-slambovian-comparison.png`
+- Desktop viewport/state: 1917 × 824, public homepage Featured Tracks, expanded fixed player
+- Mobile viewport/state: 390 × 844, public homepage Featured Tracks, expanded fixed player
 
 ## Full-view comparison evidence
 
-The implementation intentionally improves rather than copies the original screen. The hierarchy now leads with a unique “Rights review queue” title, a four-metric operational summary, a contained filter workspace, and a queue whose Review action remains visible. The dark espresso, ivory, Gary Burke red, and muted-brass visual system remains consistent with the source.
+The source protected-preview state already filled the player through the right-side controls because it rendered a watermark/session context column. The source editorial-montage state omitted that conditional column but allowed automatic grid placement to collapse the seek rail into the vacated column, leaving a large empty area before the right edge. The final implementation keeps the existing beatmondo transport styling and uses explicit grid placement for both states.
 
-## Focused table comparison evidence
+## Focused player comparison evidence
 
-The source table clipped the rightmost Review control and required horizontal scrolling. The final desktop table shows all core columns and every Review button inside the viewport. Master and publishing evidence moved behind an optional column setting and a per-row evidence expansion. At 390px, the table becomes labelled record cards with no page-level horizontal overflow.
+The editorial-montage comparison shows the seek rail now beginning immediately after track identity and extending to the minimize/close controls. The right-side gap is the same 14px grid gap used by the protected-preview state. The protected-preview player retains its context panel and original rail alignment. Because the fixed player is the only changed visual region, the combined full screenshots also serve as the focused comparison at readable scale.
 
 ## Findings and comparison history
 
 ### Iteration 1
 
-- **P1 — Primary actions clipped in the source table.**
-  - Fix: reduced the default core column set, added an optional evidence-column setting, kept Track and Action sticky on desktop, and converted rows to cards below 900px.
-  - Post-fix evidence: all 7 Review buttons are inside the 1920px viewport; the table has no horizontal overflow at the verified desktop state.
-- **P1 — Native white controls broke the design system.**
-  - Fix: standardized queue, reset, report, pagination, and review controls using the existing dark/gold beatmondo language with visible hover and focus states.
-  - Post-fix evidence: no native white buttons remain in the queue or reports area.
-- **P1 — Operational hierarchy was diluted by 12 equal KPI cards.**
-  - Fix: promoted four action-driving metrics and moved secondary measures behind “View all metrics.”
-  - Post-fix evidence: the first viewport now clearly leads from legal caution to priority metrics to the review queue.
-- **P1 — Filters were cramped and provided no active-state feedback.**
-  - Fix: added visible labels, saved views, active removable chips, clear filters, result counts, and a full-width responsive control layout.
-  - Post-fix evidence: default and Blockers views were exercised successfully; Blockers returned 5 of 7 records.
-- **P1 — Reset action was ambiguous and unsafe.**
-  - Fix: moved it under Queue settings, renamed it, and added an explicit confirmation describing the browser-persisted fictional data affected.
-  - Post-fix evidence: the confirmation dialog opened and was cancelled without mutating data.
-- **P2 — Rights status, evidence health, and licensing eligibility were easy to conflate.**
-  - Fix: separated the columns, added “How to read these states,” changed missing dates to “No review date / Schedule required,” and added row evidence with state meaning and next action.
-  - Post-fix evidence: Glass Cathedral evidence expansion presented master evidence, composition/publishing evidence, state meaning, and the recommended legal-review action.
-- **P2 — No queue-level work management.**
-  - Fix: added selection, select-all, bulk assignment with reviewer/priority/due date, simulated document requests, escalation, and clear selection.
-  - Post-fix evidence: one record was selected and the bulk assignment dialog rendered all required controls.
-- **P2 — Reports were six disconnected equal actions.**
-  - Fix: consolidated them into a labelled report type selector and one Prepare report action with role-safe simulation copy.
-  - Post-fix evidence: report preparation completed without console errors.
-- **P2 — Mobile navigation exposed an intrusive horizontal scrollbar.**
-  - Fix: retained horizontal tab access while hiding the platform scrollbar.
-  - Post-fix evidence: computed scrollbar width is `none`; the 390px page has no horizontal overflow.
-- **P2 — Sort option text clipped at the desktop filter width.**
-  - Fix: increased the final filter grid track.
-  - Post-fix evidence: the final sort control reports no text clipping.
+- **P1 — Conditional preview metadata collapsed the desktop player grid.**
+  - Evidence: the source editorial-montage rail ended near the middle of the viewport while the outer player continued to the right edge.
+  - Fix: added explicit player-state classes and assigned play, artwork, identity, optional watermark context, seek rail, and actions to stable grid columns. When watermark context is absent, the seek rail spans both context and rail columns.
+  - Post-fix evidence: the editorial-montage seek rail measures 1309px and ends 14px before the right-side action group; there is no unused right-side region.
+- **P2 — Automatic placement made future track variants vulnerable to the same gap.**
+  - Fix: every player child now has an explicit desktop grid column, with deterministic tablet and mobile rows.
+  - Post-fix evidence: The End of Jason Todd, 2022 Teaser Video (Audio Extract), Golden Hours, and Paper Planes were each activated. All player variants reached the same right-side action edge.
+- **P2 — Mobile needed a stable full-width rail after the grid change.**
+  - Fix: mobile keeps transport identity and actions in the first row, optional context in the second row, and the seek rail across all columns in the final row.
+  - Post-fix evidence: at 390px the player spans the full 375px document width, the seek rail runs from 14px to 361px, and the page has no horizontal overflow.
 
 ## Required fidelity surfaces
 
-- **Fonts and typography:** Existing display/body families were preserved. Queue labels and table support text were increased in contrast and size; hierarchy and wrapping are readable on desktop and mobile.
-- **Spacing and layout rhythm:** Header duplication was reduced, priority metrics were condensed, filters were grouped, and table/report spacing now follows a clear operational sequence.
-- **Colors and tokens:** Existing ivory, espresso, brass/gold, Gary Burke red, and semantic amber/green states were retained. Text labels accompany every semantic color.
-- **Image quality and assets:** No new raster assets were required. Existing beatmondo logo and Phosphor icon assets remain intact; no custom SVG, CSS illustration, or placeholder image was introduced.
-- **Copy and content:** Rights status, evidence health, licensing eligibility, expiry wording, reset impact, report scope, and prototype/legal cautions are explicit and internally consistent.
-- **Responsiveness:** Verified at 1920 × 1080 and 390 × 844. No page horizontal overflow; mobile queue rows render as labelled cards.
-- **Accessibility:** Visible labels, focus-visible treatment, 40–44px primary control heights, semantic table caption, checkboxes with record names, textual state badges, `aria-pressed`, `aria-live`, dialog labelling, and reduced-motion handling are present.
+- **Fonts and typography:** Existing player typography, truncation, weights, and uppercase protected-preview label remain unchanged.
+- **Spacing and layout rhythm:** Player padding, 14px grid gaps, 42–46px controls, artwork sizing, and bottom-edge placement remain consistent; only conditional column allocation changed.
+- **Colors and tokens:** Existing espresso, Gary Burke red, ivory, and muted-gold player tokens remain unchanged.
+- **Image quality and assets:** Existing track artwork and Phosphor icons are preserved; no generated or replacement assets were required.
+- **Copy and content:** Track identity, preview duration, full-duration distinction, session/watermark context, and protected-preview language remain unchanged.
+- **Responsiveness:** Verified at 1917 × 824 and 390 × 844. Desktop uses a shared edge-to-edge transport grid; tablet/mobile use explicit rows with a full-width seek rail.
+- **Accessibility and behavior:** Existing play/pause synchronization, seek input, timing semantics, minimize, close, focus handling, and reduced-motion behavior are preserved.
 
 ## Primary interactions tested
 
-- Saved Blockers view
-- Individual row selection and bulk action bar
-- Bulk assignment dialog open/close
-- Evidence row expansion
-- Queue settings open
-- Reset confirmation open/cancel
-- Permission-filtered report preparation
-- Desktop and mobile responsive layouts
+- Activated all four Featured Tracks players
+- Compared watermarked and non-watermarked preview states
+- Confirmed real playback state changed between track selections
+- Verified seek rail and right-side action geometry
+- Verified mobile player reflow
+- Checked browser console errors
 
 ## Browser verification
 
 - Build: passed
-- Desktop page horizontal overflow: none
-- Desktop table horizontal overflow: none in the default core-column state
-- Desktop visible Review buttons: 7 of 7
-- Mobile page horizontal overflow: none
-- Mobile row mode: grid cards
+- Desktop player outer left/right edges: aligned to document viewport
+- Editorial-montage unused right-side gap: removed
+- Right gap between rail and actions: 14px
+- Mobile horizontal overflow: none
 - Console errors: none
-
-## Follow-up polish
-
-- P3: A subtle edge fade could make horizontally scrollable mobile section tabs even more discoverable.
 
 final result: passed

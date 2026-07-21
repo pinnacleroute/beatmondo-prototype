@@ -10789,7 +10789,7 @@ function MiniPlayer({
 
   return (
     <aside
-      className="mini-player"
+      className={`mini-player ${previewInfo?.watermark ? "has-watermark-context" : "has-standard-context"}`}
       aria-label={`Protected preview player for ${track.title}`}
     >
       {playButton}
