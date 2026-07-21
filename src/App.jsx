@@ -11264,7 +11264,6 @@ function Footer({ setView }) {
               {links.map((item) => (
                 <button
                   key={item}
-                  className={item === "Merchandise" ? "merchandise-button merchandise-footer-button" : undefined}
                   onClick={() => navigate(item)}
                 >
                   {item}

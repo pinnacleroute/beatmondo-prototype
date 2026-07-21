@@ -1,9 +1,18 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
+  ArrowsDownUp,
+  CalendarDots,
+  CaretDown,
   CheckCircle,
+  DownloadSimple,
   FileArrowUp,
+  Funnel,
   Gavel,
+  Info,
+  MagnifyingGlass,
+  SlidersHorizontal,
   ShieldCheck,
+  UserPlus,
   WarningCircle,
   X,
 } from "@phosphor-icons/react";
@@ -43,13 +52,19 @@ const RIGHTS_SECTION_ITEMS = [
   { view: "admin-rights-expiring", label: "Expiring" },
 ];
 
-function RightsSectionNav({ navigate, active }) {
+function RightsSectionNav({ navigate, active, counts = {} }) {
+  const items = RIGHTS_SECTION_ITEMS.map((item) => ({
+    ...item,
+    label: counts[item.view]
+      ? `${item.label} ${counts[item.view]}`
+      : item.label,
+  }));
   return (
     <SectionSubnav
       ariaLabel="Rights database sections"
       navigate={navigate}
       active={active}
-      items={RIGHTS_SECTION_ITEMS}
+      items={items}
       backTo={
         active !== "admin-rights"
           ? { view: "admin-rights", label: "Back to Rights Database" }
@@ -351,7 +366,7 @@ function RightsOverviewCockpit({ record, user, onAssign, onOpenChecklist }) {
 
 export function RightsDashboard({ navigate, showToast }) {
   const { user, hasPermission } = useAuth();
-  const [filters, setFilters] = useState({
+  const defaultFilters = {
     query: "",
     status: "All Statuses",
     eligibility: "All Eligibility",
@@ -361,10 +376,112 @@ export function RightsDashboard({ navigate, showToast }) {
     completeness: "All Completeness",
     artist: "All Artists",
     sort: "Highest Priority",
-  });
+  };
+  const [filters, setFilters] = useState(defaultFilters);
+  const [quickView, setQuickView] = useState("All records");
+  const [selectedIds, setSelectedIds] = useState(() => new Set());
+  const [expandedId, setExpandedId] = useState(null);
+  const [showEvidenceColumns, setShowEvidenceColumns] = useState(false);
+  const [showAllMetrics, setShowAllMetrics] = useState(false);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [assignOpen, setAssignOpen] = useState(false);
+  const [reportType, setReportType] = useState("Rights summary");
+  const [pageSize, setPageSize] = useState(10);
+  const [page, setPage] = useState(1);
+  const [, setQueueVersion] = useState(0);
   if (!user || !hasPermission("rights.view")) return null;
-  const records = rightsService.getQueue(filters);
+  const allFilteredRecords = rightsService.getQueue(filters);
+  const records = allFilteredRecords.filter((record) => {
+    if (quickView === "Blockers")
+      return ["Blocked", "Not Yet Eligible", "Manual Review Required"].includes(
+        record.licensingEligibility,
+      );
+    if (quickView === "Expiring")
+      return (
+        record.status === "Review Expired" ||
+        record.review.expiryStatus === "Expiring Soon"
+      );
+    if (quickView === "Unassigned") return !record.assignedReviewerId;
+    return true;
+  });
   const analytics = rightsService.getAnalytics();
+  const pageCount = Math.max(1, Math.ceil(records.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleRecords = records.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize,
+  );
+  const activeFilters = [
+    filters.query && { key: "query", label: `Search: ${filters.query}` },
+    filters.status !== defaultFilters.status && {
+      key: "status",
+      label: filters.status,
+    },
+    filters.eligibility !== defaultFilters.eligibility && {
+      key: "eligibility",
+      label: filters.eligibility,
+    },
+    filters.sample !== defaultFilters.sample && {
+      key: "sample",
+      label: filters.sample,
+    },
+    filters.completeness !== defaultFilters.completeness && {
+      key: "completeness",
+      label: filters.completeness,
+    },
+    quickView !== "All records" && { key: "quickView", label: quickView },
+  ].filter(Boolean);
+  const primaryMetrics = [
+    ["Blocked or disputed", analytics.notLicensable + analytics.disputed, "critical"],
+    ["Expiring review", analytics.expiring, "warning"],
+    ["Missing ownership", analytics.missingShares, "warning"],
+    ["Documents requested", analytics.documentsRequested, "neutral"],
+  ];
+  const secondaryMetrics = [
+    ["Total tracks", analytics.total],
+    ["Fully verified", analytics.fullyVerified],
+    ["Partially verified", analytics.partiallyVerified],
+    ["Restricted", analytics.restricted],
+    ["Average completeness", `${analytics.averageCompleteness}%`],
+    ["Sample cases", analytics.sampleCases],
+    ["Manual reviews", analytics.manualReviews],
+    ["Verification rate", `${analytics.verificationRate}%`],
+  ];
+  const updateFilter = (key, value) => {
+    setFilters((current) => ({ ...current, [key]: value }));
+    setPage(1);
+  };
+  const clearFilters = () => {
+    setFilters(defaultFilters);
+    setQuickView("All records");
+    setPage(1);
+  };
+  const removeFilter = (key) => {
+    if (key === "quickView") setQuickView("All records");
+    else updateFilter(key, defaultFilters[key]);
+  };
+  const selectRecord = (id, checked) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      if (checked) next.add(id);
+      else next.delete(id);
+      return next;
+    });
+  };
+  const selectVisible = (checked) => {
+    setSelectedIds((current) => {
+      const next = new Set(current);
+      visibleRecords.forEach((record) => {
+        if (checked) next.add(record.id);
+        else next.delete(record.id);
+      });
+      return next;
+    });
+  };
+  const selectedRecords = records.filter((record) => selectedIds.has(record.id));
+  const selectedVisibleCount = visibleRecords.filter((record) =>
+    selectedIds.has(record.id),
+  ).length;
   const open = (record) => {
     window.localStorage.setItem(SELECTED_RIGHTS_KEY, record.id);
     navigate("admin-rights-track");
@@ -377,31 +494,72 @@ export function RightsDashboard({ navigate, showToast }) {
         : result.message,
     );
   };
+  const runBulkEscalation = () => {
+    selectedRecords.forEach((record) => {
+      rightsService.assignReviewer(
+        record.id,
+        record.assignedReviewerId,
+        "Critical",
+        record.review.dueDate,
+        user,
+      );
+    });
+    showToast(`${selectedRecords.length} rights record(s) escalated to critical.`);
+    setSelectedIds(new Set());
+    setQueueVersion((value) => value + 1);
+  };
+  const reviewTiming = (record) => {
+    if (!record.review.nextReviewAt)
+      return { value: "No review date", detail: "Schedule required", tone: "warning" };
+    if (record.status === "Review Expired" || record.review.expiryStatus === "Expired")
+      return { value: formatDate(record.review.nextReviewAt), detail: "Expired", tone: "critical" };
+    return {
+      value: formatDate(record.review.nextReviewAt),
+      detail: record.review.expiryStatus || "Active review",
+      tone: record.review.expiryStatus === "Expiring Soon" ? "warning" : "neutral",
+    };
+  };
   return (
     <section className="rights-page">
-      <RightsSectionNav navigate={navigate} active="admin-rights" />
+      <RightsSectionNav
+        navigate={navigate}
+        active="admin-rights"
+        counts={{
+          "admin-rights-documents": analytics.documentsRequested,
+          "admin-rights-disputes": analytics.disputed,
+          "admin-rights-expiring": analytics.expiring,
+        }}
+      />
       <header className="rights-page-header">
         <div>
           <span className="eyebrow">Rights and clearance operations</span>
-          <h2>Rights Database</h2>
+          <h2>Rights review queue</h2>
           <p>
-            Structured human review of master, composition, publishing,
-            contributor, sample, territory, contract, and licensing authority
-            data.
+            Prioritize rights blockers, assign human review, and separate
+            evidence completeness from licensing clearance.
           </p>
         </div>
         <div className="rights-header-actions">
-          {user.role === "super_administrator" && (
-            <button
-              onClick={() => {
-                rightsService.resetRightsDatabaseDemoData();
-                setFilters((current) => ({ ...current }));
-                showToast("Rights Database demo data has been reset.");
-              }}
-            >
-              Reset rights demo
-            </button>
-          )}
+          <details className="rights-settings-menu">
+            <summary>
+              <SlidersHorizontal aria-hidden="true" /> Queue settings
+            </summary>
+            <div>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={showEvidenceColumns}
+                  onChange={(event) => setShowEvidenceColumns(event.target.checked)}
+                />
+                Show master and publishing columns
+              </label>
+              {user.role === "super_administrator" && (
+                <button className="danger-outline" onClick={() => setResetOpen(true)}>
+                  Reset demo data
+                </button>
+              )}
+            </div>
+          </details>
         </div>
       </header>
       <div className="rights-legal-note">
@@ -415,179 +573,366 @@ export function RightsDashboard({ navigate, showToast }) {
           </span>
         </div>
       </div>
-      <div className="rights-metrics">
-        {[
-          ["Total tracks", analytics.total],
-          ["Fully verified", analytics.fullyVerified],
-          ["Partially verified", analytics.partiallyVerified],
-          ["Documents requested", analytics.documentsRequested],
-          ["Restricted", analytics.restricted],
-          ["Disputed", analytics.disputed],
-          ["Review expired", analytics.expiring],
-          ["Average completeness", `${analytics.averageCompleteness}%`],
-          ["Missing ownership", analytics.missingShares],
-          ["Sample cases", analytics.sampleCases],
-          ["Manual reviews", analytics.manualReviews],
-          ["Verification rate", `${analytics.verificationRate}%`],
-        ].map(([label, value]) => (
-          <article key={label}>
-            <span>{label}</span>
-            <strong>{value}</strong>
-          </article>
-        ))}
-      </div>
-      <div className="rights-filters">
-        <input
-          aria-label="Search rights records"
-          placeholder="Search track, artist, ISRC, ISWC, writer, publisher, or owner"
-          value={filters.query}
-          onChange={(e) => setFilters({ ...filters, query: e.target.value })}
-        />
-        <select
-          aria-label="Filter rights status"
-          value={filters.status}
-          onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-        >
-          <option>All Statuses</option>
-          {RIGHTS_STATUSES.map((item) => (
-            <option key={item}>{item}</option>
+      <section className="rights-priority-overview" aria-labelledby="rights-priority-title">
+        <div className="rights-overview-heading">
+          <div>
+            <span className="eyebrow">Operational priorities</span>
+            <h3 id="rights-priority-title">What needs attention now</h3>
+          </div>
+          <button className="plain-button" onClick={() => setShowAllMetrics((value) => !value)}>
+            {showAllMetrics ? "Hide secondary metrics" : "View all metrics"}
+            <CaretDown aria-hidden="true" className={showAllMetrics ? "is-open" : ""} />
+          </button>
+        </div>
+        <div className="rights-metrics rights-metrics-primary">
+          {primaryMetrics.map(([label, value, tone]) => (
+            <article className={`metric-${tone}`} key={label}>
+              <span>{label}</span>
+              <strong>{value}</strong>
+            </article>
           ))}
-        </select>
-        <select
-          aria-label="Filter licensing eligibility"
-          value={filters.eligibility}
-          onChange={(e) =>
-            setFilters({ ...filters, eligibility: e.target.value })
-          }
-        >
-          <option>All Eligibility</option>
-          {ELIGIBILITY_STATUSES.map((item) => (
-            <option key={item}>{item}</option>
+        </div>
+        {showAllMetrics && (
+          <div className="rights-metrics rights-metrics-secondary">
+            {secondaryMetrics.map(([label, value]) => (
+              <article key={label}>
+                <span>{label}</span>
+                <strong>{value}</strong>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section className="rights-queue-controls" aria-labelledby="rights-queue-title">
+        <div className="rights-queue-heading">
+          <div>
+            <span className="eyebrow">Review workload</span>
+            <h3 id="rights-queue-title">Priority queue</h3>
+          </div>
+          <div className="rights-queue-count" aria-live="polite">
+            <strong>{records.length}</strong> of {analytics.total} records
+          </div>
+        </div>
+        <div className="rights-quick-views" aria-label="Saved queue views">
+          <span>Saved views</span>
+          {["All records", "Blockers", "Expiring", "Unassigned"].map((view) => (
+            <button
+              key={view}
+              aria-pressed={quickView === view}
+              onClick={() => {
+                setQuickView(view);
+                setPage(1);
+              }}
+            >
+              {view}
+            </button>
           ))}
-        </select>
-        <select
-          aria-label="Filter sample state"
-          value={filters.sample}
-          onChange={(e) => setFilters({ ...filters, sample: e.target.value })}
-        >
-          <option>All Sample States</option>
-          <option>Clearance Required</option>
-          <option>No Sample Declared</option>
-        </select>
-        <select
-          aria-label="Filter completeness"
-          value={filters.completeness}
-          onChange={(e) =>
-            setFilters({ ...filters, completeness: e.target.value })
-          }
-        >
-          <option>All Completeness</option>
-          <option>Below 70%</option>
-          <option>70–89%</option>
-          <option>90–100%</option>
-        </select>
-        <select
-          aria-label="Sort rights queue"
-          value={filters.sort}
-          onChange={(e) => setFilters({ ...filters, sort: e.target.value })}
-        >
-          <option>Highest Priority</option>
-          <option>Lowest Completeness</option>
-          <option>Oldest Review</option>
-          <option>Track Title</option>
-        </select>
-      </div>
+        </div>
+        <div className="rights-filters">
+          <label className="rights-filter-search">
+            <span>Search rights records</span>
+            <span className="rights-search-field">
+              <MagnifyingGlass aria-hidden="true" />
+              <input
+                placeholder="Track, artist, identifier, writer, publisher, or owner"
+                value={filters.query}
+                onChange={(event) => updateFilter("query", event.target.value)}
+              />
+            </span>
+          </label>
+          <label>
+            <span>Rights status</span>
+            <select value={filters.status} onChange={(event) => updateFilter("status", event.target.value)}>
+              <option>All Statuses</option>
+              {RIGHTS_STATUSES.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Licensing</span>
+            <select value={filters.eligibility} onChange={(event) => updateFilter("eligibility", event.target.value)}>
+              <option>All Eligibility</option>
+              {ELIGIBILITY_STATUSES.map((item) => <option key={item}>{item}</option>)}
+            </select>
+          </label>
+          <label>
+            <span>Sample state</span>
+            <select value={filters.sample} onChange={(event) => updateFilter("sample", event.target.value)}>
+              <option>All Sample States</option>
+              <option>Clearance Required</option>
+              <option>No Sample Declared</option>
+            </select>
+          </label>
+          <label>
+            <span>Rights health</span>
+            <select value={filters.completeness} onChange={(event) => updateFilter("completeness", event.target.value)}>
+              <option>All Completeness</option>
+              <option>Below 70%</option>
+              <option>70–89%</option>
+              <option>90–100%</option>
+            </select>
+          </label>
+          <label>
+            <span>Sort order</span>
+            <span className="rights-select-with-icon">
+              <ArrowsDownUp aria-hidden="true" />
+              <select value={filters.sort} onChange={(event) => updateFilter("sort", event.target.value)}>
+                <option>Highest Priority</option>
+                <option>Lowest Completeness</option>
+                <option>Oldest Review</option>
+                <option>Track Title</option>
+              </select>
+            </span>
+          </label>
+        </div>
+        <div className="rights-filter-summary">
+          <Funnel aria-hidden="true" />
+          {activeFilters.length ? (
+            <div className="rights-filter-chips">
+              {activeFilters.map((filter) => (
+                <button key={filter.key} onClick={() => removeFilter(filter.key)} aria-label={`Remove ${filter.label} filter`}>
+                  {filter.label} <X aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          ) : (
+            <span>No filters applied</span>
+          )}
+          {activeFilters.length > 0 && <button className="plain-button" onClick={clearFilters}>Clear filters</button>}
+          <details className="rights-state-legend">
+            <summary><Info aria-hidden="true" /> How to read these states</summary>
+            <p><strong>Rights status</strong> records human-review progress. <strong>Rights health</strong> measures supplied evidence completeness. <strong>Licensing</strong> controls whether a request may proceed. A high score never overrides a blocker.</p>
+          </details>
+        </div>
+      </section>
+
+      {selectedIds.size > 0 && (
+        <div className="rights-bulk-bar" role="region" aria-label="Bulk rights actions">
+          <strong>{selectedIds.size} selected</strong>
+          <button onClick={() => setAssignOpen(true)}><UserPlus aria-hidden="true" /> Assign & set due date</button>
+          <button onClick={() => showToast(`Document requests prepared for ${selectedIds.size} rights record(s).`)}><FileArrowUp aria-hidden="true" /> Request documents</button>
+          <button onClick={runBulkEscalation}><WarningCircle aria-hidden="true" /> Escalate</button>
+          <button className="plain-button" onClick={() => setSelectedIds(new Set())}>Clear selection</button>
+        </div>
+      )}
       <div className="rights-table-wrap">
-        <table>
+        <table className={showEvidenceColumns ? "show-evidence" : ""}>
+          <caption>Rights review queue sorted by {filters.sort.toLowerCase()}</caption>
           <thead>
             <tr>
+              <th className="rights-select-column">
+                <input
+                  type="checkbox"
+                  aria-label="Select all records on this page"
+                  checked={visibleRecords.length > 0 && selectedVisibleCount === visibleRecords.length}
+                  onChange={(event) => selectVisible(event.target.checked)}
+                />
+              </th>
               <th>Track</th>
               <th>Rights status</th>
-              <th>Master</th>
-              <th>Publishing</th>
+              <th className="rights-evidence-column">Master</th>
+              <th className="rights-evidence-column">Publishing</th>
               <th>Rights health</th>
               <th>Licensing</th>
-              <th>Missing data / conflicts</th>
-              <th>Rights expiry</th>
+              <th>Exceptions</th>
+              <th>Review by</th>
               <th>Reviewer</th>
-              <th>Updated</th>
-              <th>Priority</th>
-              <th />
+              <th>Priority ↓</th>
+              <th className="rights-action-column">Action</th>
             </tr>
           </thead>
           <tbody>
-            {records.map((record) => (
-              <tr key={record.id}>
-                <td>
-                  <strong>{record.trackTitle}</strong>
-                  <small>
-                    {record.artist} · {record.isrc || "ISRC pending"}
-                  </small>
-                </td>
-                <td>
-                  <RightsStatusBadge status={record.status} />
-                </td>
-                <td>
-                  {record.masterRights.status}
-                  <small>{record.masterRights.totalOwnership}% recorded</small>
-                </td>
-                <td>
-                  {record.publishingRights.status}
-                  <small>
-                    {record.compositionRights.writerShareTotal}% writer shares
-                  </small>
-                </td>
-                <td>
-                  <strong>{record.completeness.percentage}%</strong>
-                  {record.completeness.blockingIssues?.[0] && (
-                    <small>{record.completeness.blockingIssues[0]}</small>
+            {visibleRecords.map((record) => {
+              const timing = reviewTiming(record);
+              const conflictCount = record.territories.conflicts.length + record.disputes.length;
+              const isExpanded = expandedId === record.id;
+              return (
+                <Fragment key={record.id}>
+                  <tr className={selectedIds.has(record.id) ? "is-selected" : ""}>
+                    <td className="rights-select-column" data-label="Select">
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${record.trackTitle}`}
+                        checked={selectedIds.has(record.id)}
+                        onChange={(event) => selectRecord(record.id, event.target.checked)}
+                      />
+                    </td>
+                    <td data-label="Track" className="rights-track-cell">
+                      <strong>{record.trackTitle}</strong>
+                      <small>{record.artist} · {record.isrc || "ISRC pending"}</small>
+                      <button className="rights-row-details" aria-expanded={isExpanded} onClick={() => setExpandedId(isExpanded ? null : record.id)}>
+                        {isExpanded ? "Hide evidence" : "View evidence"}
+                      </button>
+                    </td>
+                    <td data-label="Rights status"><RightsStatusBadge status={record.status} /></td>
+                    <td data-label="Master" className="rights-evidence-column">
+                      <strong>{record.masterRights.status}</strong>
+                      <small>{record.masterRights.totalOwnership}% ownership recorded</small>
+                    </td>
+                    <td data-label="Publishing" className="rights-evidence-column">
+                      <strong>{record.publishingRights.status}</strong>
+                      <small>{record.compositionRights.writerShareTotal}% writer shares recorded</small>
+                    </td>
+                    <td data-label="Rights health">
+                      <strong className="rights-health-value">{record.completeness.percentage}%</strong>
+                      <small>{record.completeness.missingSections.length ? `${record.completeness.missingSections.length} evidence area(s) missing` : "Required evidence recorded"}</small>
+                    </td>
+                    <td data-label="Licensing"><EligibilityBadge status={record.licensingEligibility} /></td>
+                    <td data-label="Exceptions" className={conflictCount ? "has-exception" : ""}>
+                      <strong>{record.completeness.missingSections.length} missing</strong>
+                      <small>{conflictCount ? `${conflictCount} conflict alert(s)` : "No recorded conflicts"}</small>
+                    </td>
+                    <td data-label="Review by" className={`rights-review-timing tone-${timing.tone}`}>
+                      <strong>{timing.value}</strong>
+                      <small>{timing.detail}</small>
+                    </td>
+                    <td data-label="Reviewer">
+                      <strong>{reviewerName(record.assignedReviewerId)}</strong>
+                      <small>Updated {formatDate(record.updatedAt)}</small>
+                    </td>
+                    <td data-label="Priority"><span className={`rights-priority priority-${record.priority.toLowerCase()}`}>{record.priority}</span></td>
+                    <td data-label="Action" className="rights-action-column">
+                      <button className="rights-review-button" onClick={() => open(record)}>Review</button>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <tr className="rights-evidence-row" key={`${record.id}-evidence`}>
+                      <td colSpan={showEvidenceColumns ? 12 : 10}>
+                        <div>
+                          <section>
+                            <span>Master evidence</span>
+                            <strong>{record.masterRights.status} · {record.masterRights.totalOwnership}% recorded</strong>
+                          </section>
+                          <section>
+                            <span>Composition & publishing</span>
+                            <strong>{record.compositionRights.writerShareTotal}% writer shares · {record.publishingRights.status}</strong>
+                          </section>
+                          <section>
+                            <span>What the state means</span>
+                            <strong>{RIGHTS_STATUS_CONTENT[record.status]?.description || "Human review is required."}</strong>
+                          </section>
+                          <section>
+                            <span>Recommended next action</span>
+                            <strong>{RIGHTS_STATUS_CONTENT[record.status]?.next || "Open the record for review"}</strong>
+                          </section>
+                        </div>
+                      </td>
+                    </tr>
                   )}
-                </td>
-                <td>
-                  <EligibilityBadge status={record.licensingEligibility} />
-                </td>
-                <td>
-                  <strong>{record.completeness.missingSections.length} missing</strong>
-                  <small>
-                    {(record.territories.conflicts.length || record.disputes.length)
-                      ? `${record.territories.conflicts.length + record.disputes.length} conflict alert(s)`
-                      : "No recorded conflict"}
-                  </small>
-                </td>
-                <td>
-                  {formatDate(record.review.nextReviewAt)}
-                  <small>{record.review.expiryStatus}</small>
-                </td>
-                <td>{reviewerName(record.assignedReviewerId)}</td>
-                <td>{formatDate(record.updatedAt)}</td>
-                <td>{record.priority}</td>
-                <td>
-                  <button onClick={() => open(record)}>Review</button>
+                </Fragment>
+              );
+            })}
+            {!visibleRecords.length && (
+              <tr className="rights-table-empty">
+                <td colSpan={showEvidenceColumns ? 12 : 10}>
+                  <ShieldCheck aria-hidden="true" />
+                  <strong>No rights records match this view.</strong>
+                  <button onClick={clearFilters}>Clear filters</button>
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
+      </div>
+      <div className="rights-pagination" aria-label="Rights queue pagination">
+        <span>Showing {visibleRecords.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, records.length)} of {records.length}</span>
+        <label>
+          Rows per page
+          <select value={pageSize} onChange={(event) => { setPageSize(Number(event.target.value)); setPage(1); }}>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+          </select>
+        </label>
+        <button disabled={currentPage <= 1} onClick={() => setPage((value) => Math.max(1, value - 1))}>Previous</button>
+        <span>Page {currentPage} of {pageCount}</span>
+        <button disabled={currentPage >= pageCount} onClick={() => setPage((value) => Math.min(pageCount, value + 1))}>Next</button>
       </div>
       <section className="rights-report-panel">
         <div>
           <span className="eyebrow">Mock reports</span>
-          <h3>Printable rights intelligence</h3>
+          <h3>Export permission-filtered intelligence</h3>
+          <p>Generated files remain simulated and include only evidence visible to your role.</p>
         </div>
-        {[
-          "Rights summary",
-          "Ownership gaps",
-          "Expiring rights",
-          "Disputes",
-          "Licensing eligibility",
-          "Track clearance",
-        ].map((type) => (
-          <button key={type} onClick={() => report(type)}>
-            {type}
-          </button>
-        ))}
+        <label>
+          Report type
+          <select value={reportType} onChange={(event) => setReportType(event.target.value)}>
+            {["Rights summary", "Ownership gaps", "Expiring rights", "Disputes", "Licensing eligibility", "Track clearance"].map((type) => <option key={type}>{type}</option>)}
+          </select>
+        </label>
+        <button className="rights-export-button" onClick={() => report(reportType)}><DownloadSimple aria-hidden="true" /> Prepare report</button>
       </section>
+      {resetOpen && (
+        <div className="rights-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="reset-rights-title">
+          <div className="rights-modal rights-confirm-modal">
+            <button className="modal-x" onClick={() => setResetOpen(false)} aria-label="Close reset confirmation"><X /></button>
+            <WarningCircle className="confirm-icon" aria-hidden="true" />
+            <h3 id="reset-rights-title">Reset demo data?</h3>
+            <p>This replaces browser-persisted Rights Database records with the original fictional demo set. It does not affect real rights or external systems.</p>
+            <div className="modal-actions">
+              <button onClick={() => setResetOpen(false)}>Cancel</button>
+              <button className="danger-button" onClick={() => {
+                rightsService.resetRightsDatabaseDemoData();
+                clearFilters();
+                setSelectedIds(new Set());
+                setQueueVersion((value) => value + 1);
+                setResetOpen(false);
+                showToast("Rights Database demo data has been reset.");
+              }}>Reset demo data</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {assignOpen && (
+        <BulkAssignRights
+          records={selectedRecords}
+          actor={user}
+          onClose={() => setAssignOpen(false)}
+          onComplete={(count) => {
+            setAssignOpen(false);
+            setSelectedIds(new Set());
+            setQueueVersion((value) => value + 1);
+            showToast(`${count} rights record(s) assigned for review.`);
+          }}
+        />
+      )}
     </section>
+  );
+}
+
+function BulkAssignRights({ records, actor, onClose, onComplete }) {
+  const [reviewerId, setReviewerId] = useState(records[0]?.assignedReviewerId || RIGHTS_REVIEWERS[0]?.id || "");
+  const [priority, setPriority] = useState("High");
+  const [dueDate, setDueDate] = useState("2026-08-04");
+  return (
+    <div className="rights-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="bulk-assign-title">
+      <div className="rights-modal">
+        <button className="modal-x" onClick={onClose} aria-label="Close assignment"><X /></button>
+        <UserPlus className="modal-heading-icon" aria-hidden="true" />
+        <h3 id="bulk-assign-title">Assign {records.length} rights record(s)</h3>
+        <p>Apply one reviewer, priority, and due date to the selected queue records.</p>
+        <Field label="Reviewer">
+          <select value={reviewerId} onChange={(event) => setReviewerId(event.target.value)}>
+            {RIGHTS_REVIEWERS.map((reviewer) => <option key={reviewer.id} value={reviewer.id}>{reviewer.name} — {reviewer.role}</option>)}
+          </select>
+        </Field>
+        <Field label="Priority">
+          <select value={priority} onChange={(event) => setPriority(event.target.value)}>
+            <option>Standard</option><option>High</option><option>Urgent</option><option>Critical</option>
+          </select>
+        </Field>
+        <Field label="Due date">
+          <input type="date" value={dueDate} onChange={(event) => setDueDate(event.target.value)} />
+        </Field>
+        <div className="modal-actions">
+          <button onClick={onClose}>Cancel</button>
+          <button className="gold-button" onClick={() => {
+            const completed = records.filter((record) => rightsService.assignReviewer(record.id, reviewerId, priority, dueDate, actor).ok).length;
+            onComplete(completed);
+          }}><CalendarDots aria-hidden="true" /> Save assignment</button>
+        </div>
+      </div>
+    </div>
   );
 }
 

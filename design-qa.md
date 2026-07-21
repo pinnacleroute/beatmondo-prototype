@@ -1,91 +1,91 @@
-# Explore Music Filter Design QA
+# Rights Database Queue — Design QA
 
-- Source visual truth: `/Users/amankumarsingh/.codex/generated_images/019f6f39-5492-7a91-ad35-d6cd83df11d4/exec-93c68826-e54e-4172-9271-fc29519995c2.png`
-- Desktop implementation evidence: `/Users/amankumarsingh/.codex/visualizations/2026/07/17/019f6f39-5492-7a91-ad35-d6cd83df11d4/music-filter-implementation/desktop-qa-final-2.png`
-- Mobile implementation evidence: `/Users/amankumarsingh/.codex/visualizations/2026/07/17/019f6f39-5492-7a91-ad35-d6cd83df11d4/music-filter-implementation/mobile-qa-final.png`
-- Desktop viewport: 1440 × 1024
-- Mobile viewport: 390 × 844
-- State: Explore Music, All Filters open; all four groups expanded; representative Mood selection active on desktop
+## Comparison target
+
+- Source visual truth: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/01-rights-database-queue.png`
+- Final desktop implementation: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/09-rights-queue-final-desktop.png`
+- Final mobile implementation: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/10-rights-queue-final-mobile.png`
+- Full-view comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/07-full-view-comparison.png`
+- Focused table comparison: `/Users/amankumarsingh/Projects/beatmondo-prototype/product-design-audits/rights-database-queue-2026-07-21/implementation/08-table-comparison.png`
+- Desktop viewport/state: 1920 × 1080, super-administrator, Rights Database Queue, default filters
+- Mobile viewport/state: 390 × 844, super-administrator, Rights Database Queue, default filters
 
 ## Full-view comparison evidence
 
-The source and final desktop implementation were opened together in the same comparison input. The implementation preserves the source hierarchy: compact command bar beneath the library tabs, attached active chips, full-width results, a 400–420px right filter drawer, grouped Creative Direction / Sound / Usage / Rights & Delivery sections, and a sticky Clear / Show tracks footer. The implementation intentionally preserves the existing prototype's wider global navigation and real visibility-filtered public catalog counts instead of copying the generated mock's invented counts.
+The implementation intentionally improves rather than copies the original screen. The hierarchy now leads with a unique “Rights review queue” title, a four-metric operational summary, a contained filter workspace, and a queue whose Review action remains visible. The dark espresso, ivory, Gary Burke red, and muted-brass visual system remains consistent with the source.
 
-## Focused region comparison evidence
+## Focused table comparison evidence
 
-The desktop drawer and 390 × 844 mobile full-width sheet were inspected directly. The mobile evidence confirms a 390px drawer in a 390px viewport, one scrolling filter region, body scroll locked while open, 44px choice targets, and a persistent footer. The filter rail was measured after the final fix: both range inputs occupy the same top coordinate and height, producing one dual-thumb range rail.
+The source table clipped the rightmost Review control and required horizontal scrolling. The final desktop table shows all core columns and every Review button inside the viewport. Master and publishing evidence moved behind an optional column setting and a per-row evidence expansion. At 390px, the table becomes labelled record cards with no page-level horizontal overflow.
+
+## Findings and comparison history
+
+### Iteration 1
+
+- **P1 — Primary actions clipped in the source table.**
+  - Fix: reduced the default core column set, added an optional evidence-column setting, kept Track and Action sticky on desktop, and converted rows to cards below 900px.
+  - Post-fix evidence: all 7 Review buttons are inside the 1920px viewport; the table has no horizontal overflow at the verified desktop state.
+- **P1 — Native white controls broke the design system.**
+  - Fix: standardized queue, reset, report, pagination, and review controls using the existing dark/gold beatmondo language with visible hover and focus states.
+  - Post-fix evidence: no native white buttons remain in the queue or reports area.
+- **P1 — Operational hierarchy was diluted by 12 equal KPI cards.**
+  - Fix: promoted four action-driving metrics and moved secondary measures behind “View all metrics.”
+  - Post-fix evidence: the first viewport now clearly leads from legal caution to priority metrics to the review queue.
+- **P1 — Filters were cramped and provided no active-state feedback.**
+  - Fix: added visible labels, saved views, active removable chips, clear filters, result counts, and a full-width responsive control layout.
+  - Post-fix evidence: default and Blockers views were exercised successfully; Blockers returned 5 of 7 records.
+- **P1 — Reset action was ambiguous and unsafe.**
+  - Fix: moved it under Queue settings, renamed it, and added an explicit confirmation describing the browser-persisted fictional data affected.
+  - Post-fix evidence: the confirmation dialog opened and was cancelled without mutating data.
+- **P2 — Rights status, evidence health, and licensing eligibility were easy to conflate.**
+  - Fix: separated the columns, added “How to read these states,” changed missing dates to “No review date / Schedule required,” and added row evidence with state meaning and next action.
+  - Post-fix evidence: Glass Cathedral evidence expansion presented master evidence, composition/publishing evidence, state meaning, and the recommended legal-review action.
+- **P2 — No queue-level work management.**
+  - Fix: added selection, select-all, bulk assignment with reviewer/priority/due date, simulated document requests, escalation, and clear selection.
+  - Post-fix evidence: one record was selected and the bulk assignment dialog rendered all required controls.
+- **P2 — Reports were six disconnected equal actions.**
+  - Fix: consolidated them into a labelled report type selector and one Prepare report action with role-safe simulation copy.
+  - Post-fix evidence: report preparation completed without console errors.
+- **P2 — Mobile navigation exposed an intrusive horizontal scrollbar.**
+  - Fix: retained horizontal tab access while hiding the platform scrollbar.
+  - Post-fix evidence: computed scrollbar width is `none`; the 390px page has no horizontal overflow.
+- **P2 — Sort option text clipped at the desktop filter width.**
+  - Fix: increased the final filter grid track.
+  - Post-fix evidence: the final sort control reports no text clipping.
 
 ## Required fidelity surfaces
 
-- Fonts and typography: passed. Existing beatmondo serif display and sans UI families are retained; hierarchy, 14–16px drawer labels, compact metadata, and button weights follow the source.
-- Spacing and layout rhythm: passed. Command controls, result toolbar, 420px drawer, grouped dividers, compact facet grids, and sticky footer align with the selected direction. Existing shell width is intentionally retained.
-- Colors and visual tokens: passed. Warm near-black surfaces, ivory text, muted brass selection states, and Gary Burke red licensing actions remain semantically consistent.
-- Image quality and asset fidelity: passed. Existing supplied track art and beatmondo brand assets are reused without placeholder or code-drawn replacements; no new raster assets were required for this controls-only redesign.
-- Copy and content: passed. Labels use buyer-safe Explore Music terminology, real facet data, real accessible counts, and the requested Creative Direction / Sound / Usage / Rights & Delivery grouping.
-
-## Comparison history
-
-1. P2 — mobile showed page and drawer scrollbars simultaneously.
-   - Fix: lock body overflow while the filter sheet is open and let `.search-filter-scroll` own scrolling.
-   - Post-fix evidence: `mobile-qa-final.png`; body overflow is `hidden`, drawer width equals viewport width, and one scrollbar is visible.
-2. P2 — BPM minimum and maximum controls rendered as two stacked rails.
-   - Fix: overlap both accessible range inputs on one 28px rail while retaining independent thumb interaction.
-   - Post-fix evidence: both range inputs measured at the same top coordinate and height in the final desktop check.
-3. P2 — initial facet lists were too long and delayed the Sound group compared with the selected design.
-   - Fix: use four-item previews with functional View all / Show less controls; All Filters opens every major group while quick-filter buttons open the relevant group.
-   - Post-fix evidence: `desktop-qa-final-2.png` and `mobile-qa-final.png` show the concise hierarchy.
+- **Fonts and typography:** Existing display/body families were preserved. Queue labels and table support text were increased in contrast and size; hierarchy and wrapping are readable on desktop and mobile.
+- **Spacing and layout rhythm:** Header duplication was reduced, priority metrics were condensed, filters were grouped, and table/report spacing now follows a clear operational sequence.
+- **Colors and tokens:** Existing ivory, espresso, brass/gold, Gary Burke red, and semantic amber/green states were retained. Text labels accompany every semantic color.
+- **Image quality and assets:** No new raster assets were required. Existing beatmondo logo and Phosphor icon assets remain intact; no custom SVG, CSS illustration, or placeholder image was introduced.
+- **Copy and content:** Rights status, evidence health, licensing eligibility, expiry wording, reset impact, report scope, and prototype/legal cautions are explicit and internally consistent.
+- **Responsiveness:** Verified at 1920 × 1080 and 390 × 844. No page horizontal overflow; mobile queue rows render as labelled cards.
+- **Accessibility:** Visible labels, focus-visible treatment, 40–44px primary control heights, semantic table caption, checkboxes with record names, textual state badges, `aria-pressed`, `aria-live`, dialog labelling, and reduced-motion handling are present.
 
 ## Primary interactions tested
 
-- Open All Filters from the command bar.
-- Open and close grouped sections.
-- Select a mood and confirm the quick control, active chip, result count, and selected state update.
-- Select a BPM preset and confirm the sticky Show tracks count updates.
-- Close the drawer through the result action.
-- Verify desktop and mobile responsive states.
-- Check browser console errors: none.
+- Saved Blockers view
+- Individual row selection and bulk action bar
+- Bulk assignment dialog open/close
+- Evidence row expansion
+- Queue settings open
+- Reset confirmation open/cancel
+- Permission-filtered report preparation
+- Desktop and mobile responsive layouts
 
-## Shared role and permission coverage
+## Browser verification
 
-The supplied demo credentials were used only in the local browser session and were not copied into source, reports, screenshots, or logs. Every listed account was authenticated through the real simulated login flow; MFA-enabled roles were also verified through the six-digit challenge.
-
-| Surface / role | Shared command bar and drawer | Permission-safe result scope | Sensitive internal facets |
-| --- | --- | --- | --- |
-| Public | Passed | 5 accessible tracks | Hidden |
-| Super Administrator | Passed | 21 accessible tracks | Rights Status and Index Status visible |
-| Catalog & Licensing Manager | Passed | 21 accessible tracks | Rights Status and Index Status visible |
-| Rights Manager | Passed | 21 accessible tracks | Rights Status and Index Status visible |
-| Media Operations | Passed | 9 accessible tracks | Hidden |
-| Finance Manager | Passed | 9 accessible tracks | Hidden |
-| Legal Reviewer | Passed, including MFA | 9 accessible tracks | Hidden |
-| Security Administrator | Passed, including MFA | 9 accessible tracks | Hidden |
-| Privacy Administrator | Passed, including MFA | 9 accessible tracks | Hidden |
-| Platform Administrator / Operations | Passed | 21 accessible tracks | Rights Status and Index Status visible |
-| VIP Buyer | Passed | 19 accessible tracks | Hidden |
-| Discovery Buyer / verification under review | Passed | 9 accessible tracks | Hidden |
-| Professional Buyer / additional verification required | Passed | 9 accessible tracks | Hidden |
-| Rejected Buyer / cancelling membership | Passed | 9 accessible tracks | Hidden |
-| Suspended-verification Buyer | Passed | 9 accessible tracks | Hidden |
-| Artist / Rightsholder | Passed | 9 accessible tracks | Hidden |
-
-Responsive coverage also passed at 390 × 844 for representative internal, buyer, and artist sessions. Each rendered a 390px full-width drawer, four shared filter groups, locked background scroll, one drawer scrollbar, and the sticky role-scoped Show tracks action.
-
-## Featured Explore Music ordering and playback coverage
-
-- Public, VIP buyer, artist/rightsholder, and internal Catalog & Licensing Manager sessions all rendered **The End of Jason Todd** first and **2022 Teaser Video (Audio Extract)** second.
-- The ordering remains pinned when a user selects a different sort, while semantic subsets and active search/filter criteria still determine whether a track belongs in the result set.
-- The End of Jason Todd loaded its PCM WAV protected preview, advanced playback, and showed synchronized card and fixed-player pause state.
-- The Slambovian Circus of Dreams audio extract loaded its WAV protected preview, advanced playback, replaced the active Jason Todd preview cleanly, and synchronized both cards with the fixed player.
-- Both additions remain protected previews only. Existing rights, quote, licence, master, stem, download, and secure-delivery restrictions were not broadened.
-- Global music-search persistence passed with an unrelated query (`Quiet Machines`): The End of Jason Todd remained first, the Slambovian audio extract remained second, and the query match followed them. Both featured results successfully launched and advanced their shared WAV protected previews from the filtered result page.
-- Ordinary search queries, filters, and sorts now retain both featured results. Saved-only views, curated collections, and artist-specific subsets continue to include only tracks that semantically belong to those subsets.
-
-## Findings
-
-No actionable P0, P1, or P2 findings remain.
+- Build: passed
+- Desktop page horizontal overflow: none
+- Desktop table horizontal overflow: none in the default core-column state
+- Desktop visible Review buttons: 7 of 7
+- Mobile page horizontal overflow: none
+- Mobile row mode: grid cards
+- Console errors: none
 
 ## Follow-up polish
 
-- P3: the generated mock uses invented larger catalog counts and a narrower global sidebar; the implementation correctly keeps real prototype data and the established shared shell.
+- P3: A subtle edge fade could make horizontally scrollable mobile section tabs even more discoverable.
 
 final result: passed

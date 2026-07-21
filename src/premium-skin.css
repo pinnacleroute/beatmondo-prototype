@@ -9884,13 +9884,6 @@ button.auth-social-btn,
   font-size: 12px;
 }
 
-.site-footer .merchandise-footer-button {
-  min-height: 30px;
-  padding: 0 10px;
-  color: #f7fbf5;
-  background: linear-gradient(180deg, #477f57, #345f41);
-}
-
 .merchandise-page {
   min-height: 100vh;
   color: #f4efe6;
