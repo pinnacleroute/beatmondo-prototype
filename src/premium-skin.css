@@ -5507,7 +5507,7 @@ button[aria-disabled="true"]:not(.is-loading) {
     linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent 58%),
     rgba(24, 19, 15, 0.88);
   border: 1px solid rgba(95, 113, 103, 0.2);
-  border-top-color: rgba(196, 164, 90, 0.22);
+  border-top-color: rgba(166, 52, 42, 0.35);
   border-radius: 7px;
   box-shadow: 0 10px 24px rgba(29, 20, 14, 0.08);
   transition:

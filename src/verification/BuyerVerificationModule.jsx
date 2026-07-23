@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Fragment } from "react";
 import {
   ArrowRight,
   CheckCircle,
@@ -2011,10 +2011,10 @@ function ProfileCompanyReview({ app }) {
         <h3>Buyer profile</h3>
         <dl>
           {Object.entries(p).map(([key, value]) => (
-            <>
-              <dt key={`${key}-dt`}>{key.replace(/([A-Z])/g, " $1")}</dt>
-              <dd key={`${key}-dd`}>{String(value || "Not provided")}</dd>
-            </>
+            <Fragment key={key}>
+              <dt>{key.replace(/([A-Z])/g, " $1")}</dt>
+              <dd>{String(value || "Not provided")}</dd>
+            </Fragment>
           ))}
         </dl>
       </section>
@@ -2022,10 +2022,10 @@ function ProfileCompanyReview({ app }) {
         <h3>Company details</h3>
         <dl>
           {Object.entries(c).map(([key, value]) => (
-            <>
-              <dt key={`${key}-dt`}>{key.replace(/([A-Z])/g, " $1")}</dt>
-              <dd key={`${key}-dd`}>{String(value || "Not provided")}</dd>
-            </>
+            <Fragment key={key}>
+              <dt>{key.replace(/([A-Z])/g, " $1")}</dt>
+              <dd>{String(value || "Not provided")}</dd>
+            </Fragment>
           ))}
         </dl>
       </section>
