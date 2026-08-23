@@ -16,7 +16,7 @@ import "./previews/previews.css";
 
 /** Override with VITE_SITE_PASSWORD in .env for private deploys. */
 const SITE_PASSWORD =
-  import.meta.env.VITE_SITE_PASSWORD || "surfaceboy";
+  import.meta.env.VITE_SITE_PASSWORD || "circusboy";
 const ACCESS_KEY = "beatmondo-site-access";
 const isDemoMode =
   new URLSearchParams(window.location.search).get("demo") === "investor";
